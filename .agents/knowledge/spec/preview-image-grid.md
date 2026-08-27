@@ -13,8 +13,10 @@ Parameters: `PreviewOptions` plus `GridOptions` (flattened: `columns`, `rows`, `
 `row_width`, `color`, `opacity`, `line_width`) from `.agents/knowledge/spec/mcp-overview.md`.
 
 Returns: `[Image, metadata]` with the base keys plus
-`grid: {"columns": int, "rows": int, "step_x": float, "step_y": float}` where `step_*` is the cell size
-in normalized coordinates of the **cropped** view (so `1 / columns` in ratio mode).
+`grid: {"columns": int, "rows": int, "step_x": float, "step_y": float, "cell_width": float,
+"cell_height": float}` where `step_*` is the cell size in normalized coordinates of the **cropped** view
+(so `1 / columns` in ratio mode) and `cell_*` is the same cell size in output pixels (`output_width /
+columns`, or the configured widths in fixed mode).
 
 ## Behavior
 

@@ -78,8 +78,10 @@ Every preview tool returns two content blocks in this order:
 | Key | Meaning |
 |---|---|
 | `original_size` | `[width, height]` of the uncropped source after EXIF orientation |
+| `original_width`, `original_height` | the same two numbers as scalars |
 | `crop` | the **applied** normalized box — the request rounded outward to whole source pixels — or the full frame `[0, 0, 1, 1]` |
 | `output_size` | `[width, height]` of the returned image |
+| `output_width`, `output_height` | the same two numbers as scalars (what a model should use as the pixel frame) |
 | `scale` | output pixels per source pixel (`output_width / cropped_source_width`) |
 | `format` | the encoded format |
 | `saved_to` | the `save_to` value when used, else absent |

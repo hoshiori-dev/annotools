@@ -137,6 +137,10 @@ def test_ac9_legend_metadata():
     )
     image_w, image_h = result.metadata["image_size"]
     assert result.image.height <= 100 and result.metadata["output_size"][1] <= 100
+    assert (
+        result.metadata["output_width"] == result.image.width
+        and result.metadata["output_height"] == result.image.height
+    )
     assert image_h < result.image.height
     assert result.metadata["scale"] == pytest.approx(image_w / 400, abs=0.01)
 

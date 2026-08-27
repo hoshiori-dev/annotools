@@ -22,7 +22,14 @@ def test_ac1_default_grid_line_positions():
         assert pix(img, 300, x)[0] >= 127
     assert pix(img, 0, 300) == (0, 0, 0) and pix(img, 767, 300) == (0, 0, 0)
     assert pix(img, 40, 300) == (0, 0, 0)
-    assert black.metadata["grid"] == {"columns": 10, "rows": 10, "step_x": 0.1, "step_y": 0.1}
+    assert black.metadata["grid"] == {
+        "columns": 10,
+        "rows": 10,
+        "step_x": 0.1,
+        "step_y": 0.1,
+        "cell_width": 76.8,
+        "cell_height": 76.8,
+    }
 
 
 @pytest.mark.parametrize("line_width", [1, 2, 3])
@@ -43,6 +50,7 @@ def test_ac2_fixed_mode():
     assert pix(img, 100, 10)[0] >= 127 and pix(img, 700, 10)[0] >= 127 and pix(img, 50, 10) == (0, 0, 0)
     assert result.metadata["grid"]["columns"] == 8 and result.metadata["grid"]["rows"] == 6
     assert result.metadata["grid"]["step_x"] == pytest.approx(100 / 768)
+    assert (result.metadata["grid"]["cell_width"], result.metadata["grid"]["cell_height"]) == (100, 100)
 
 
 def test_ac3_color_black_and_invert():
@@ -75,4 +83,5 @@ async def test_ac6_tool_metadata(mcp_server, image_file):
         result = await client.call_tool("preview_image_grid", {"source": str(image_file(300, 150))})
     meta = json.loads(result.content[1].text)
     assert meta["grid"]["step_x"] == 0.1 and meta["grid"]["columns"] == 10
-    assert meta["output_size"] == [300, 150]
+    assert meta["grid"]["cell_width"] == 30 and meta["grid"]["cell_height"] == 15
+    assert meta["output_size"] == [300, 150] and meta["output_width"] == 300

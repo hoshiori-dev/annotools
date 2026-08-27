@@ -152,6 +152,7 @@ def overlay_mask(
         metadata["scale"] = result.metadata["scale"] * factor
         # output_size is the composite; image_size is the area the inverse mapping applies to.
         metadata["output_size"] = list(size)
+        metadata["output_width"], metadata["output_height"] = size
         metadata["image_size"] = [round(image.width * factor), round(image.height * factor)]
         image = combined
     return PreviewResult(image=image, metadata=metadata)

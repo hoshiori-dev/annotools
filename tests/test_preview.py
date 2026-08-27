@@ -13,6 +13,8 @@ def test_ac1_downscale_fits_limits():
     assert result.image.size == (384, 288)
     assert result.metadata["original_size"] == [4000, 3000]
     assert result.metadata["output_size"] == [384, 288]
+    assert (result.metadata["original_width"], result.metadata["original_height"]) == (4000, 3000)
+    assert (result.metadata["output_width"], result.metadata["output_height"]) == (384, 288)
     assert result.metadata["scale"] == pytest.approx(384 / 4000)
 
 
