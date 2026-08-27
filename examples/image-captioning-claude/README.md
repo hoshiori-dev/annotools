@@ -25,7 +25,7 @@ in this directory read `CONTEXT.md` first.
 One `query()` per image: the agent calls `look_at_item` (annotools preview at 768 px), writes the long
 caption, compresses it twice, produces tags, and records each with `record_caption` / `record_tags`
 (SQLite, schema from the `sqlite-annotation-store` skill). The pipeline verifies that all four variants
-exist and within budget; on failure it sets the item's rows to `needs_review` (nothing is overwritten
+exist and are within budget; on failure it sets the item's rows to `needs_review` (nothing is overwritten
 and the item stays pending for the next run) and stops the run after 10 failures in a row.
 
 ## Usage record
@@ -39,4 +39,4 @@ and the item stays pending for the next run) and stops the run after 10 failures
 | Wall time | _pending_ |
 
 Fill this table from the JSON summary `just run` prints (`items`, `input_tokens`, `output_tokens`,
-`cache_read_input_tokens`, `cost_usd`, `seconds`); `cost_usd` sums the SDK's client-side estimates, not a bill.
+`cache_read_input_tokens`, `cache_creation_input_tokens`, `cost_usd`, `seconds`); `cost_usd` sums the SDK's client-side estimates, not a bill.
