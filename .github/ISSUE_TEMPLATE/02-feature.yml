@@ -1,0 +1,33 @@
+name: Feature request
+description: Propose a new MCP tool, library capability, skill, or example for annotools
+labels: ["enhancement", "status/needs-triage"]
+type: Feature
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: What becomes possible, and for which agent or developer, when this exists.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and references
+      description: Why now — the annotation task or model behavior that motivates it, prior discussion, alternatives considered.
+    validations:
+      required: false
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance sketch
+      description: How we would observe that this is done. Rough is fine; the Task issue that implements it carries the executable criteria.
+    validations:
+      required: false
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: What this request deliberately does not cover.
+    validations:
+      required: false

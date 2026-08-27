@@ -1,0 +1,20 @@
+# Generated release notes consume merged PR labels. Categories are evaluated in order; '*' stays last.
+# Every label here must exist in .github/labels.json (checked by scripts/check_taxonomy.py).
+changelog:
+  exclude:
+    labels: ["duplicate", "invalid", "wontfix"]
+  categories:
+    - title: New features
+      labels: ["enhancement"]
+    - title: Bug fixes
+      labels: ["bug"]
+    - title: MCP tools and library
+      labels: ["area/mcp"]
+    - title: Skills and examples
+      labels: ["area/skills", "area/examples"]
+    - title: Documentation
+      labels: ["documentation", "area/docs"]
+    - title: Harness and CI
+      labels: ["area/harness"]
+    - title: Other changes
+      labels: ["*"]
