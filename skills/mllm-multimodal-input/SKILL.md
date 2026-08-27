@@ -24,8 +24,9 @@ rely on for cost (vendors change tiers without notice) and record the date next 
 3. **Lay the prompt out for the cache**: static system text and tool definitions first, task rules
    second, the per-item block (metadata + media + question) last. Keep the static prefix above the
    provider minimum (table below) or nothing caches.
-4. **Ask for coordinates in the model's native convention** and convert to the project's storage
-   convention (normalized xyxy; see the annotools MCP overview spec) in code — never ask a model to convert.
+4. **Ask for coordinates in the model's native convention** (table below) and convert to the storage
+   convention (normalized xyxy relative to the uncropped source) with the annotools
+   `normalize_coordinates` tool or `annotools.geometry.normalize_coordinates` — never ask a model to convert.
 5. **Set reasoning effort per task**: lowest tier for captioning/classification, medium for
    detection with a self-check loop, high only when the spec demands it.
 6. **Verify once, then batch**: run 3 items, read `usage` (cached tokens, input tokens per image),
@@ -45,10 +46,28 @@ rely on for cost (vendors change tiers without notice) and record the date next 
 | Qwen2.5-VL | 14-px patches merged 2×2 → one token per 28×28 px; `min_pixels`/`max_pixels` bound the area (typical 256·28² – 1280·28²), sizes rounded to multiples of 28. 768×768 → 784 tokens. | Set `max_pixels` to the budget; 768 long side ≈ 450–800 tokens |
 | Qwen3-VL | 16-px patches merged 2×2 → one token per **32×32** px; sizes rounded to multiples of 32; pixel budgets in units of 32² (video `fps` default 2; the `total_pixels` default differs between the README and `vision_process.py` — set it explicitly). 768×768 → 576 tokens. | Same rule with 32-px units; 768 long side ≈ 330–600 tokens |
 
-Practical consequence: the annotools default of 768 px on the long side costs roughly 350–800 tokens
-on Claude, GPT, and Qwen and 4–6 × 258 tokens on Gemini. For Gemini, downsize to ≤ 384 px when
-the task tolerates it or lower `media_resolution`; for fine detail on any model, `crop` a region at
-768 px rather than sending a 1536 px image.
+Practical consequence: the annotools server default is **384×384** — the largest size Gemini bills as
+one 258-token unit. That is often too small for the other families: they bill by area with no tile
+boundary, so 384 saves little and loses detail. Start the server with the size for the model you use
+(`annotools --max-width W --max-height H`, or `ANNOTOOLS_MAX_WIDTH`/`ANNOTOOLS_MAX_HEIGHT` in the MCP
+registration; every tool also takes `max_width`/`max_height` per call), and `crop` a region at that size
+rather than sending a larger image.
+
+## Recommended startup size per model
+
+| Model family | `max_width` × `max_height` | Why |
+|---|---|---|
+| Gemini 2.5 / 3.x | 384 × 384 (the default) | one 258-token unit; 768 costs 4–6 units |
+| Claude (standard or high-res tier) | 768 × 768 (up to 1092 × 1092 stays under 1568 tokens) | 28-px patches, area billing; well inside both tier limits so coordinates need no rescale |
+| GPT-5.2 / 5.4 / 5.6 (patch models) | 768 × 768 (up to 1024 × 1024 ≈ 1229 tokens) | 32-px patches × 1.2, area billing |
+| GPT-4o / 4.1 / 5.1 (tile models) | 512 × 512 for one tile, else 768 × 768 (4 tiles) | 512-px tiles; `detail=high` |
+| Qwen2.5-VL / Qwen3-VL | 768 × 768 | 28- or 32-px units, area billing; set `max_pixels`/`total_pixels` to match |
+
+Registration examples — Claude Code `.mcp.json`:
+`"annotools": {"type": "stdio", "command": "uv", "args": ["run", "annotools"], "env": {"ANNOTOOLS_MAX_WIDTH": "768", "ANNOTOOLS_MAX_HEIGHT": "768"}}`;
+Codex `config.toml`: `[mcp_servers.annotools]` … `env = { ANNOTOOLS_MAX_WIDTH = "768", ANNOTOOLS_MAX_HEIGHT = "768" }`;
+OpenCode: `"environment": {"ANNOTOOLS_MAX_WIDTH": "768", "ANNOTOOLS_MAX_HEIGHT": "768"}`. The same
+variables (or `--grid-columns`, `--grid-rows`, `--target-pixels`, …) set the other defaults.
 
 ## Video and audio
 
@@ -61,18 +80,26 @@ the task tolerates it or lower `media_resolution`; for fine detail on any model,
 
 Rule: sample sparser (`fps`) before sampling smaller; 32 frames at 768 px is already 15–25 k tokens.
 
-## Coordinate conventions the models answer in
+## Coordinate conventions by model
 
-| Model | Ask for | Convert with |
-|---|---|---|
-| Claude | Absolute pixel `[x1, y1, x2, y2]` of the image **as sent**; the docs state normalized 0–1000 requests work poorly. Keep the preview within the tier limits (the annotools default 768 px is; raising `max_width`/`max_height` past 1568/2576 px makes Claude resize and answer in the resized space). | divide by the preview `output_size`, then map through `crop` using the annotools metadata |
-| Gemini | `[ymin, xmin, ymax, xmax]` normalized to 0–1000 (note the y-first order); segmentation masks as `[x, y]` polygons 0–1000 | divide by 1000, swap to xyxy |
-| GPT | No documented convention; pixel coordinates of the sent image work in practice — state the image size in the prompt | divide by `output_size` |
-| Qwen2.5-VL / Qwen3-VL | Absolute pixels of the resized image (the size after `min/max_pixels`, multiples of 28 or 32) | divide by the resized size |
+Normalized 0–1 is the **storage** convention only. Each model answers best in the frame it was trained
+on; asking for anything else degrades localization (Claude documents this explicitly). Prompt in the
+native convention, then convert with `normalize_coordinates(coordinates, base_width, base_height, crop,
+axis_order)` — `base` is the frame the model used, `crop` the applied crop from the preview metadata.
 
-Store everything as normalized xyxy relative to the uncropped source (the annotools convention: x and
-y in 0–1, `[x_min, y_min, x_max, y_max]`, polygons as flat `[x1, y1, …]`); the grid overlay helps every
-model equally because the grid is drawn on the image the model sees.
+| Model | Native convention (vendor statement, verified 2026-08-27) | Prompt wording | Convert with |
+|---|---|---|---|
+| Claude | Absolute pixels of the image **as sent**: "Claude works best with absolute pixel coordinates … does not work well when you ask for normalized coordinates, for example: 'Return bounding box coordinates between 0 and 1000'". Coordinates refer to the resized image if Claude had to resize; normalize by the resized, never the padded, size. | "Return `[x1, y1, x2, y2]` in pixel coordinates of the image as shown (width W, height H)" with W/H from `output_width`/`output_height` | `base = output_width, output_height`, `axis_order="xy"` |
+| GPT-5.4+ and Codex | The GPT-5.4 vision tips recommend "a strict coordinate contract like `[x_min, y_min, x_max, y_max]` and a fixed coordinate space such as `0..999` with the origin in the top-left corner" (plus code-interpreter access for localization). Pixels of the sent image also work but are not the documented recommendation. | "Return `[x_min, y_min, x_max, y_max]` as integers in a fixed 0..999 space, origin top-left" | `base = 999, 999` (or 1000 if you prompt 0–1000), `axis_order="xy"` |
+| Gemini | `box_2d` = `[ymin, xmin, ymax, xmax]` normalized to 0–1000 (y first); segmentation masks as `[x, y]` polygons in the same space | "The box_2d should be `[ymin, xmin, ymax, xmax]` normalized to 0-1000" | `base = 1000, 1000`, `axis_order="yx"` |
+| Qwen2.5-VL | Absolute coordinates "using the actual size scale of the image, without performing traditional coordinate normalization" — pixels of the smart-resized input (multiples of 28) | pixel `[x1, y1, x2, y2]` of the image as shown; state W×H | `base = output_width, output_height` (send a preview already sized to multiples of 28 so no resize happens) |
+| Qwen3-VL | Relative 0–1000 `[x1, y1, x2, y2]` (top-left, bottom-right); some cookbook utilities divide by 999 | "`bbox_2d` `[x1, y1, x2, y2]` in a 0-1000 space" | `base = 1000, 1000`, `axis_order="xy"` |
+| Unknown / other | Undocumented | Trial-label 3 images with the grid preview, asking for pixels of the shown image; assert the value range of the answer (≤ `output_width` → pixels; ≤ 1000 with values near 1000 on a small image → fixed space) before choosing | per the observed range |
+
+Rules that hold for every model: the grid overlay is drawn on the image the model sees, so it anchors
+any convention equally; state the shown size in the prompt for pixel conventions; convert in code
+right after parsing and store only normalized values (`localization-annotation-guide` has the loop);
+`denormalize_coordinates` renders stored boxes back into a model's frame when you need to quote them.
 
 ## Prompt caching minimums (prefix must be byte-identical)
 

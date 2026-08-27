@@ -54,8 +54,15 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 1
         conn.executescript(schema_path.read_text(encoding="utf-8"))
-        for key, value in (("task", args.task), ("schema_version", SCHEMA_VERSION), ("coordinate_convention", CONVENTION)):
-            conn.execute("INSERT INTO meta(key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", (key, value))
+        for key, value in (
+            ("task", args.task),
+            ("schema_version", SCHEMA_VERSION),
+            ("coordinate_convention", CONVENTION),
+        ):
+            conn.execute(
+                "INSERT INTO meta(key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+                (key, value),
+            )
         kinds = ", ".join(f"'{k}'" for k in TASK_KINDS[args.task])
         conn.execute("DROP VIEW IF EXISTS task_annotations")
         conn.execute(f"CREATE VIEW task_annotations AS SELECT * FROM final_annotations WHERE kind IN ({kinds})")
@@ -65,7 +72,17 @@ def main(argv: list[str] | None = None) -> int:
     except sqlite3.Error as exc:
         print(f"init_db: error: {exc}", file=sys.stderr)
         return 1
-    print(json.dumps({"db": str(db_path), "task": args.task, "schema_version": SCHEMA_VERSION, "tables": tables, "task_view": "task_annotations"}))
+    print(
+        json.dumps(
+            {
+                "db": str(db_path),
+                "task": args.task,
+                "schema_version": SCHEMA_VERSION,
+                "tables": tables,
+                "task_view": "task_annotations",
+            }
+        )
+    )
     return 0
 
 

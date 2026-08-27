@@ -19,7 +19,8 @@ description: >-
   expects.
 - **Ask** each model in the convention it is trained for (`mllm-multimodal-input` → coordinate
   table): Claude and Qwen answer in pixels of the image they saw; Gemini in `[ymin, xmin, ymax,
-  xmax]` × 1000. Convert in code with the preview metadata (`output_size`, `crop`, `scale`).
+  xmax]` × 1000. Convert in code with the `normalize_coordinates` tool (or `assets/build_preview_call.py`) using the
+  preview metadata (`output_width`/`output_height`, `crop`).
 - Rotated boxes: request `(cx, cy, w, h, theta)` **or** 4 corners, convert with
   `rotated_bbox_to_polygon`, and verify rectangularity with `is_rectangle`
   ([assets/check_rectangle.py](assets/check_rectangle.py)).
@@ -64,8 +65,9 @@ description: >-
 
 - A model that returns normalized coordinates when asked for pixels (or vice versa) shifts every box
   — assert the value range before converting.
-- Claude resizes images above its tier limits and answers in the resized space; at the annotools
-  default (768 px) this never triggers, but a raised `max_width`/`max_height` or a raw upload would.
+- Claude resizes images above its tier limits and answers in the resized space; any annotools preview
+  ≤ 1092 px on both sides stays under the standard tier, but a larger `max_width`/`max_height` or a raw
+  upload would trigger it — then normalize by the resized size, not the original.
 - Rendering candidates without the grid loses the anchor the model used; keep `grid={}` in the
   verification call.
 - `preview_image_polygons` rejects coordinates outside 0–1 — clamp rotated-box corners first.

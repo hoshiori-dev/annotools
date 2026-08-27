@@ -12,7 +12,8 @@ WORKSPACE = Path("workspaces/<task>")
 DB = WORKSPACE / "data" / "dataset.db"
 RUN_ID = 1  # created by the pipeline start-up (a `runs` row per execution; foreign keys require it)
 MAX_ROUNDS = 3  # confirmed with the user in the interview
-CONVENTION = "pixels"  # or "gemini"; from config/
+CONFIG = json.loads(Path("config/default.json").read_text())
+CONVENTION = CONFIG.get("coordinates", "pixels")  # pixels | gpt | thousand | thousand_yx (build_preview_call)
 CONFIDENCE_FLOOR = 0.5
 
 
@@ -56,8 +57,10 @@ async def detect_item(vision: VisionTools, item_id: int, uri: str, prompts: dict
     conn.execute("PRAGMA foreign_keys = ON")
     try:
         await _detect(conn, vision, item_id, uri, prompts, classes)
-    except Exception as exc:  # noqa: BLE001 - a malformed model answer must not abort the run
-        conn.execute("UPDATE annotations SET status = 'needs_review' WHERE item_id = ? AND run_id = ?", (item_id, RUN_ID))
+    except Exception as exc:
+        conn.execute(
+            "UPDATE annotations SET status = 'needs_review' WHERE item_id = ? AND run_id = ?", (item_id, RUN_ID)
+        )
         conn.execute(
             "INSERT INTO annotations(item_id, run_id, kind, key, payload_json, status) VALUES (?,?,?,?,?,?) "
             "ON CONFLICT(item_id, run_id, kind, key) DO UPDATE SET payload_json=excluded.payload_json, status=excluded.status",
@@ -68,13 +71,17 @@ async def detect_item(vision: VisionTools, item_id: int, uri: str, prompts: dict
         conn.close()
 
 
-async def _detect(conn: sqlite3.Connection, vision: VisionTools, item_id: int, uri: str, prompts: dict, classes: set[str]) -> None:
+async def _detect(
+    conn: sqlite3.Connection, vision: VisionTools, item_id: int, uri: str, prompts: dict, classes: set[str]
+) -> None:
     image, meta = vision.look_at_item(uri, grid={})
     proposal = await call_model(prompts["propose"], [image, f"Image id: {item_id}; shown size: {meta['output_size']}"])
     boxes = clean(proposal.get("boxes", []), meta, classes)
     rounds, done = 0, False
     while rounds < MAX_ROUNDS and boxes and not done:
-        overlay, _ = vision.look_at_annotations(uri, bboxes=[{**b, "label": f"{i}:{b['label']}"} for i, b in enumerate(boxes)])
+        overlay, _ = vision.look_at_annotations(
+            uri, bboxes=[{**b, "label": f"{i}:{b['label']}"} for i, b in enumerate(boxes)]
+        )
         answer = await call_model(prompts["propose"] + prompts["correct"], [overlay])
         rounds += 1
         done = bool(answer.get("done"))
@@ -95,7 +102,17 @@ async def _detect(conn: sqlite3.Connection, vision: VisionTools, item_id: int, u
             "INSERT INTO annotations(item_id, run_id, kind, key, label, payload_json, confidence, rounds, status) VALUES (?,?,?,?,?,?,?,?,?) "
             "ON CONFLICT(item_id, run_id, kind, key) DO UPDATE SET label=excluded.label, payload_json=excluded.payload_json, "
             "confidence=excluded.confidence, rounds=excluded.rounds, status=excluded.status",
-            (item_id, RUN_ID, "bbox", str(index), b["label"], json.dumps({"bbox": b["bbox"]}), b["confidence"], rounds, status),
+            (
+                item_id,
+                RUN_ID,
+                "bbox",
+                str(index),
+                b["label"],
+                json.dumps({"bbox": b["bbox"]}),
+                b["confidence"],
+                rounds,
+                status,
+            ),
         )
     conn.commit()
 
@@ -103,7 +120,7 @@ async def _detect(conn: sqlite3.Connection, vision: VisionTools, item_id: int, u
 async def main(workers: int = 4) -> None:
     conn = sqlite3.connect(DB)
     conn.execute("PRAGMA foreign_keys = ON")
-    vision = VisionTools(WORKSPACE, max_width=768, max_height=768)
+    vision = VisionTools(WORKSPACE, **CONFIG.get("preview", {}))  # per-model size from config/
     prompts = {name: (Path("spec/prompts") / f"{name}.md").read_text() for name in ("propose", "correct")}
     classes = set(json.loads(Path("config/classes.json").read_text()))
     pending = conn.execute("SELECT id, uri FROM items_pending").fetchall()
