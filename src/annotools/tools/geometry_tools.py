@@ -16,6 +16,10 @@ CoordinatesParam = Annotated[
         description="Entries of flat x, y, x, y, ... values (point, box, polygon); y, x per pair when axis_order='yx'",
     ),
 ]
+NormalizedCoordinatesParam = Annotated[
+    list[list[float]],
+    Field(min_length=1, description="Entries of flat x, y, x, y, ... values in [0, 1] (always x-first)"),
+]
 BaseWidthParam = Annotated[
     float,
     Field(
@@ -25,7 +29,8 @@ BaseWidthParam = Annotated[
 ]
 BaseHeightParam = Annotated[float, Field(gt=0, description="Height of that frame: output_height, or 1000")]
 AxisOrderParam = Annotated[
-    Literal["xy", "yx"], Field(description="Pair order in the base frame (yx for Gemini's [ymin, xmin, ymax, xmax])")
+    Literal["xy", "yx"],
+    Field(description="Pair order on the base-frame side only (yx for Gemini's [ymin, xmin, ymax, xmax])"),
 ]
 
 
@@ -86,7 +91,7 @@ def normalize_coordinates(
 
 @mcp.tool
 def denormalize_coordinates(
-    coordinates: CoordinatesParam,
+    coordinates: NormalizedCoordinatesParam,
     base_width: BaseWidthParam,
     base_height: BaseHeightParam,
     crop: CropParam = None,

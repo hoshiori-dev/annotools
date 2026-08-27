@@ -191,8 +191,8 @@ def normalize_coordinates(
     (Gemini's ``[ymin, xmin, ymax, xmax]``); the result is always ``x, y`` and clamped to [0, 1].
 
     Raises:
-        ValueError: naming ``name[i]`` for an odd-length entry, or ``name`` for a non-positive base or
-            an invalid crop.
+        ValueError: naming ``name[i]`` for an odd-length entry, ``name`` for a non-positive base, or
+            ``crop`` for an invalid crop.
     """
     _check_base(base_width, base_height, name)
     x0, y0, x1, y1 = validate_normalized_box(crop, name="crop") if crop is not None else FULL_FRAME
@@ -224,8 +224,8 @@ def denormalize_coordinates(
     ``axis_order="yx"``. Values are not rounded or clamped: a point outside ``crop`` maps outside the frame.
 
     Raises:
-        ValueError: naming ``name[i]`` for an odd-length entry or a value outside [0, 1], or ``name`` for
-            a non-positive base or an invalid crop.
+        ValueError: naming ``name[i]`` for an odd-length entry or a value outside [0, 1], ``name`` for a
+            non-positive base, or ``crop`` for an invalid crop.
     """
     _check_base(base_width, base_height, name)
     x0, y0, x1, y1 = validate_normalized_box(crop, name="crop") if crop is not None else FULL_FRAME

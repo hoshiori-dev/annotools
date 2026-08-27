@@ -67,7 +67,7 @@ async def test_ac9_tools(mcp_server):
         )
         back = await client.call_tool(
             "denormalize_coordinates",
-            {"coordinates": [[0.5, 0.5, 1, 1]], "base_width": 1000, "base_height": 1000, "axis_order": "yx"},
+            {"coordinates": [[0.2, 0.1, 0.4, 0.3]], "base_width": 1000, "base_height": 1000, "axis_order": "yx"},
         )
         bad = await client.call_tool(
             "normalize_coordinates",
@@ -76,5 +76,5 @@ async def test_ac9_tools(mcp_server):
         )
     approx_lists(pixels.structured_content["coordinates"], [[0.5, 0.5, 1, 1]])
     approx_lists(gpt.structured_content["coordinates"], [[0, 0, 1, 1]])
-    approx_lists(back.structured_content["coordinates"], [[500, 500, 1000, 1000]])
+    approx_lists(back.structured_content["coordinates"], [[100, 200, 300, 400]])
     assert bad.is_error and "coordinates[0]" in bad.content[0].text
