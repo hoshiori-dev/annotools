@@ -53,6 +53,7 @@ Claude, GPT, or Qwen start the server with a larger limit, e.g. `uv run annotool
 | `preview_image_segmentation` | ID-mask overlay with labels or a legend |
 | `color_from_text` | stable color from any text |
 | `rotated_bbox_to_polygon` | (cx, cy, w, h, θ) → DOTA 8-number corners |
+| `normalize_coordinates` / `denormalize_coordinates` | a model's frame (pixels of the preview, or 0–1000) ↔ normalized 0–1 |
 | `preview_video` / `preview_video_grid` | frame sampling at N fps → previews |
 | `clip_audio` | clip and resample audio |
 
