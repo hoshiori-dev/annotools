@@ -291,6 +291,7 @@ def preview_image_segmentation(
     result = render_preview(options)
     extra: dict = {}
     _with_grid(result, grid, extra)
+    result.metadata.update(extra)  # so a legend re-fit can rescale the grid's pixel cell sizes
     drawn = overlay_mask(
         result,
         load_mask(mask_source),
@@ -302,6 +303,7 @@ def preview_image_segmentation(
         max_height=max_height,
         target_pixels=target_pixels,
     )
+    extra.pop("grid", None)  # drawn.metadata carries the grid, rescaled by the legend re-fit if any
     extra["ids"] = drawn.metadata["ids"]
     if "legend" in drawn.metadata:
         extra["legend"] = drawn.metadata["legend"]

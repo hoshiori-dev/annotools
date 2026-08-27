@@ -16,7 +16,8 @@ Returns: `[Image, metadata]` with the base keys plus
 `grid: {"columns": int, "rows": int, "step_x": float, "step_y": float, "cell_width": float,
 "cell_height": float}` where `step_*` is the cell size in normalized coordinates of the **cropped** view
 (so `1 / columns` in ratio mode) and `cell_*` is the same cell size in output pixels (`output_width /
-columns`, or the configured widths in fixed mode).
+columns`, or the configured widths in fixed mode). When a later step re-fits the image (the
+`preview_image_segmentation` legend), `cell_*` is rescaled with it and refers to the returned pixels.
 
 ## Behavior
 
@@ -34,14 +35,15 @@ columns`, or the configured widths in fixed mode).
 
 1. `test_ac1_default_grid_line_positions`: 768×768 white preview → pixels at x = round(76.8·i) for
    i = 1..9 are unchanged (white on white) while on a black image they are 50 % grey; 9 vertical and 9
-   horizontal lines, no line on the borders.
+   horizontal lines, no line on the borders; metadata `grid.cell_width == cell_height == 76.8`.
 2. `test_ac2_fixed_mode`: `mode="fixed", column_width=100, row_width=100` on 768×512 → lines every
-   100 px; metadata `grid.columns == 8`, `grid.rows == 6`.
+   100 px; metadata `grid.columns == 8`, `grid.rows == 6`, `cell_width == cell_height == 100`.
 3. `test_ac3_color_black_and_invert`: on a white image `black` lines are 50 % grey; `invert` on a
    red image yields the blend of red and cyan.
 4. `test_ac4_opacity_zero_is_noop`: `opacity=0` → identical bytes to the plain preview.
 5. `test_ac5_invalid_options`: `columns=0`, `opacity=1.5`, fixed mode without widths → `ValueError`.
-6. `test_ac6_tool_metadata`: via `Client(mcp)` the metadata carries `grid` with `step_x == 0.1`.
+6. `test_ac6_tool_metadata`: via `Client(mcp)` the metadata carries `grid` with `step_x == 0.1` and
+   `cell_width == output_width / 10`.
 
 ## Out of scope
 

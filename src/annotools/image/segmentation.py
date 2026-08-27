@@ -10,7 +10,7 @@ from annotools.color import color_from_text, to_hex
 from annotools.config import get_settings
 from annotools.geometry import fit_size
 from annotools.image.overlay import _draw_label
-from annotools.image.preview import PreviewResult
+from annotools.image.preview import PreviewResult, size_metadata
 from annotools.io import load_image
 
 settings = get_settings()
@@ -149,10 +149,16 @@ def overlay_mask(
         factor = size[0] / combined.width
         if size != combined.size:
             combined = combined.resize(size, Image.Resampling.LANCZOS)
-        metadata["scale"] = result.metadata["scale"] * factor
         # output_size is the composite; image_size is the area the inverse mapping applies to.
-        metadata["output_size"] = list(size)
-        metadata["output_width"], metadata["output_height"] = size
+        metadata.update(
+            size_metadata((original_w, original_h), result.metadata["crop"], size, result.metadata["scale"] * factor)
+        )
         metadata["image_size"] = [round(image.width * factor), round(image.height * factor)]
+        if "grid" in metadata:  # the grid was drawn before the re-fit: its pixel cell sizes shrink with it
+            metadata["grid"] = {
+                **metadata["grid"],
+                "cell_width": metadata["grid"]["cell_width"] * factor,
+                "cell_height": metadata["grid"]["cell_height"] * factor,
+            }
         image = combined
     return PreviewResult(image=image, metadata=metadata)

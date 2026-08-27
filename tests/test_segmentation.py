@@ -131,6 +131,37 @@ def test_ac8_line_width():
         overlay_mask(preview(make_image(20, 10)), mask_array(20, 10), line_width=-1)
 
 
+def test_legend_refit_rescales_grid_cells():
+    from annotools.image.grid import GridOptions, draw_grid
+
+    result = preview(make_image(400, 200), max_height=100)
+    gridded = draw_grid(result.image, GridOptions())
+    result.image, result.metadata = gridded.image, {**result.metadata, **gridded.metadata}
+    out = overlay_mask(result, mask_array(400, 200), annotation="legend", line_width=0, max_height=100)
+    image_w, _ = out.metadata["image_size"]
+    assert out.metadata["grid"]["cell_width"] == pytest.approx(image_w / 10, abs=0.5)
+    assert out.metadata["grid"]["step_x"] == 0.1
+
+
+async def test_legend_refit_rescales_grid_cells_tool(mcp_server, image_file, tmp_path):
+    mask_path = tmp_path / "mask.png"
+    Image.fromarray(mask_array(400, 200)).save(mask_path)
+    async with Client(mcp_server) as client:
+        result = await client.call_tool(
+            "preview_image_segmentation",
+            {
+                "source": str(image_file(400, 200)),
+                "mask_source": str(mask_path),
+                "annotation": "legend",
+                "grid": {},
+                "max_height": 100,
+            },
+        )
+    meta = json.loads(result.content[1].text)
+    assert meta["grid"]["cell_width"] == pytest.approx(meta["image_size"][0] / 10, abs=0.5)
+    assert meta["output_width"] == meta["output_size"][0]
+
+
 def test_ac9_legend_metadata():
     result = overlay_mask(
         preview(make_image(400, 200), max_height=100), mask_array(400, 200), annotation="legend", max_height=100
