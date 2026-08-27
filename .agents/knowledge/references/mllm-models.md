@@ -13,8 +13,8 @@ the derived copies (see the Keep In Sync table in `AGENTS.md`).
 | Resolution tiers | standard: edge ≤ 1568 px and ≤ 1568 tokens; high-resolution (Claude 4.7+): edge ≤ 2576 px and ≤ 4784 tokens; larger images are resized to fit, then padded to a multiple of 28 on the right/bottom | Vision; Coordinates and bounding boxes — https://platform.claude.com/docs/en/build-with-claude/vision-coordinates (2026-08-27) |
 | Coordinate convention | "Claude works best with absolute pixel coordinates. Ask for them explicitly in your prompt … Claude does not work well when you ask for normalized coordinates, for example: 'Return bounding box coordinates between 0 and 1000.' Always ask for pixel coordinates and normalize in your own code if you need to." Coordinates refer to the image **as Claude sees it** (after its resize); "Always normalize or rescale by the resized dimensions, not the padded dimensions." | Coordinates and bounding boxes (2026-08-27) |
 | Precision advice | pre-resize to the tier size so coordinates map one-to-one; crop and send the region for small targets; `transformations: {"oversized_image": "error"}` turns a silent resize into a 400 | Coordinates and bounding boxes (2026-08-27) |
-| Video / audio | no native video or audio input; send sampled frames as images | Vision (2026-08-27) |
-| Prompt cache minimum | Opus 5 / Fable 5: 512 tokens; Opus 4.8 / Sonnet 5 / Sonnet 4.6: 1024; Opus 4.7: 2048; Opus 4.6 / Haiku 4.5: 4096; max 4 `cache_control` breakpoints; images count toward the prefix | https://platform.claude.com/docs/en/build-with-claude/prompt-caching (2026-08-27) |
+| Video / audio | image-only input: animations are unsupported and only the first frame is used, so send sampled frames as images (no audio path) | Vision (2026-08-27) |
+| Prompt cache minimum (selected models; the page lists more) | Opus 5 / Fable 5 / Mythos 5: 512 tokens; Opus 4.8 / Sonnet 5 / Sonnet 4.6: 1024; Opus 4.7: 2048; Opus 4.6 / Haiku 4.5: 4096; max 4 `cache_control` breakpoints; images count toward the prefix | https://platform.claude.com/docs/en/build-with-claude/prompt-caching (2026-08-27) |
 
 ## Gemini (Google)
 

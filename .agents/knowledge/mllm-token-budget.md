@@ -16,8 +16,8 @@ project decisions built on them. Update the reference first when a figure drifts
   tiles = ceil(w / unit) × ceil(h / unit) at 258 tokens each — so a 768×432 preview costs 6 tiles
   (1548 tokens) and a 768×768 one 4 tiles, while ≤ 384×384 costs 258. For Gemini the cheap point is
   therefore ≤ 384 px on both sides (or the model's `media_resolution` setting), not 768. Keep 768 as the
-  default until the user revisits it; the `mllm-multimodal-input` skill (P4) must document the per-model
-  sweet spots and tools accept `max_width`/`max_height` per call.
+  default until the user revisits it; per-model sweet spots are in `references/mllm-models.md` and the
+  `mllm-multimodal-input` skill, and tools accept `max_width`/`max_height` per call.
 - Crop-zoom instead of upscaling: `crop` on a preview tool re-renders a region at up to 768 px, giving
   detail without paying for the whole image at high resolution.
 - Grid default 10×10 (9 lines each way), 50 % white: dense enough to anchor coordinates, sparse enough
@@ -25,8 +25,8 @@ project decisions built on them. Update the reference first when a figure drifts
 - Video default 1 fps with a `max_frames` cap (32): frames are billed like images; sample sparser
   before sampling smaller.
 - Prompt caching: keep static instructions and tool schemas first, put per-item metadata and media last
-  so batch runs share the longest possible cached prefix. Per-framework minimum cacheable prefix lengths
-  are recorded in the `mllm-multimodal-input` skill (P4), not here.
+  so batch runs share the longest possible cached prefix. Per-provider minimum cacheable prefix lengths
+  are in `references/mllm-models.md`.
 
 ## Per-model facts
 
