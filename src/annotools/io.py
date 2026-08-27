@@ -32,7 +32,7 @@ def write_bytes(uri: str, data: bytes) -> None:
     try:
         with fsspec.open(uri, "wb", auto_mkdir=True) as fh:
             fh.write(data)
-    except Exception as exc:
+    except Exception as exc:  # same reasoning as open_bytes: backend errors share no base class
         raise OSError(f"cannot write {uri}: {exc}") from exc
 
 

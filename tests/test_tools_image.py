@@ -50,9 +50,14 @@ async def test_invalid_crop_is_tool_error(mcp_server, image_file):
     assert "crop" in result.content[0].text
 
 
-def test_preview_options_schema_matches_tool_aliases():
+async def test_preview_options_schema_matches_tool_aliases(mcp_server):
     from annotools.tools.common import PreviewOptions
 
-    props = PreviewOptions.model_json_schema()["properties"]
-    assert "fsspec" in props["source"]["description"]
-    assert props["max_width"]["minimum"] == 1 and props["max_height"]["minimum"] == 1
+    model_props = PreviewOptions.model_json_schema()["properties"]
+    async with Client(mcp_server) as client:
+        tools = {t.name: t for t in await client.list_tools()}
+    tool_props = tools["preview_image"].inputSchema["properties"]
+    for key in model_props:
+        assert tool_props[key].get("description") == model_props[key].get("description"), key
+        for constraint in ("minimum", "maximum"):
+            assert tool_props[key].get(constraint) == model_props[key].get(constraint), (key, constraint)
