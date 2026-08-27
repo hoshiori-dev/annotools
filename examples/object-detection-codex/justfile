@@ -1,0 +1,42 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+# Keep this project's environment separate from a globally exported UV_PROJECT_ENVIRONMENT (the devcontainer sets one).
+export UV_PROJECT_ENVIRONMENT := ".venv"
+
+workspace := "workspaces/coco-cats"
+db := workspace + "/data/dataset.db"
+
+default:
+    @just --list
+
+# Create the SQLite store for the workspace
+init-db:
+    uv run scripts/init_db.py --db {{db}} --task detection
+
+# Download the COCO cat subset (all, or the first N for trials)
+download limit="":
+    uv run scripts/download_coco_cats.py --workspace {{workspace}} {{ if limit == "" { "" } else { "--limit " + limit } }}
+
+# Detect on N items, save the final overlays under data/interim/trial and print boxes for review
+trial n="3":
+    uv run python -m detection.pipeline --limit {{n}} --trial
+
+# Detect on every pending item
+run:
+    uv run python -m detection.pipeline
+
+# Sanity check: mean IoU of final boxes against the COCO cat boxes (informational)
+sanity:
+    uv run scripts/sanity_iou.py --db {{db}}
+
+# Export output/detections.jsonl
+export:
+    uv run scripts/export_detections.py --db {{db}} --out {{workspace}}/output/detections.jsonl
+
+# Refresh the pinned skill copies from the annotools repository
+sync-skills:
+    for s in annotation-project-interview sqlite-annotation-store agent-vision-tools task-object-detection localization-annotation-guide mllm-multimodal-input; do rm -rf skills/$s && cp -r ../../skills/$s skills/; done; git -C ../.. rev-parse --short HEAD > skills/PINNED.txt
+
+# Lint, types, tests
+check:
+    uv run ruff check . && uv run ruff format --check . && uv run ty check && uv run pytest -q
