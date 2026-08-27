@@ -1,2 +1,6 @@
 [mcp_servers.fastmcp-docs]
 url = "https://gofastmcp.com/mcp"
+
+[mcp_servers.annotools]
+command = "uv"
+args = ["run", "annotools"]

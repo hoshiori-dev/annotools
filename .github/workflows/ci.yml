@@ -30,6 +30,7 @@ jobs:
       - run: uv sync --group dev
       - run: uv run ruff check .
       - run: uv run --with pyyaml==6.0.2 scripts/check_taxonomy.py --labels .github/labels.json
+      - run: uv run scripts/check_readme_sync.py
 
   format:
     runs-on: ubuntu-latest

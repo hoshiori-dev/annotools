@@ -1,8 +1,6 @@
 {
   "mcpServers": {
-    "fastmcp-docs": {
-      "type": "http",
-      "url": "https://gofastmcp.com/mcp"
-    }
+    "fastmcp-docs": { "type": "http", "url": "https://gofastmcp.com/mcp" },
+    "annotools": { "type": "stdio", "command": "uv", "args": ["run", "annotools"] }
   }
 }
