@@ -13,7 +13,7 @@ SQLite 上构建 agentic 数据标注管道的 skills 与示例。
 
 ## 状态
 
-建设中——里程碑 P1（核心库与图片工具）。5 个图片预览工具已可用；分割、几何、视频、音频工具为规划中。进度见
+建设中——里程碑 P1（核心库与图片工具）。5 个图片预览工具与 `color_from_text` 已可用；分割、几何、视频、音频工具为规划中。进度见
 [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1)。
 
 ## 安装
@@ -40,7 +40,7 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 | `preview_image_grid` | 叠加半透明 10×10 网格的预览 |
 | `preview_image_bboxes` / `_keypoints` / `_polygons` | 基于归一化坐标的叠加层，可带标签 |
 | `preview_image_segmentation` | ID 掩码叠加，标签或图例模式 |
-| `color_from_text` | 由任意文本得到稳定颜色（已可用） |
+| `color_from_text` | 由任意文本得到稳定颜色 |
 | `rotated_bbox_to_polygon` | (cx, cy, w, h, θ) → DOTA 8 数角点 |
 | `preview_video` / `preview_video_grid` | 按 N fps 抽帧 → 预览 |
 | `clip_audio` | 音频切片与重采样 |

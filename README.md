@@ -15,7 +15,7 @@ the Claude Agent SDK or the Codex SDK.
 
 ## Status
 
-Under construction — milestone P1 (core library and image tools). The five image preview tools are available; segmentation, geometry, video, and audio tools are planned. Follow
+Under construction — milestone P1 (core library and image tools). The five image preview tools and `color_from_text` are available; segmentation, geometry, video, and audio tools are planned. Follow
 the [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1).
 
 ## Install
@@ -42,7 +42,7 @@ the three shapes: `.mcp.json` (Claude Code), `.codex/config.toml` (Codex), `open
 | `preview_image_grid` | preview with a semi-transparent 10×10 grid |
 | `preview_image_bboxes` / `_keypoints` / `_polygons` | overlays from normalized coordinates, optional labels |
 | `preview_image_segmentation` | ID-mask overlay with labels or a legend |
-| `color_from_text` | stable color from any text (available) |
+| `color_from_text` | stable color from any text |
 | `rotated_bbox_to_polygon` | (cx, cy, w, h, θ) → DOTA 8-number corners |
 | `preview_video` / `preview_video_grid` | frame sampling at N fps → previews |
 | `clip_audio` | clip and resample audio |
