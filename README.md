@@ -15,7 +15,7 @@ the Claude Agent SDK or the Codex SDK.
 
 ## Status
 
-Under construction — milestone P3 complete (all MCP tools); skills and examples next. All planned MCP tools are available. Follow
+Under construction — milestone P4 (skills) complete; example projects next. All planned MCP tools are available. Follow
 the [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1).
 
 ## Install
@@ -51,11 +51,12 @@ Specifications live in `docs/spec/` (shared conventions: `docs/spec/mcp-overview
 
 ## Skills and examples
 
-`skills/` holds installable skills (`npx skills add hoshiori-dev/annotools`). Available now:
+`skills/` holds installable skills (`npx skills add hoshiori-dev/annotools`). All seven ship:
 `annotation-project-interview` (design-tree interview + workspace scaffold), `sqlite-annotation-store`
 (schema, tool contract, exports), `mllm-multimodal-input` (per-model token cost, coordinate conventions,
-cache layout), and `localization-annotation-guide` (the grid → propose → verify → correct → commit loop).
-Planned: agent vision tools and task scaffolds. `examples/` will hold complete example projects (image captioning, object
+cache layout), `localization-annotation-guide` (the grid → propose → verify → correct → commit loop),
+`agent-vision-tools` (execution-agent tools on the library for the Claude Agent SDK and Codex SDK),
+`task-image-captioning`, and `task-object-detection` (task scaffolds with prompts and pipeline skeletons). `examples/` will hold complete example projects (image captioning, object
 detection) for both SDKs, each with its recorded usage.
 
 ## Development
