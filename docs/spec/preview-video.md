@@ -26,8 +26,9 @@ first frame plus `frames: N`, `timestamps: [seconds…]`, `duration: seconds`, `
 
 ## Behavior
 
-1. Open the source with PyAV (`annotools[media]`); a missing dependency raises `ImportError` naming
-   the extra. Remote sources are read fully into memory first.
+1. Open the source with PyAV (`annotools[media]`) through a streamed fsspec handle (local and remote
+   alike); a missing dependency raises `ImportError` naming the extra; undecodable content raises
+   `ValueError` naming the source.
 2. Decode the first video stream from `start` (keyframe seek, then skip) to `end` (or the end of the
    stream); select the first decoded frame whose time reaches each target `start + k / fps`.
 3. If more than `max_frames` frames were selected, keep `max_frames` of them evenly spaced by index
@@ -35,8 +36,9 @@ first frame plus `frames: N`, `timestamps: [seconds…]`, `duration: seconds`, `
 4. Render each frame with the image preview (crop, limits, upscale rule) and, for the grid variant,
    the grid; encode with `output_format`. `save_to` is treated as a directory: frames are written as
    `frame_<index>_<timestamp>.<ext>` inside it.
-- Error: `fps ≤ 0`, `start < 0`, `end ≤ start`, `max_frames < 1` → `ValueError`; no video stream →
-  `ValueError` naming the source; unreadable source → as `preview_image`.
+- Error: `fps ≤ 0`, `start < 0`, `end ≤ start` (start defaults to 0), `max_frames < 1` → `ValueError`;
+  no video stream, or no frame inside `[start, end)` → `ValueError` naming the source; unreadable source
+  → as `preview_image`.
 
 ## Acceptance criteria
 
@@ -49,7 +51,10 @@ first frame plus `frames: N`, `timestamps: [seconds…]`, `duration: seconds`, `
 5. `test_ac5_missing_extra`: with `av` unimportable the library raises `ImportError` mentioning
    `annotools[media]`.
 6. `test_ac6_tool`: `Client(mcp)` returns N image blocks followed by one JSON text block whose
-   `frames == N`.
+   `frames == N` (both tools).
+7. `test_ac7_save_to_directory`: `save_to` writes `frame_0000_0.000.<ext>` … into the directory.
+8. `test_ac8_errors_name_source`: an audio-only file, a non-media file, and an empty range each raise
+   `ValueError` naming the source.
 
 ## Out of scope
 

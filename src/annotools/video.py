@@ -1,11 +1,10 @@
 """Frame sampling from video files via PyAV (``annotools[media]``)."""
 
-import io
+from contextlib import ExitStack
 from typing import Any
 
+import fsspec
 from PIL import Image
-
-from annotools.io import open_bytes
 
 
 def _av():
@@ -14,6 +13,25 @@ def _av():
     except ImportError as exc:
         raise ImportError("video support requires PyAV: install annotools[media]") from exc
     return av
+
+
+def _open_container(av, uri: str, stack: ExitStack):
+    """Open ``uri`` with PyAV through an fsspec file handle (streamed, not buffered in memory).
+
+    Raises:
+        FileNotFoundError / OSError: as ``annotools.io.open_bytes`` for unreadable sources.
+        ValueError: naming the URI when the content is not a decodable media file.
+    """
+    try:
+        handle = stack.enter_context(fsspec.open(uri, "rb"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"cannot read {uri}: not found") from exc
+    except Exception as exc:  # backend-specific errors share no base class
+        raise OSError(f"cannot read {uri}: {exc}") from exc
+    try:
+        return stack.enter_context(av.open(handle))
+    except Exception as exc:
+        raise ValueError(f"{uri}: not a decodable media file ({exc})") from exc
 
 
 def sample_frames(
@@ -37,13 +55,14 @@ def sample_frames(
         raise ValueError(f"fps must be > 0, got {fps}")
     if start is not None and start < 0:
         raise ValueError(f"start must be >= 0, got {start}")
-    if end is not None and start is not None and end <= start:
-        raise ValueError(f"end ({end}) must be greater than start ({start})")
+    if end is not None and end <= (start or 0.0):
+        raise ValueError(f"end ({end}) must be greater than start ({start or 0.0})")
     if max_frames < 1:
         raise ValueError(f"max_frames must be >= 1, got {max_frames}")
     av = _av()
     begin = start or 0.0
-    with av.open(io.BytesIO(open_bytes(uri))) as container:
+    with ExitStack() as stack:
+        container = _open_container(av, uri, stack)
         if not container.streams.video:
             raise ValueError(f"{uri}: no video stream")
         stream = container.streams.video[0]
@@ -67,6 +86,9 @@ def sample_frames(
                 next_target += 1 / fps
                 while next_target <= t:
                     next_target += 1 / fps
+    if not selected:
+        until = end if end is not None else "the end"
+        raise ValueError(f"{uri}: no frames between {begin} s and {until} (duration {duration:.3f} s)")
     thinned = len(selected) > max_frames
     if thinned:
         step = (len(selected) - 1) / (max_frames - 1) if max_frames > 1 else 0

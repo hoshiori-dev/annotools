@@ -1,13 +1,12 @@
 """Video preview tools: sampled frames rendered through the image preview pipeline."""
 
 import json
-import os
 from typing import Annotated, Any
 
 from pydantic import Field
 
 from annotools import config
-from annotools.image.grid import GridOptions, draw_grid
+from annotools.image.grid import GridOptions
 from annotools.image.preview import encode, preview
 from annotools.io import write_bytes
 from annotools.server import mcp
@@ -26,19 +25,30 @@ from annotools.tools.common import (
     McpImage,
     OutputFormatParam,
     PreviewOptions,
-    SaveToParam,
     SourceParam,
     TargetPixelsParam,
 )
+from annotools.tools.image_tools import _with_grid
 from annotools.video import sample_frames
 
 FpsParam = Annotated[float, Field(gt=0, description="Target sampling rate in frames per second")]
 StartParam = Annotated[float | None, Field(ge=0, description="Start time in seconds")]
 EndParam = Annotated[float | None, Field(gt=0, description="End time in seconds (exclusive)")]
 MaxFramesParam = Annotated[int, Field(ge=1, description="Hard cap on returned frames; extra frames are thinned evenly")]
+SaveDirParam = Annotated[
+    str | None,
+    Field(description="Directory (path or fsspec URL) to write the frames into as frame_<index>_<time>.<ext>"),
+]
 
 
-def _render_frames(options: PreviewOptions, fps: float, start, end, max_frames: int, grid: GridOptions | None) -> list:
+def _render_frames(
+    options: PreviewOptions,
+    fps: float,
+    start: float | None,
+    end: float | None,
+    max_frames: int,
+    grid: GridOptions | None,
+) -> list:
     frames, info = sample_frames(options.source, fps=fps, start=start, end=end, max_frames=max_frames)
     blocks: list[Any] = []
     metadata: dict[str, Any] = {}
@@ -52,19 +62,15 @@ def _render_frames(options: PreviewOptions, fps: float, start, end, max_frames: 
             max_height=options.max_height,
             allow_upscale=options.allow_upscale,
         )
-        if grid is not None:
-            gridded = draw_grid(result.image, grid)
-            result.image, grid_meta = gridded.image, gridded.metadata
-            metadata.setdefault("grid", grid_meta["grid"])
-        data = encode(result.image, options.output_format)
-        if options.save_to:
-            write_bytes(
-                os.path.join(options.save_to, f"frame_{index:04d}_{timestamp:.3f}.{options.output_format}"), data
-            )
-        blocks.append(McpImage(data=data, format=options.output_format))
-        timestamps.append(round(timestamp, 3))
         if index == 0:
             metadata.update(result.metadata)
+        _with_grid(result, grid, metadata)
+        data = encode(result.image, options.output_format)
+        if options.save_to:
+            name = f"frame_{index:04d}_{timestamp:.3f}.{options.output_format}"
+            write_bytes(f"{options.save_to.rstrip('/')}/{name}", data)
+        blocks.append(McpImage(data=data, format=options.output_format))
+        timestamps.append(round(timestamp, 3))
     metadata.update(
         {
             "format": options.output_format,
@@ -94,7 +100,7 @@ def preview_video(
     max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
-    save_to: SaveToParam = None,
+    save_to: SaveDirParam = None,
 ) -> list[McpImage | str]:
     """Sample a video at `fps` (default 1 frame/s, at most `max_frames`) and preview each frame at a bounded size.
 
@@ -135,7 +141,7 @@ def preview_video_grid(
     max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
-    save_to: SaveToParam = None,
+    save_to: SaveDirParam = None,
 ) -> list[McpImage | str]:
     """Like preview_video, with a semi-transparent grid (default 10x10) drawn on every frame to anchor positions."""
     options = PreviewOptions(

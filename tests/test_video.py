@@ -88,3 +88,41 @@ async def test_ac4_and_ac6_tool(mcp_server, hd_video_file):
     assert meta["frames"] == len(images) == 2
     assert meta["output_size"] == [768, 432] and meta["grid"]["columns"] == 10
     assert meta["timestamps"][0] == pytest.approx(0, abs=0.05)
+
+
+async def test_ac6_plain_tool_and_ac7_save_to_directory(mcp_server, video_file, tmp_path):
+    out = tmp_path / "frames"
+    async with Client(mcp_server) as client:
+        result = await client.call_tool("preview_video", {"source": str(video_file), "fps": 1, "save_to": str(out)})
+    *images, text = result.content
+    meta = json.loads(text.text)
+    assert meta["frames"] == len(images) == 5 and "grid" not in meta
+    assert meta["saved_to"] == str(out)
+    assert sorted(p.name for p in out.iterdir())[0] == "frame_0000_0.000.jpeg"
+    assert meta["output_size"] == [320, 240]
+
+
+def test_ac8_errors_name_source(tmp_path, video_file):
+    text = tmp_path / "notes.txt"
+    text.write_text("not a video")
+    with pytest.raises(ValueError, match=r"notes\.txt"):
+        sample_frames(str(text))
+    with pytest.raises(ValueError, match=r"clip\.mp4.*no frames"):
+        sample_frames(str(video_file), start=4.99, end=4.995)
+    with pytest.raises(ValueError, match=r"end \(0\)"):
+        sample_frames(str(video_file), end=0)
+    with pytest.raises(FileNotFoundError, match=r"missing\.mp4"):
+        sample_frames(str(tmp_path / "missing.mp4"))
+
+
+def test_audio_only_source_raises(tmp_path):
+    import wave
+
+    path = tmp_path / "tone.wav"
+    with wave.open(str(path), "wb") as wav:
+        wav.setnchannels(1)
+        wav.setsampwidth(2)
+        wav.setframerate(8000)
+        wav.writeframes(bytes(16000))
+    with pytest.raises(ValueError, match=r"tone\.wav: no video stream"):
+        sample_frames(str(path))
