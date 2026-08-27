@@ -19,3 +19,13 @@ Each example project's own `CONTEXT.md`; this file only states the repository-le
   SDK configuration enforces it.
 - Each example README records the real usage of one full run (tokens, cost, wall time) and the model used.
 - Examples are excluded from the root ruff/ty configuration; they carry their own checks.
+
+## Environment notes
+
+- Each example is its own uv project. The devcontainer exports `UV_PROJECT_ENVIRONMENT=/opt/uv/venv`
+  globally; every example justfile pins `UV_PROJECT_ENVIRONMENT=.venv`, and `uv` run by hand inside an
+  example needs the same override or it rewrites the root environment.
+- Live runs need provider credentials (`ANTHROPIC_API_KEY`, or a Codex login) and network access to
+  `images.cocodataset.org`; neither exists in the devcontainer, so usage records are filled from runs
+  elsewhere.
+- Examples pin copies of the skills they follow under `skills/` (`PINNED.txt`, `just sync-skills`).
