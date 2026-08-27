@@ -19,6 +19,8 @@ class PreviewResult:
 
     image: Image.Image
     metadata: dict[str, Any] = field(default_factory=dict)
+    crop_pixels: tuple[int, int, int, int] | None = None
+    """The applied crop in source pixels (None = full frame); exact, unlike re-deriving it from ``crop``."""
 
 
 def preview(
@@ -37,6 +39,7 @@ def preview(
     """
     original_size = image.size
     box = validate_normalized_box(crop, name="crop") if crop is not None else FULL_FRAME
+    px_box: tuple[int, int, int, int] | None = None
     if box != FULL_FRAME:
         px_box = normalized_box_to_pixels(box, *original_size)
         image = image.crop(px_box)
@@ -60,7 +63,7 @@ def preview(
         "output_size": list(out_size),
         "scale": out_size[0] / cropped_size[0],
     }
-    return PreviewResult(image=image, metadata=metadata)
+    return PreviewResult(image=image, metadata=metadata, crop_pixels=px_box)
 
 
 def encode(image: Image.Image, output_format: str = config.DEFAULT_OUTPUT_FORMAT) -> bytes:

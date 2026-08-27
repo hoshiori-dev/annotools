@@ -1,5 +1,9 @@
 """Image preview tools."""
 
+from typing import Annotated, Literal
+
+from pydantic import Field
+
 from annotools import config
 from annotools.image.grid import GridOptions, draw_grid
 from annotools.image.overlay import (
@@ -10,6 +14,7 @@ from annotools.image.overlay import (
     draw_keypoints,
     draw_polygons,
 )
+from annotools.image.segmentation import load_mask, overlay_mask
 from annotools.server import mcp
 from annotools.tools.common import (
     DEFAULT_OUTPUT_FORMAT,
@@ -242,4 +247,61 @@ def preview_image_polygons(
         result, objects, line_width=line_width, point_diameter=point_diameter, show_point_index=show_point_index
     )
     extra["objects"] = drawn.metadata["objects"]
+    return finish(drawn, options, extra=extra)
+
+
+@mcp.tool(output_schema=None)
+def preview_image_segmentation(
+    source: SourceParam,
+    mask_source: Annotated[str, Field(description="Single-channel ID mask (uint8/uint16 PNG/TIFF); 0 = background")],
+    annotation: Annotated[
+        Literal["label", "legend"], Field(description="label: ID at each region; legend: strip below")
+    ] = "label",
+    id_names: Annotated[dict[int, str] | None, Field(description="Optional display names per ID")] = None,
+    alpha: Annotated[float, Field(ge=0.0, le=1.0, description="Blend strength of region colours")] = 0.5,
+    line_width: Annotated[
+        int, Field(ge=0, description="Region outline width in output pixels; 0 disables")
+    ] = config.DEFAULT_LINE_WIDTH,
+    grid: GridOptions | None = None,
+    crop: CropParam = None,
+    target_pixels: TargetPixelsParam = None,
+    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
+    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    allow_upscale: AllowUpscaleParam = False,
+    output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
+    save_to: SaveToParam = None,
+) -> list[McpImage | str]:
+    """Preview an image with an ID mask (instance/panoptic/semantic) blended on top, labelled or with a legend.
+
+    Regions are coloured with color_from_text(str(id)). Returns the image and one JSON metadata object
+    (base keys, `grid` when used, `ids`, and `legend` in legend mode).
+    """
+    options = _options(
+        source=source,
+        crop=crop,
+        target_pixels=target_pixels,
+        max_width=max_width,
+        max_height=max_height,
+        allow_upscale=allow_upscale,
+        output_format=output_format,
+        save_to=save_to,
+    )
+    result = render_preview(options)
+    extra: dict = {}
+    _with_grid(result, grid, extra)
+    drawn = overlay_mask(
+        result,
+        load_mask(mask_source),
+        annotation=annotation,
+        id_names=id_names,
+        alpha=alpha,
+        line_width=line_width,
+        max_width=max_width,
+        max_height=max_height,
+        target_pixels=target_pixels,
+    )
+    extra["ids"] = drawn.metadata["ids"]
+    if "legend" in drawn.metadata:
+        extra["legend"] = drawn.metadata["legend"]
+        extra["image_size"] = drawn.metadata["image_size"]
     return finish(drawn, options, extra=extra)
