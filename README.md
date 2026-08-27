@@ -15,7 +15,7 @@ the Claude Agent SDK or the Codex SDK.
 
 ## Status
 
-Under construction — milestone P1 (core library and image tools). All image, colour, and geometry tools are available; video and audio tools are planned. Follow
+Under construction — milestone P3 complete (all MCP tools); skills and examples next. All planned MCP tools are available. Follow
 the [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1).
 
 ## Install

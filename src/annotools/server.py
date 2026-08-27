@@ -12,7 +12,7 @@ mcp = FastMCP("annotools", instructions=INSTRUCTIONS)
 
 def register_tools() -> None:
     """Import the tool modules so their ``@mcp.tool`` decorators run."""
-    from annotools.tools import color_tools, geometry_tools, image_tools, video_tools  # noqa: F401
+    from annotools.tools import audio_tools, color_tools, geometry_tools, image_tools, video_tools  # noqa: F401
 
 
 register_tools()
