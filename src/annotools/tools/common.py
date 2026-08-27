@@ -38,7 +38,7 @@ PointDiameterParam = Annotated[int, Field(ge=1, description="Vertex/point dot di
 
 
 class PreviewOptions(BaseModel):
-    """Parameters shared by every preview tool (see docs/spec/mcp-overview.md).
+    """Parameters shared by every preview tool (see .agents/knowledge/spec/mcp-overview.md).
 
     Field types reuse the ``*Param`` aliases above so the tool schema and this model cannot drift apart.
     """

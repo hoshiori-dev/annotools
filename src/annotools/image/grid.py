@@ -12,7 +12,7 @@ from annotools.image.preview import PreviewResult
 
 
 class GridOptions(BaseModel):
-    """Grid parameters shared by every tool that accepts ``grid`` (see docs/spec/mcp-overview.md)."""
+    """Grid parameters shared by every tool that accepts ``grid`` (see .agents/knowledge/spec/mcp-overview.md)."""
 
     columns: int = Field(default=config.GRID_COLUMNS, ge=1, description="Cells per row (columns-1 vertical lines)")
     rows: int = Field(default=config.GRID_ROWS, ge=1, description="Cells per column (rows-1 horizontal lines)")

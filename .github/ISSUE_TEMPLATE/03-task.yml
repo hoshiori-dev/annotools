@@ -7,7 +7,7 @@ body:
     id: content
     attributes:
       label: Content
-      description: The planned change, precisely. For an MCP tool or library feature, name the spec document under docs/spec/ (existing or to be written first).
+      description: The planned change, precisely. For an MCP tool or library feature, name the spec document under .agents/knowledge/spec/ (existing or to be written first).
     validations:
       required: true
   - type: textarea
@@ -21,7 +21,7 @@ body:
     id: context
     attributes:
       label: Context and references
-      description: Everything the executor needs that lives outside this issue — plan sections, the spec, the module being imitated (link it, not "like A"), constraints.
+      description: Everything the executor needs that lives outside this issue — ARCHITECTURE.md decisions, the spec, the module being imitated (link it, not "like A"), constraints.
     validations:
       required: true
   - type: textarea

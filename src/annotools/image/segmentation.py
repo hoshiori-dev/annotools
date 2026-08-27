@@ -13,7 +13,8 @@ from annotools.image.overlay import _draw_label
 from annotools.image.preview import PreviewResult
 from annotools.io import load_image
 
-MASK_MODES = {"L", "P", "I", "I;16", "I;16B", "I;16L"}  # keep in step with docs/spec/preview-image-segmentation.md
+# Keep in step with .agents/knowledge/spec/preview-image-segmentation.md.
+MASK_MODES = {"L", "P", "I", "I;16", "I;16B", "I;16L"}
 
 
 def load_mask(uri: str) -> np.ndarray:

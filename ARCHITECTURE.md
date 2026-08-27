@@ -35,7 +35,7 @@ Two kinds of agents use the project:
 
 ## Layout
 
-Modules marked *(planned)* are defined by the approved plan (`docs/plan/`) and land in milestones P1–P6.
+Modules marked *(planned)* are tracked by issue #1 and its milestones; design drafts are not committed.
 
 ```text
 src/annotools/
@@ -50,7 +50,7 @@ src/annotools/
   audio.py          (planned) clip + resample → WAV
   tools/            MCP wrappers: image_tools, color_tools, geometry_tools, video_tools, audio_tools (planned)
 tests/              unit tests with generated fixtures; container tests behind the `container` marker
-docs/spec/          one specification per MCP tool (goal, parameters, return, acceptance criteria)
+.agents/knowledge/spec/          one specification per MCP tool (goal, parameters, return, acceptance criteria)
 skills/ examples/   (planned) publishable skills; independent example projects (each with CONTEXT.md)
 ```
 

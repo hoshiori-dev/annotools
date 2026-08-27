@@ -62,4 +62,4 @@ Audio; scene detection; overlays on frames (use the image tools on saved frames)
 
 ## References
 
-Plan §5.4; issue #30; `.agents/knowledge/mllm-token-budget.md`.
+issue #30; `.agents/knowledge/mllm-token-budget.md`.

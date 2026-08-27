@@ -87,5 +87,5 @@ or credentials) raises `OSError`; undecodable, truncated, or corrupt content rai
 
 ## References
 
-Plan §5 (`docs/plan/2026-08-annotools-plan.zh.md`); `.agents/knowledge/mllm-token-budget.md`; FastMCP
+`.agents/knowledge/mllm-token-budget.md`; FastMCP
 media helper classes (`fastmcp.utilities.types.Image`).

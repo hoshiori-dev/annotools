@@ -1,7 +1,7 @@
 ---
 name: spec-driven-feature
 description: >-
-  Implements an annotools feature end to end in the project's order — issue, spec in docs/spec/, failing
+  Implements an annotools feature end to end in the project's order — issue, spec in .agents/knowledge/spec/, failing
   tests, implementation, docs — for any new or changed MCP tool, library function, CLI option, or example
   output contract. Use when asked to "add a tool", "implement", "change the parameters of", "support
   <format>", or when starting work on a Task issue. Not for harness-only or documentation-only changes.
@@ -14,10 +14,10 @@ description: >-
 1. **Issue.** Confirm an open issue exists (create one via `github-project-workflow` if not). Its
    `Acceptance criteria` section is the contract; if it is vague, sharpen it in the issue before coding.
    Done when: every criterion names a command, test, or observable output.
-2. **Spec.** Write or update `docs/spec/<feature>.md` following `.agents/knowledge/spec-format.md`
+2. **Spec.** Write or update `.agents/knowledge/spec/<feature>.md` following `.agents/knowledge/spec-format.md`
    (Goal, Interface, Behavior, Acceptance criteria, Out of scope, References); start from
    [assets/spec-template.md](assets/spec-template.md). Define shared parameter groups
-   (`PreviewOptions`, `GridOptions`) once in `docs/spec/mcp-overview.md` (create it with the first tool
+   (`PreviewOptions`, `GridOptions`) once in `.agents/knowledge/spec/mcp-overview.md` (create it with the first tool
    spec) and reference them from every tool spec.
    Defaults must match `annotools.config`. Copy the acceptance criteria into the issue if they changed.
 3. **Tests first.** One test per acceptance criterion, named `test_ac<n>_<slug>`, in

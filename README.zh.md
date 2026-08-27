@@ -45,7 +45,7 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 | `preview_video` / `preview_video_grid` | 按 N fps 抽帧 → 预览 |
 | `clip_audio` | 音频切片与重采样 |
 
-规范文档位于 `docs/spec/`（共享约定：`docs/spec/mcp-overview.md`）。
+规范文档位于 `.agents/knowledge/spec/`（共享约定：`.agents/knowledge/spec/mcp-overview.md`）。
 
 ## Skills 与示例
 

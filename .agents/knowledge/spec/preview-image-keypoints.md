@@ -44,4 +44,4 @@ Skeleton edges between keypoints; visibility flags.
 
 ## References
 
-Plan §5.2; issue #18; `docs/spec/mcp-overview.md`; `docs/spec/preview-image-bboxes.md`.
+issue #18; `.agents/knowledge/spec/mcp-overview.md`; `.agents/knowledge/spec/preview-image-bboxes.md`.

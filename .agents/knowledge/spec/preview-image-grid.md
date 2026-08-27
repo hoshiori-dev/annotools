@@ -10,7 +10,7 @@ Overlay a semi-transparent grid on a preview so an MLLM can anchor positions to 
 Tool: `preview_image_grid` (MCP) / `annotools.image.grid.draw_grid` (library)
 
 Parameters: `PreviewOptions` plus `GridOptions` (flattened: `columns`, `rows`, `mode`, `column_width`,
-`row_width`, `color`, `opacity`, `line_width`) from `docs/spec/mcp-overview.md`.
+`row_width`, `color`, `opacity`, `line_width`) from `.agents/knowledge/spec/mcp-overview.md`.
 
 Returns: `[Image, metadata]` with the base keys plus
 `grid: {"columns": int, "rows": int, "step_x": float, "step_y": float}` where `step_*` is the cell size
@@ -47,4 +47,4 @@ Row/column index labels; overlays (own specs).
 
 ## References
 
-Plan §5.1–5.2; issue #16; `.agents/knowledge/mllm-token-budget.md`.
+issue #16; `.agents/knowledge/mllm-token-budget.md`.
