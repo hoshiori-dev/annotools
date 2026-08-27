@@ -27,12 +27,12 @@ Agents working in this directory read `CONTEXT.md` first.
 
 ## How it works
 
-One `query()` per image with three tools: `look_at_item` (768 px preview + 10×10 grid, returns the shown
+One `query()` per image with three tools: `look_at_item` (768 px preview + the configured grid, returns the shown
 size), `propose_boxes` (cleans the candidates — class list, ≥ 1 % area, IoU-duplicate removal — draws them
 with index labels on the same gridded view, counts a round), `commit_boxes` (stores `bbox` rows with
 label, confidence, and rounds, replacing the item's earlier commit in this run; `needs_review` unless the
-model declared the overlay correct and every confidence is ≥ `confidence_floor`; an empty `done=true`
-commit stores a `no_object` tag). Claude answers in pixel coordinates because its docs
+model declared the overlay correct and every confidence is ≥ `confidence_floor`; an empty commit stores a
+`no_object` tag with the same status rule). Claude answers in pixel coordinates because its docs
 say normalized requests work poorly; `geometry.py` maps them back through the preview metadata.
 
 ## Usage record
