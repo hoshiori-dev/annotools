@@ -15,7 +15,8 @@ the Claude Agent SDK or the Codex SDK.
 
 ## Status
 
-Under construction — all milestones implemented; the example projects await their first live runs (usage records). All planned MCP tools are available. Follow
+Under construction — all milestones implemented; the example projects await their first live runs
+(usage records). All planned MCP tools are available. Follow
 the [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1).
 
 ## Install
