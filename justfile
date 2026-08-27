@@ -48,8 +48,12 @@ check-taxonomy:
 sync-labels *args:
     uv run scripts/sync_labels.py --repo hoshiori-dev/annotools --file .github/labels.json {{args}}
 
+# Check README.md and README.zh.md share the same structure
+readme-check:
+    uv run scripts/check_readme_sync.py
+
 # Everything CI runs on a pull request (except container tests)
-check: lint format-check typecheck check-taxonomy test
+check: lint format-check typecheck check-taxonomy readme-check test
 
 # Build the documentation site
 docs:
