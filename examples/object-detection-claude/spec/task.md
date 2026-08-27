@@ -42,5 +42,5 @@ commit; per box `kind=bbox`, `key=<index>`, `label`, `confidence`, `rounds`.
   `{"uri", "coco_id", "boxes": [{"bbox": [x0, y0, x1, y1], "label", "confidence", "rounds"}]}`.
 
 ## Budget
-- ≤ 4 model calls per image (1 propose + ≤ 3 corrections); ≤ 4 workers; stop after 10 consecutive
-  failures; `max_budget_usd_per_item` 0.15.
+- ≤ 4 model calls per image (1 propose + ≤ 3 corrections); ≤ 4 workers; stop after 10 failures in a row
+  (`max_failures`); `max_budget_usd_per_item` 0.15.

@@ -9,7 +9,7 @@ them rendered with index labels, corrects by index (at most 3 rounds), and commi
 ## Run
 
 ```bash
-uv sync                       # own environment (the annotools repo is a path dependency)
+UV_PROJECT_ENVIRONMENT=.venv uv sync   # own environment (annotools is a path dependency); just recipes set this too
 export ANTHROPIC_API_KEY=...  # the SDK bundles the Claude Code binary; no separate install
 just init-db
 just download 20              # trial subset (all ~184 cat images: just download)

@@ -3,13 +3,15 @@
 import hashlib
 import json
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 
-def connect(db: Path) -> sqlite3.Connection:
-    conn = sqlite3.connect(db)
+def connect(db: Path) -> closing[sqlite3.Connection]:
+    """Open a connection (30 s busy timeout, foreign keys on) that closes at the end of a ``with`` block."""
+    conn = sqlite3.connect(db, timeout=30)
     conn.execute("PRAGMA foreign_keys = ON")
-    return conn
+    return closing(conn)
 
 
 def start_run(conn: sqlite3.Connection, model: str, prompts: dict[str, str], config: dict) -> int:
@@ -30,7 +32,7 @@ def finish_run(conn: sqlite3.Connection, run_id: int) -> None:
 
 def pending_items(conn: sqlite3.Connection, limit: int | None = None) -> list[tuple[int, str]]:
     sql = "SELECT id, uri FROM items_pending ORDER BY id"
-    if limit:
+    if limit is not None:
         sql += f" LIMIT {int(limit)}"
     return [(int(i), u) for i, u in conn.execute(sql).fetchall()]
 

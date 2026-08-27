@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKSPACE = ROOT / "workspaces" / "coco-cats"
 DB = WORKSPACE / "data" / "dataset.db"
 SYSTEM_PROMPT = ROOT / "spec" / "prompts" / "system.md"
+TOKEN_KEYS = ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
 
 
 def system_prompt(config: dict) -> str:
@@ -28,6 +29,7 @@ def system_prompt(config: dict) -> str:
 async def detect_item(ctx: ToolContext, uri: str, config: dict, system: str) -> dict:
     options = ClaudeAgentOptions(
         model=config["model"],
+        effort=config.get("effort"),
         system_prompt=system,
         cwd=str(ctx.workspace),
         tools=[],
@@ -68,11 +70,15 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
         ctx.trial_dir.mkdir(parents=True, exist_ok=True)
     semaphore = asyncio.Semaphore(1 if trial else config["workers"])
     totals: dict[str, float] = {"items": 0, "cost_usd": 0.0, "needs_review": 0, "seconds": 0.0, "rounds": 0}
+    totals.update(dict.fromkeys(TOKEN_KEYS, 0))
     failures = 0
+    stop = asyncio.Event()
 
     async def one(item_id: int, uri: str) -> None:
         nonlocal failures
         async with semaphore:
+            if stop.is_set():
+                return
             try:
                 usage = await detect_item(ctx, uri, config, system)
             except Exception as exc:
@@ -113,15 +119,18 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
             totals["rounds"] += rounds
             totals["cost_usd"] += float(usage.get("cost_usd") or 0.0)
             totals["seconds"] += float(usage.get("seconds") or 0.0)
-            if failures >= config["max_consecutive_failures"]:
-                raise RuntimeError(f"{failures} consecutive failures; stopping")
+            for key in TOKEN_KEYS:
+                totals[key] += int(usage.get(key) or 0)
+            if failures >= config["max_failures"] and not stop.is_set():
+                stop.set()
+                print(f"stopping: {failures} failures in a row (max_failures)", file=sys.stderr)
 
     await asyncio.gather(*(one(i, u) for i, u in items))
     with store.connect(DB) as conn:
         store.finish_run(conn, run_id)
     totals["mean_rounds"] = round(totals["rounds"] / totals["items"], 2) if totals["items"] else 0.0
-    print(json.dumps({"run_id": run_id, **totals}))
-    return 0
+    print(json.dumps({"run_id": run_id, "stopped_early": stop.is_set(), **totals}))
+    return 1 if stop.is_set() else 0
 
 
 def main(argv: list[str] | None = None) -> int:

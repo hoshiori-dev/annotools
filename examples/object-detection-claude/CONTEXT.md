@@ -19,6 +19,7 @@ directory is independent of the repository root: read this file first, not the r
 - The execution agent sees only `workspaces/coco-cats/` (tool confinement in `src/detection/tools.py`); it never sees the COCO boxes.
 - Changing `spec/` needs the user's confirmation; prompts and export follow the spec.
 - Development checks: `just check` (ruff, ty, pytest) — the repository CI does not run this project.
+- The justfile exports `UV_PROJECT_ENVIRONMENT=.venv`; when running `uv` directly, set it too.
 
 ## Commands
 `just init-db` · `just download [limit]` · `just trial [n]` · `just run` · `just export` · `just sanity` · `just check`

@@ -1,5 +1,8 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
+# Keep this project's environment separate from a globally exported UV_PROJECT_ENVIRONMENT (the devcontainer sets one).
+export UV_PROJECT_ENVIRONMENT := ".venv"
+
 workspace := "workspaces/coco-cats"
 db := workspace + "/data/dataset.db"
 
