@@ -28,8 +28,10 @@ the decisions and the facts that justified them, with the verification date.
   so batch runs share the longest possible cached prefix. Per-framework minimum cacheable prefix lengths
   are recorded in the `mllm-multimodal-input` skill (P4), not here.
 
-## Open
+## Per-model facts
 
-Per-model token formulas (Claude, GPT, Qwen) and the most efficient input path per SDK are collected in
-the `mllm-multimodal-input` skill under `skills/` (milestone P4). Until it exists, verify against the
-vendor docs before quoting a number.
+Token formulas, resolution tiers, coordinate conventions, and cache minimums for Gemini, Claude, GPT,
+and Qwen live in `skills/mllm-multimodal-input/SKILL.md` (sources with dates in its
+`references/sources.md`). Two facts that shape this project: Claude counts 28×28 patches (768 px long
+side ≈ 450–800 tokens) and answers localization in **pixel** coordinates of the image it saw, so ask
+models in their native convention and normalize in code (`skills/localization-annotation-guide`).
