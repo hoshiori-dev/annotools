@@ -110,3 +110,55 @@ async def test_ac6_tool(mcp_server, image_file, tmp_path):
     meta = json.loads(result.content[1].text)
     assert meta["ids"] == 2 and meta["grid"]["columns"] == 4
     assert GridOptions(columns=4).columns == 4
+
+
+def test_ac7_crop_alignment():
+    # a crop that does not fall on pixel boundaries: mask rows must cover exactly the image rows
+    source = make_image(527, 757)
+    mask = np.zeros((757, 527), dtype=np.uint8)
+    mask[347:472, 121:215] = 1  # the pixel box the image crop will receive
+    result = preview(source, crop=(0.23087, 0.45960, 0.40695, 0.62330))
+    assert result.crop_pixels == (121, 347, 215, 472)
+    out = overlay_mask(result, mask, annotation="legend", line_width=0)
+    top = np.asarray(out.image.convert("RGB"))[: result.image.height]
+    assert (top != 255).all(axis=-1).all()  # every image pixel is coloured, including the last row/col
+
+
+def test_ac8_line_width():
+    result = overlay_mask(preview(make_image(200, 100)), mask_array(), annotation="legend", line_width=0)
+    assert pix(result.image, 10, 30) == blend(color_from_text("1"))  # boundary pixel blended, not solid
+    with pytest.raises(ValueError, match="line_width"):
+        overlay_mask(preview(make_image(20, 10)), mask_array(20, 10), line_width=-1)
+
+
+def test_ac9_legend_metadata():
+    result = overlay_mask(
+        preview(make_image(400, 200), max_height=100), mask_array(400, 200), annotation="legend", max_height=100
+    )
+    image_w, image_h = result.metadata["image_size"]
+    assert result.image.height <= 100 and result.metadata["output_size"][1] <= 100
+    assert image_h < result.image.height
+    assert result.metadata["scale"] == pytest.approx(image_w / 400, abs=0.01)
+
+
+def test_rgba_source_flattened_on_white():
+    rgba = Image.new("RGBA", (20, 10), (255, 0, 0, 0))
+    out = overlay_mask(preview(rgba), np.zeros((10, 20), dtype=np.uint8), annotation="legend")
+    assert pix(out.image, 5, 5) == (255, 255, 255)
+
+
+async def test_string_keyed_id_names(mcp_server, image_file, tmp_path):
+    mask_path = tmp_path / "mask.png"
+    Image.fromarray(mask_array(400, 200)).save(mask_path)
+    async with Client(mcp_server) as client:
+        result = await client.call_tool(
+            "preview_image_segmentation",
+            {
+                "source": str(image_file(400, 200)),
+                "mask_source": str(mask_path),
+                "annotation": "legend",
+                "id_names": {"1": "cat"},
+            },
+        )
+    meta = json.loads(result.content[1].text)
+    assert meta["legend"][0]["name"] == "cat" and meta["image_size"] == [400, 200]

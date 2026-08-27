@@ -8,12 +8,12 @@ from PIL import Image, ImageDraw
 
 from annotools import config
 from annotools.color import color_from_text, to_hex
-from annotools.geometry import fit_size, normalized_box_to_pixels
+from annotools.geometry import fit_size
 from annotools.image.overlay import _draw_label
 from annotools.image.preview import PreviewResult
 from annotools.io import load_image
 
-MASK_MODES = {"L", "P", "I", "I;16", "I;16B", "I;16L"}
+MASK_MODES = {"L", "P", "I", "I;16", "I;16B", "I;16L"}  # keep in step with docs/spec/preview-image-segmentation.md
 
 
 def load_mask(uri: str) -> np.ndarray:
@@ -24,7 +24,9 @@ def load_mask(uri: str) -> np.ndarray:
     """
     image = load_image(uri)
     if image.mode not in MASK_MODES:
-        raise ValueError(f"mask_source: {uri} must be a single-channel ID image (L/I;16), got mode {image.mode!r}")
+        raise ValueError(
+            f"mask_source: {uri} must be a single-channel ID image (L, P, I, or I;16), got mode {image.mode!r}"
+        )
     return np.asarray(image).astype(np.int64)
 
 
@@ -83,6 +85,7 @@ def overlay_mask(
     line_width: int = config.DEFAULT_LINE_WIDTH,
     max_width: int = config.MAX_PREVIEW_WIDTH,
     max_height: int = config.MAX_PREVIEW_HEIGHT,
+    target_pixels: int | None = None,
 ) -> PreviewResult:
     """Blend the ID ``mask`` over ``result.image`` and annotate regions with labels or a legend.
 
@@ -101,12 +104,15 @@ def overlay_mask(
     names = {int(k): v for k, v in (id_names or {}).items()}
     original_w, original_h = result.metadata["original_size"]
     full = _resize_ids(mask, (original_w, original_h))
-    x0, y0, x1, y1 = normalized_box_to_pixels(tuple(result.metadata["crop"]), original_w, original_h)
+    x0, y0, x1, y1 = result.crop_pixels or (0, 0, original_w, original_h)
     cropped = full[y0:y1, x0:x1]
     view = _resize_ids(cropped, result.image.size)
     ids = [int(v) for v in np.unique(view) if v != 0]
 
-    image = result.image.convert("RGB")
+    if result.image.mode == "RGBA":
+        image = Image.alpha_composite(Image.new("RGBA", result.image.size, "white"), result.image).convert("RGB")
+    else:
+        image = result.image.convert("RGB")
     rgb = np.asarray(image, dtype=np.float32)
     colors = {i: color_from_text(str(i)) for i in ids}
     for i in ids:
@@ -134,10 +140,15 @@ def overlay_mask(
         combined = Image.new("RGB", (image.width, image.height + strip.height), "white")
         combined.paste(image, (0, 0))
         combined.paste(strip, (0, image.height))
-        size = fit_size(combined.width, combined.height, max_width=max_width, max_height=max_height)
+        size = fit_size(
+            combined.width, combined.height, max_width=max_width, max_height=max_height, target_pixels=target_pixels
+        )
+        factor = size[0] / combined.width
         if size != combined.size:
             combined = combined.resize(size, Image.Resampling.LANCZOS)
-            metadata["scale"] = result.metadata["scale"] * (size[0] / image.width)
+        metadata["scale"] = result.metadata["scale"] * factor
+        # output_size is the composite; image_size is the area the inverse mapping applies to.
         metadata["output_size"] = list(size)
+        metadata["image_size"] = [round(image.width * factor), round(image.height * factor)]
         image = combined
     return PreviewResult(image=image, metadata=metadata)

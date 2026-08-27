@@ -298,8 +298,10 @@ def preview_image_segmentation(
         line_width=line_width,
         max_width=max_width,
         max_height=max_height,
+        target_pixels=target_pixels,
     )
     extra["ids"] = drawn.metadata["ids"]
     if "legend" in drawn.metadata:
         extra["legend"] = drawn.metadata["legend"]
+        extra["image_size"] = drawn.metadata["image_size"]
     return finish(drawn, options, extra=extra)
