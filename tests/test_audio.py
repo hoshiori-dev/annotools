@@ -68,7 +68,7 @@ def test_ac6_multichannel_kept(tmp_path):
 
 def test_ac7_errors_name_source(tmp_path, audio_file):
     junk = tmp_path / "junk.bin"
-    junk.write_bytes(b"not audio at all" * 100)
+    junk.write_bytes(bytes(range(256)) * 64)  # random-looking bytes: no demuxer accepts them
     with pytest.raises(ValueError, match=r"junk\.bin"):
         clip(str(junk))
     with pytest.raises(ValueError, match=r"end \(0\)"):

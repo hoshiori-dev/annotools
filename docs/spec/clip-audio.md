@@ -38,8 +38,8 @@ Returns: one `audio/wav` block followed by one JSON text block: `source_duration
 3. `test_ac3_invalid_range`: `start=5, end=5`, `start=-1`, `start=20` (beyond 10 s) → `ValueError`.
 4. `test_ac4_and_ac5_tool`: `Client(mcp)` returns an `AudioContent` (`audio/wav`) then a JSON text
    block with `duration ≈ 3`, and `save_to` writes bytes identical to the returned audio.
-6. `test_ac6_multichannel_kept`: a 6-channel source clips to a 6-channel WAV.
-7. `test_ac7_errors_name_source`: a non-media file → `ValueError` naming it; `end=0` → `ValueError`.
+5. `test_ac6_multichannel_kept`: a 6-channel source clips to a 6-channel WAV.
+6. `test_ac7_errors_name_source`: a non-media file → `ValueError` naming it; `end=0` → `ValueError`.
 
 ## Out of scope
 
