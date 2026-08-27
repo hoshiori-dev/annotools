@@ -66,3 +66,10 @@ async def test_ac5_tool(mcp_server, image_file):
         )
     meta = json.loads(result.content[1].text)
     assert meta["objects"] == 1 and meta["grid"]["columns"] == 10
+
+
+def test_label_at_top_edge_stays_inside():
+    pts = [0, 0, 0.5, 0, 0.25, 0.4]
+    plain = np.asarray(render([PolygonObject(points=pts)], show_point_index=False).convert("RGB"))
+    labeled = np.asarray(render([PolygonObject(points=pts, label="roof")], show_point_index=False).convert("RGB"))
+    assert (plain != labeled).any()

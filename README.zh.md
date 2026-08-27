@@ -13,7 +13,7 @@ SQLite 上构建 agentic 数据标注管道的 skills 与示例。
 
 ## 状态
 
-建设中——里程碑 P1（核心库与图片工具）。`preview_image` 已可用；表中其余工具为规划中。进度见
+建设中——里程碑 P1（核心库与图片工具）。5 个图片预览工具已可用；分割、几何、视频、音频工具为规划中。进度见
 [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1)。
 
 ## 安装

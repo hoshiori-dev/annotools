@@ -22,7 +22,8 @@ Returns: `[Image, metadata]` with the base keys, `grid` when drawn, and `objects
 1. Render the preview (and grid) as `preview_image_grid`.
 2. Map each point through the crop; points outside the output image are skipped (still counted).
 3. Draw a filled circle of `point_diameter` px centred on the mapped point. With a label, draw the same
-   filled tag as bounding boxes to the right of the dot (moved inside the frame when needed).
+   filled tag as bounding boxes to the right of the dot, vertically centred on it (moved inside the frame
+   when needed).
 - Error: empty `objects`, point outside `[0, 1]`, unknown color, `point_diameter < 1` → `ValueError`
   naming the object index.
 

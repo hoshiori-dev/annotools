@@ -50,8 +50,8 @@ class Mapper:
         return ((x - self.x_min) / self.span_x * self.width, (y - self.y_min) / self.span_y * self.height)
 
     def inside(self, px: float, py: float) -> bool:
-        """Whether an output pixel coordinate lies within the image."""
-        return 0 <= px < self.width and 0 <= py < self.height
+        """Whether an output pixel coordinate lies within the image (edges inclusive)."""
+        return 0 <= px <= self.width and 0 <= py <= self.height
 
 
 def _canvas(result: PreviewResult) -> tuple[Image.Image, ImageDraw.ImageDraw]:
@@ -64,12 +64,26 @@ def _draw_dot(draw: ImageDraw.ImageDraw, px: float, py: float, diameter: int, co
     draw.ellipse((px - r, py - r, px + r, py + r), fill=color)
 
 
-def _draw_label(draw: ImageDraw.ImageDraw, text: str, x: float, y: float, color: RGB, size: tuple[int, int]) -> None:
+def _draw_label(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    x: float,
+    y: float,
+    color: RGB,
+    size: tuple[int, int],
+    anchor: str = "above",
+) -> None:
+    """Draw a filled tag with ``text`` near (x, y), kept fully inside ``size``.
+
+    ``anchor="above"`` puts the tag's bottom-left at (x, y) (falling back to below when there is no room);
+    ``anchor="middle"`` centres it vertically on y with its left edge at x.
+    """
     font = ImageFont.load_default()
     left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
     tw, th = right - left + 4, bottom - top + 4
+    ty = y - th / 2 if anchor == "middle" else (y - th if y - th >= 0 else y)
     tx = min(max(0, x), max(0, size[0] - tw))
-    ty = y - th if y - th >= 0 else y
+    ty = min(max(0, ty), max(0, size[1] - th))
     draw.rectangle((tx, ty, tx + tw, ty + th), fill=color)
     draw.text((tx + 2 - left, ty + 2 - top), text, fill=text_color_for(color), font=font)
 
@@ -125,7 +139,7 @@ def draw_keypoints(
             continue
         _draw_dot(draw, px, py, point_diameter, color)
         if obj.label:
-            _draw_label(draw, obj.label, px + point_diameter, py, color, image.size)
+            _draw_label(draw, obj.label, px + point_diameter, py, color, image.size, anchor="middle")
     return PreviewResult(image=image, metadata={**result.metadata, "objects": len(objects)})
 
 

@@ -57,11 +57,13 @@ def draw_grid(image: Image.Image, options: GridOptions) -> PreviewResult:
         return PreviewResult(image=image, metadata={"grid": grid_meta})
     rgb = np.asarray(image.convert("RGB"), dtype=np.float32)
     mask = np.zeros((height, width), dtype=bool)
-    half = options.line_width / 2
-    for x in xs:
-        mask[:, max(0, math.floor(x - half)) : min(width, math.ceil(x + half))] = True
+    lw = options.line_width
+    for x in xs:  # a band exactly line_width px wide, centred on the line position
+        start = max(0, math.floor(x - lw / 2 + 0.5))  # centred band; avoids banker's rounding
+        mask[:, start : min(width, start + lw)] = True
     for y in ys:
-        mask[max(0, math.floor(y - half)) : min(height, math.ceil(y + half)), :] = True
+        start = max(0, math.floor(y - lw / 2 + 0.5))
+        mask[start : min(height, start + lw), :] = True
     fill = {"white": 255.0, "black": 0.0}
     target = 255.0 - rgb if options.color == "invert" else np.full_like(rgb, fill[options.color])
     blended = rgb.copy()

@@ -25,6 +25,18 @@ def test_ac1_default_grid_line_positions():
     assert black.metadata["grid"] == {"columns": 10, "rows": 10, "step_x": 0.1, "step_y": 0.1}
 
 
+@pytest.mark.parametrize("line_width", [1, 2, 3])
+def test_line_width_is_exact(line_width):
+    img = draw_grid(make_image(100, 100, "black"), GridOptions(columns=2, rows=1, line_width=line_width)).image
+    row = np.asarray(img.convert("RGB"))[10, :, 0]
+    assert int((row > 0).sum()) == line_width
+
+
+def test_ac1_white_on_white_is_unchanged():
+    img = draw_grid(make_image(100, 100, "white"), GridOptions()).image
+    assert (np.asarray(img.convert("RGB")) == 255).all()
+
+
 def test_ac2_fixed_mode():
     result = draw_grid(make_image(768, 512, "black"), GridOptions(mode="fixed", column_width=100, row_width=100))
     img = result.image

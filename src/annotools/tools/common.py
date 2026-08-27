@@ -30,6 +30,10 @@ AllowUpscaleParam = Annotated[bool, Field(description="Enlarge small images/regi
 OutputFormatParam = Annotated[OutputFormat, Field(description="Encoding: jpeg (quality 90), png, or webp")]
 SaveToParam = Annotated[str | None, Field(description="Also write the encoded image to this path or fsspec URL")]
 LineWidthParam = Annotated[int, Field(ge=1, description="Outline width in output pixels")]
+GridCellsParam = Annotated[int, Field(ge=1, description="Number of grid cells along this axis")]
+GridCellSizeParam = Annotated[int | None, Field(ge=1, description="Cell size in output pixels (mode='fixed')")]
+GridOpacityParam = Annotated[float, Field(ge=0.0, le=1.0, description="Line opacity, 0 (invisible) to 1 (solid)")]
+GridLineWidthParam = Annotated[int, Field(ge=1, description="Grid line width in output pixels")]
 PointDiameterParam = Annotated[int, Field(ge=1, description="Vertex/point dot diameter in output pixels")]
 
 

@@ -63,6 +63,25 @@ def test_ac5_grid_plus_boxes():
     assert pix(img, 77, 200) == BLUE
 
 
+def test_label_clamped_inside_frame_when_box_starts_above_crop():
+    img = render(crop=(0.25, 0.25, 0.75, 0.75), objects=[BBoxObject(bbox=(0.3, 0.1, 0.7, 0.6), label="person")]).image
+    top = np.asarray(img.convert("RGB"))[0:20, :, :]
+    assert (top != 255).any()  # the tag is drawn at the top edge instead of off-frame
+
+
+def test_partially_outside_box_is_clipped_and_outside_box_is_counted():
+    result = render(
+        crop=(0.25, 0.25, 0.75, 0.75),
+        objects=[BBoxObject(bbox=(0.1, 0.4, 0.6, 0.6)), BBoxObject(bbox=(0.8, 0.8, 0.9, 0.9))],
+    )
+    assert result.metadata["objects"] == 2
+    img = result.image
+    assert pix(img, 0, 115) == BLUE  # top edge (y = 115.2) runs from the frame edge: the left edge is clipped away
+    assert pix(img, 0, 200) == WHITE
+    assert pix(img, 268, 200) == BLUE  # right edge at (0.6 - 0.25) / 0.5 * 384 = 268.8 -> band 267..268
+    assert pix(img, 383, 383) == WHITE  # second box is entirely outside
+
+
 def test_ac6_empty_objects_raises():
     with pytest.raises(ValueError, match="objects"):
         render(objects=[])

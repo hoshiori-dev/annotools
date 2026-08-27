@@ -15,7 +15,7 @@ the Claude Agent SDK or the Codex SDK.
 
 ## Status
 
-Under construction — milestone P1 (core library and image tools). `preview_image` is available; the rest of the table is planned. Follow
+Under construction — milestone P1 (core library and image tools). The five image preview tools are available; segmentation, geometry, video, and audio tools are planned. Follow
 the [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1).
 
 ## Install

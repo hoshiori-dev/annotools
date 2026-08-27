@@ -34,6 +34,11 @@ def test_ac2_label_offset():
     assert (right != 255).any()
 
 
+def test_point_on_source_edge_is_drawn():
+    img = render(objects=[KeypointObject(point=(1.0, 0.5))]).image
+    assert pix(img, 767, 384) == BLUE
+
+
 def test_ac3_out_of_range_raises():
     with pytest.raises(ValueError, match=r"objects\[0\]\.point"):
         render(objects=[KeypointObject(point=(1.2, 0.5))])
