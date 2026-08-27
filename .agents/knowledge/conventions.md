@@ -42,6 +42,13 @@ or CI job commands.
   (`gh api repos/<owner>/<repo>/git/ref/tags/<tag>`) — `astral-sh/setup-uv` and
   `pypa/gh-action-pypi-publish` publish no major-version tag.
 
+## Shell And Search Gotchas
+
+- `rg` skips hidden directories: pass `--hidden` (and `--glob '!.git'`) or searches miss `.agents/` and
+  `.github/`.
+- The devcontainer shell is zsh: unquoted `$var` does not word-split — pipe file lists through `xargs`;
+  in `sed 's#…#…#'` a replacement containing `#<n>` breaks the expression, so pick another delimiter.
+
 ## Validation
 
 | Check | Command |
