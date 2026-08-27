@@ -10,10 +10,10 @@ methodology; `examples/` show Claude Agent SDK and Codex SDK pipelines. See `ARC
 ```text
 src/annotools/        <- library layer (image/video/audio/geometry/color/io) + MCP wrappers (tools/, server.py)
 tests/                <- pytest; `container` marker needs docker
-docs/                 <- zensical site; docs/spec/ (planned, P1) one spec per MCP tool; docs/plan/ the approved plan
+docs/                 <- zensical site only (user-facing pages); specs are not here
 skills/               <- (planned, P4) publishable skills (npx skills add hoshiori-dev/annotools); English
 examples/             <- (planned, P5/P6) independent example projects; each has its own CONTEXT.md
-.agents/knowledge/    <- agent knowledge base (this file routes into it)
+.agents/knowledge/    <- agent knowledge base (this file routes into it); spec/ holds one spec per MCP tool
 .agents/skills/       <- development skills (Claude Code sees them via .claude/skills symlink)
 .github/              <- workflows, issue forms, labels.json, release.yml, CODEOWNERS
 scripts/              <- repo maintenance scripts (labels, taxonomy, release checks)
@@ -25,13 +25,15 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
   language; draft user-facing plans, issues, and PR text in that language for review, publish in English.
 - `README.md` and `README.zh.md` are mirrors: change both in the same PR (`just readme-check`).
 - Issue first, spec second, tests third: no feature work without an open issue; MCP tools and library
-  contracts get a spec in `docs/spec/` (goal, parameters, return, acceptance criteria) mirrored in the
+  contracts get a spec in `.agents/knowledge/spec/` (goal, parameters, return, acceptance criteria) mirrored in the
   issue; write the failing test before the implementation.
 - Coordinates are normalized 0.0–1.0 relative to the uncropped source; colors are names or `#RRGGBB`.
 - The library layer never imports `fastmcp`; MCP wrappers only validate parameters and encode results.
 - Never store binary data in an annotation database — store file pointers (fsspec URL or local path).
 - Changing anything under `examples/<project>/` requires reading that project's `CONTEXT.md` first;
   example projects do not use AGENTS.md.
+- Planning documents and design drafts are never committed; durable decisions go to `ARCHITECTURE.md` (Decisions) and
+  `.agents/knowledge/`, scope to the tracking issue.
 - Python: Google-style docstrings for public contracts, ruff + ty, pytest with real objects over mocks.
   Details in `.agents/knowledge/conventions.md`.
 
@@ -45,7 +47,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 | Touching `examples/` | `.agents/knowledge/examples-context.md`, then the project's `CONTEXT.md` |
 | Creating or editing issues, labels, milestones, tracking issues | `.agents/knowledge/planning.md` |
 | Touching workflows, diagnosing a red check, remote settings | `.agents/knowledge/platform-settings.md` |
-| Full design: modules, file structure, MCP interfaces, decisions | `docs/plan/2026-08-annotools-plan.zh.md` (Chinese, approved) |
+| Module layout, data flow, recorded decisions | `ARCHITECTURE.md`; tool contracts in `.agents/knowledge/spec/` |
 | Issue → branch → draft PR → review → merge, publishing to GitHub | `.agents/skills/github-project-workflow/` |
 | Implementing a feature end to end (issue, spec, tests, code) | `.agents/skills/spec-driven-feature/` |
 | Before opening a PR: lessons learned, skill candidates | `.agents/skills/retrospective-to-skill/` |
@@ -84,6 +86,6 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 |---|---|
 | A CI job is renamed or added | `.agents/knowledge/platform-settings.md` job map and the `main` ruleset required checks |
 | A label, issue form, `release.yml`, or dependabot label | `.github/labels.json` — `just check-taxonomy` fails otherwise |
-| An MCP tool's parameters or return | its `docs/spec/` file, tests, and README tool table (both languages) |
+| An MCP tool's parameters or return | its `.agents/knowledge/spec/` file, tests, and README tool table (both languages) |
 | A new knowledge file or development skill | this file's When To Read What table |
 | Python tool versions in `pyproject.toml` dev group | matching `rev` in `.pre-commit-config.yaml` |

@@ -48,4 +48,4 @@ Keypoints, polygons, segmentation, filled boxes.
 
 ## References
 
-Plan §5.2, §7 (detection loop); issue #17; `docs/spec/mcp-overview.md`.
+issue #17; `.agents/knowledge/spec/mcp-overview.md`.

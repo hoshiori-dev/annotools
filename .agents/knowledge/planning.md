@@ -5,7 +5,7 @@ Load this before creating or editing issues, labels, milestones, or the tracking
 ## Source Of Truth
 
 `.github/labels.json` for labels (synced with `just sync-labels [--apply]`); GitHub for milestones and
-issues; `docs/plan/2026-08-annotools-plan.zh.md` for the approved scope.
+issues; tracking issue #1 and `ARCHITECTURE.md` (Decisions) for the approved scope — plans are not committed.
 
 ## Structure
 

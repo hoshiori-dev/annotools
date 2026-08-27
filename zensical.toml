@@ -1,18 +1,17 @@
 [project]
-site_url = "https://www.example.com/"
-site_name = "Documentation"
+site_url = "https://hoshiori-dev.github.io/annotools/"
+site_name = "annotools"
 # site_description = "Your project description"
 # site_author = "Your name"
 
 # copyright = "Copyright &copy; 2026 Your name"
 
-# repo_url = "https://github.com/user/repo"
-# repo_name = "user/repo"
+repo_url = "https://github.com/hoshiori-dev/annotools"
+repo_name = "hoshiori-dev/annotools"
 # edit_uri = "edit/main/docs/"
 
 nav = [
   { "Get started" = "index.md" },
-  { "Markdown in 5min" = "markdown.md" },
 ]
 
 # extra_css = ["stylesheets/extra.css"]

@@ -65,4 +65,4 @@ RGB-encoded panoptic masks; polygonization; per-ID custom colours.
 
 ## References
 
-Plan §5.2; issue #23; decision #6; `docs/spec/color-from-text.md`.
+issue #23; ARCHITECTURE.md Decisions (mask format); `.agents/knowledge/spec/color-from-text.md`.

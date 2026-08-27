@@ -16,7 +16,7 @@
 
 ## Checklist
 
-- [ ] Spec linked for any new or changed MCP tool / library contract (docs/spec/), or "not applicable"
+- [ ] Spec linked for any new or changed MCP tool / library contract (.agents/knowledge/spec/), or "not applicable"
 - [ ] Tests added or updated (written before the implementation where practical)
 - [ ] `just check` passes locally
 - [ ] README.md and README.zh.md updated together, or README not changed

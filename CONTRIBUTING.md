@@ -12,7 +12,7 @@ Bugs, features, and tasks → the issue forms. Vulnerabilities → private vulne
 
 ## Working on a change
 
-1. Open or pick an issue first; feature work starts with a spec in `docs/spec/` and a failing test.
+1. Open or pick an issue first; feature work starts with a spec in `.agents/knowledge/spec/` and a failing test.
 2. Branch from `main` (`gh issue develop -c <number>` creates `<number>-<slug>`) and open a draft PR early
    with `Closes #<number>`.
 3. Under squash merge the PR title becomes the commit message and must follow Conventional Commits

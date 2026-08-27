@@ -47,4 +47,4 @@ Compressed output formats; loudness normalization; channel mixing.
 
 ## References
 
-Plan §5.5; issue #31; FastMCP `fastmcp.utilities.types.Audio`.
+issue #31; FastMCP `fastmcp.utilities.types.Audio`.

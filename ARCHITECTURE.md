@@ -35,7 +35,7 @@ Two kinds of agents use the project:
 
 ## Layout
 
-Modules marked *(planned)* are defined by the approved plan (`docs/plan/`) and land in milestones P1–P6.
+Modules marked *(planned)* are tracked by issue #1 and its milestones; design drafts are not committed.
 
 ```text
 src/annotools/
@@ -50,7 +50,7 @@ src/annotools/
   audio.py          (planned) clip + resample → WAV
   tools/            MCP wrappers: image_tools, color_tools, geometry_tools, video_tools, audio_tools (planned)
 tests/              unit tests with generated fixtures; container tests behind the `container` marker
-docs/spec/          one specification per MCP tool (goal, parameters, return, acceptance criteria)
+.agents/knowledge/  spec/ one specification per MCP tool (goal, parameters, return, acceptance criteria)
 skills/ examples/   (planned) publishable skills; independent example projects (each with CONTEXT.md)
 ```
 
@@ -79,4 +79,6 @@ skills/ examples/   (planned) publishable skills; independent example projects (
 - Library layer independent of FastMCP so execution agents can reuse it without an MCP client.
 - SQLite is the assumed annotation store in skills and examples; nothing in the library depends on it.
 - Rotated boxes are exchanged as DOTA-style 8 numbers (4 corners); `theta` defaults to degrees.
+- Segmentation masks are single-channel ID images (uint8/uint16 PNG/TIFF; 0 = background; `MASK_MODES`
+  in `image/segmentation.py`); any other mode is an error rather than a guess.
 - Separate, complete example projects per SDK rather than shared scaffolding — closer to real usage.

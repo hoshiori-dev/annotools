@@ -57,4 +57,4 @@ Polygon → rotated box conversion; angle-range normalization.
 
 ## References
 
-Plan §5.3, decision #5; issue #25; `docs/spec/preview-image-polygons.md`.
+issue #25; `.agents/knowledge/spec/preview-image-polygons.md`.

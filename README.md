@@ -48,7 +48,7 @@ the three shapes: `.mcp.json` (Claude Code), `.codex/config.toml` (Codex), `open
 | `preview_video` / `preview_video_grid` | frame sampling at N fps → previews |
 | `clip_audio` | clip and resample audio |
 
-Specifications live in `docs/spec/` (shared conventions: `docs/spec/mcp-overview.md`).
+Specifications live in `.agents/knowledge/spec/` (shared conventions: `.agents/knowledge/spec/mcp-overview.md`).
 
 ## Skills and examples
 

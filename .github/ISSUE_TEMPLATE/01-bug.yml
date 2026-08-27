@@ -14,7 +14,7 @@ body:
     id: expected
     attributes:
       label: What should happen
-      description: The intended behavior, ideally with a link to the spec under docs/spec/. Together with the field above this is the acceptance baseline for the fix.
+      description: The intended behavior, ideally with a link to the spec under .agents/knowledge/spec/. Together with the field above this is the acceptance baseline for the fix.
     validations:
       required: true
   - type: textarea

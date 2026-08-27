@@ -31,4 +31,4 @@ Returns: `[Image, metadata]` where metadata is one JSON line with keys `<...>`.
 
 ## References
 
-- Plan §<n>; issue #<n>; <vendor doc URL used to verify a fact>.
+- issue #<n>; <vendor doc URL used to verify a fact>.

@@ -25,7 +25,7 @@ rely on for cost (vendors change tiers without notice) and record the date next 
    second, the per-item block (metadata + media + question) last. Keep the static prefix above the
    provider minimum (table below) or nothing caches.
 4. **Ask for coordinates in the model's native convention** and convert to the project's storage
-   convention (normalized xyxy, `docs/spec/mcp-overview.md`) in code — never ask a model to convert.
+   convention (normalized xyxy; see the annotools MCP overview spec) in code — never ask a model to convert.
 5. **Set reasoning effort per task**: lowest tier for captioning/classification, medium for
    detection with a self-check loop, high only when the spec demands it.
 6. **Verify once, then batch**: run 3 items, read `usage` (cached tokens, input tokens per image),
@@ -109,5 +109,5 @@ Anything that varies per item (file names, timestamps, item ids) goes after the 
 ## References
 
 - Read [references/sources.md](references/sources.md) when you need the vendor page for a number.
-- The annotools tool specs (parameter names, metadata keys) ship with the annotools repository under
-  `docs/spec/`; this skill only depends on `output_size`, `crop`, and `scale` from the metadata.
+- The annotools tool specs (parameter names, metadata keys) live in the annotools repository under
+  `.agents/knowledge/spec/`; this skill only depends on `output_size`, `crop`, and `scale` from the metadata.

@@ -45,4 +45,4 @@ Filled polygons; segmentation masks (own spec); rotated-box conversion (`rotated
 
 ## References
 
-Plan §5.2; issue #19; `docs/spec/mcp-overview.md`; `docs/spec/preview-image-keypoints.md`.
+issue #19; `.agents/knowledge/spec/mcp-overview.md`; `.agents/knowledge/spec/preview-image-keypoints.md`.

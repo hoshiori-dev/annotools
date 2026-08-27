@@ -9,7 +9,7 @@ region, so an agent never has to load a full-resolution asset to look at it.
 
 Tool: `preview_image` (MCP) / `annotools.image.preview.preview` + `encode` (library)
 
-Parameters: exactly `PreviewOptions` from `docs/spec/mcp-overview.md`.
+Parameters: exactly `PreviewOptions` from `.agents/knowledge/spec/mcp-overview.md`.
 
 Returns: `[Image, metadata]` with the base metadata keys.
 
@@ -52,4 +52,4 @@ Grids, overlays, video frames (own specs).
 
 ## References
 
-Plan §5.2; issue #15; `.agents/knowledge/mllm-token-budget.md`.
+issue #15; `.agents/knowledge/mllm-token-budget.md`.
