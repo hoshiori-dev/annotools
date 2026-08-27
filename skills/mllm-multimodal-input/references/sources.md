@@ -12,3 +12,4 @@
 | OpenAI tile/patch image token rules and multipliers | https://developers.openai.com/api/docs/guides/images-vision |
 | OpenAI prompt caching minimum 1024 (GPT-5.6+) / 2048, 30-minute retention | https://developers.openai.com/api/docs/guides/prompt-caching |
 | Qwen2.5-VL 14-px patches, 2×2 merge, `min_pixels`/`max_pixels`, video `fps`/`num_frames` | https://github.com/QwenLM/Qwen2.5-VL |
+| Qwen3-VL 16-px patches, 2×2 merge (32-px units), `total_pixels` 20480·32², video `fps` 2 | https://github.com/QwenLM/Qwen3-VL (`qwen-vl-utils/vision_process.py`) |

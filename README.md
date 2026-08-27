@@ -53,7 +53,7 @@ Specifications live in `docs/spec/` (shared conventions: `docs/spec/mcp-overview
 
 `skills/` holds installable skills (`npx skills add hoshiori-dev/annotools`). Available now:
 `mllm-multimodal-input` (per-model token cost, coordinate conventions, cache layout) and
-`localization-annotation-guide` (the grid → propose → verify → commit loop). Planned: the annotation
+`localization-annotation-guide` (the grid → propose → verify → correct → commit loop). Planned: the annotation
 project interview, the SQLite annotation store, agent vision tools, and task scaffolds. `examples/` will hold complete example projects (image captioning, object
 detection) for both SDKs, each with its recorded usage.
 

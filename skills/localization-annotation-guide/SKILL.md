@@ -15,7 +15,8 @@ description: >-
 
 - **Store** boxes as normalized `[x_min, y_min, x_max, y_max]` (0–1, relative to the uncropped
   source), polygons as flat `[x1, y1, …]`, rotated boxes as DOTA-style 8 numbers (4 corners,
-  clockwise from top-left). This is the annotools and SQLite convention (`sqlite-annotation-store`).
+  clockwise from top-left). This is the annotools convention and what the project's annotation store
+  expects.
 - **Ask** each model in the convention it is trained for (`mllm-multimodal-input` → coordinate
   table): Claude and Qwen answer in pixels of the image they saw; Gemini in `[ymin, xmin, ymax,
   xmax]` × 1000. Convert in code with the preview metadata (`output_size`, `crop`, `scale`).
@@ -34,9 +35,10 @@ description: >-
    ([assets/build_preview_call.py](assets/build_preview_call.py)); each box carries an index label so
    the model can name what to move.
 4. **Correct**: ask for adjustments *by index* ("move box 2's right edge to the object's edge") and
-   re-render. Stop when the model says the overlay is acceptable or the round limit is reached.
-5. **Commit**: write the final list with the round count and the model's self-assessment via the
-   store's `record_annotation`; never write intermediate rounds as final.
+   re-render. Box labels from the asset are 0-based; polygon vertex numbers drawn by
+   `preview_image_polygons` are 1-based — say which you mean in the prompt. Stop when the model says the overlay is acceptable or the round limit is reached.
+5. **Commit**: write the final list with the round count and the model's self-assessment through the
+   project's annotation-store write tool; never write intermediate rounds as final.
    Done when: every image has either a committed annotation or a `needs_review` flag with the last
    overlay saved (`save_to`).
 
@@ -62,8 +64,8 @@ description: >-
 
 - A model that returns normalized coordinates when asked for pixels (or vice versa) shifts every box
   — assert the value range before converting.
-- Claude resizes images above its tier limits and answers in the resized space; annotools previews
-  are ≤ 768 px so this never triggers, but a raw upload would.
+- Claude resizes images above its tier limits and answers in the resized space; at the annotools
+  default (768 px) this never triggers, but a raised `max_width`/`max_height` or a raw upload would.
 - Rendering candidates without the grid loses the anchor the model used; keep `grid={}` in the
   verification call.
 - `preview_image_polygons` rejects coordinates outside 0–1 — clamp rotated-box corners first.

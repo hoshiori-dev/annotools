@@ -38,12 +38,14 @@ rely on for cost (vendors change tiers without notice) and record the date next 
 | Model family | Rule | Cheapest useful size |
 |---|---|---|
 | Gemini 2.5 / 3.x | ≤ 384×384 → 258 tokens; larger images are tiled: crop unit ≈ floor(min(w, h)/1.5), tiles = ceil(w/unit) × ceil(h/unit), 258 tokens per tile (768×768 → 4 tiles, 768×432 → 6). `media_resolution` low/default caps tokens per image/frame. | ≤ 384 px both sides (258 tokens); otherwise accept 4–6 tiles at 768 |
-| Claude 4.7+ (high-res tier); older Claude (standard) | 28×28 patches: ⌈w/28⌉ × ⌈h/28⌉ tokens. Downscaled to ≤ 2576 px edge / 4784 tokens (high-res) or ≤ 1568 px / 1568 tokens (standard); padded to a multiple of 28 on the right/bottom. 768×768 → 784 tokens; 768×432 → 448. | Any size ≤ 1568 px; 768 long side ≈ 450–800 tokens |
-| GPT-4o / GPT-4.1 / GPT-5.1 (tile models) | `detail=low` → base only (85 / 85 / 70). `high`: fit in 2048², then shortest side to 768, count 512-px tiles × (170 / 170 / 140) + base. 768×768 → 4 tiles ≈ 765 tokens; ≤ 512×512 → 1 tile ≈ 255. | ≤ 512 px both sides for 1 tile; `detail=low` when layout only |
-| GPT-5.2+ / GPT-5.4 / GPT-5.6 (patch models), GPT-4.1-mini | 32-px patches: ceil(w/32) × ceil(h/32) × multiplier (1.2 for 5.4/5.6, 1.62 for 4.1-mini). 768×768 → 576 patches × 1.2 ≈ 692. | Same as above; area scales linearly |
-| Qwen2.5-VL / Qwen3-VL | 14-px patches merged 2×2 → one token per 28×28 px; `min_pixels`/`max_pixels` bound the area (typical 256·28² – 1280·28²), sizes rounded to multiples of 28. 768×768 → 784 tokens. | Set `max_pixels` to the budget; 768 long side ≈ 450–800 tokens |
+| Claude 4.7+ (high-res tier); older Claude (standard) | 28×28 patches: ⌈w/28⌉ × ⌈h/28⌉ tokens — cost grows with **area**. Images above the tier limit (2576 px edge / 4784 tokens high-res; 1568 px / 1568 tokens standard) are downscaled, then padded to a multiple of 28 on the right/bottom. 768×768 → 784 tokens; 768×432 → 448; 1568×1568 would be 3136 and is therefore resized on the standard tier. | Smallest size that still shows the target: 768 long side ≈ 450–800 tokens; 384 ≈ 100–200. 1568/2576 px are resize thresholds, not cheap sizes |
+| GPT-4o / GPT-4.1 (tile models) | `detail=low` → 85 base tokens only. `high`: fit in 2048², then shortest side to 768, count 512-px tiles × 170 + 85. 768×768 → 4 tiles = 765; ≤ 512×512 → 1 tile = 255. | ≤ 512 px both sides for one tile; `detail=low` only when layout does not matter |
+| GPT-5.1 (tile model) | Same procedure with 70 base + 140 per tile: 768×768 → 630; ≤ 512×512 → 210. | as above |
+| GPT-5.2 / 5.4 / 5.6 families, GPT-4.1-mini/nano, gpt-5-mini/nano, o4-mini (patch models) | 32-px patches: ceil(w/32) × ceil(h/32) × model multiplier (1.2 for 5.2/5.4/5.6 and gpt-5-mini; 1.62 for 4.1-mini; other multipliers per the source page). 768×768 → 576 patches × 1.2 ≈ 692. | Cost is linear in area: shrink to the smallest legible size; no tile boundary to exploit |
+| Qwen2.5-VL | 14-px patches merged 2×2 → one token per 28×28 px; `min_pixels`/`max_pixels` bound the area (typical 256·28² – 1280·28²), sizes rounded to multiples of 28. 768×768 → 784 tokens. | Set `max_pixels` to the budget; 768 long side ≈ 450–800 tokens |
+| Qwen3-VL | 16-px patches merged 2×2 → one token per **32×32** px; sizes rounded to multiples of 32; pixel budgets in units of 32² (video `total_pixels` default 20480·32², `fps` default 2). 768×768 → 576 tokens. | Same rule with 32-px units; 768 long side ≈ 350–600 tokens |
 
-Practical consequence: the annotools default of 768 px on the long side costs roughly 450–800 tokens
+Practical consequence: the annotools default of 768 px on the long side costs roughly 350–800 tokens
 on Claude, GPT, and Qwen and 4–6 × 258 tokens on Gemini. For Gemini, downsize to ≤ 384 px when
 the task tolerates it or lower `media_resolution`; for fine detail on any model, `crop` a region at
 768 px rather than sending a 1536 px image.
@@ -63,13 +65,14 @@ Rule: sample sparser (`fps`) before sampling smaller; 32 frames at 768 px is alr
 
 | Model | Ask for | Convert with |
 |---|---|---|
-| Claude | Absolute pixel `[x1, y1, x2, y2]` of the image **as sent**; the docs state normalized 0–1000 requests work poorly. Pre-resize so no server-side resize happens (annotools previews are already ≤ 1568 px). | divide by the preview `output_size`, then map through `crop` using the annotools metadata |
+| Claude | Absolute pixel `[x1, y1, x2, y2]` of the image **as sent**; the docs state normalized 0–1000 requests work poorly. Keep the preview within the tier limits (the annotools default 768 px is; raising `max_width`/`max_height` past 1568/2576 px makes Claude resize and answer in the resized space). | divide by the preview `output_size`, then map through `crop` using the annotools metadata |
 | Gemini | `[ymin, xmin, ymax, xmax]` normalized to 0–1000 (note the y-first order); segmentation masks as `[x, y]` polygons 0–1000 | divide by 1000, swap to xyxy |
 | GPT | No documented convention; pixel coordinates of the sent image work in practice — state the image size in the prompt | divide by `output_size` |
 | Qwen2.5-VL | Absolute pixels of the resized image (the size after `min/max_pixels`) | divide by the resized size |
 
-Store everything as normalized xyxy relative to the uncropped source (annotools convention); the
-grid overlay helps every model equally because the grid is drawn on the image the model sees.
+Store everything as normalized xyxy relative to the uncropped source (the annotools convention: x and
+y in 0–1, `[x_min, y_min, x_max, y_max]`, polygons as flat `[x1, y1, …]`); the grid overlay helps every
+model equally because the grid is drawn on the image the model sees.
 
 ## Prompt caching minimums (prefix must be byte-identical)
 
@@ -94,7 +97,9 @@ Anything that varies per item (file names, timestamps, item ids) goes after the 
 
 ## Gotchas
 
-- Gemini's "one tile" is ≤ 384 px, not 768 — an untested assumption that 768 fits one tile costs 4–6×.
+- Gemini's cheap point is ≤ 384 px on both sides (258 tokens). The vendor page also says larger
+  images are "tiled into 768x768 pixel tiles", yet its crop-unit formula makes a 768×768 image 4
+  tiles — trust the formula (it is what the worked example uses) and measure `usage` once.
 - Claude pads to multiples of 28; normalize by the **resized** size, never the padded one.
 - Any per-item text placed before the cache breakpoint (a file name in the system prompt) sets cache
   reads to zero for the whole run.
@@ -104,3 +109,5 @@ Anything that varies per item (file names, timestamps, item ids) goes after the 
 ## References
 
 - Read [references/sources.md](references/sources.md) when you need the vendor page for a number.
+- The annotools tool specs (parameter names, metadata keys) ship with the annotools repository under
+  `docs/spec/`; this skill only depends on `output_size`, `crop`, and `scale` from the metadata.
