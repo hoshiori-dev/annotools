@@ -17,10 +17,12 @@ description: >-
   source), polygons as flat `[x1, y1, …]`, rotated boxes as DOTA-style 8 numbers (4 corners,
   clockwise from top-left). This is the annotools convention and what the project's annotation store
   expects.
-- **Ask** each model in the convention it is trained for (`mllm-multimodal-input` → coordinate
-  table): Claude and Qwen answer in pixels of the image they saw; Gemini in `[ymin, xmin, ymax,
-  xmax]` × 1000. Convert in code with the `normalize_coordinates` tool (or `assets/build_preview_call.py`) using the
-  preview metadata (`output_width`/`output_height`, `crop`).
+- **Ask** each model in the convention it is trained for (`mllm-multimodal-input` → "Coordinate
+  conventions by model"): Claude and Qwen2.5-VL answer in pixels of the image they saw (`pixels`);
+  GPT/Codex in a fixed 0..999 `[x_min, y_min, x_max, y_max]` space (`gpt`); Gemini in
+  `[ymin, xmin, ymax, xmax]` × 1000 (`thousand_yx`); Qwen3-VL in 0–1000 xyxy (`thousand`). Convert in
+  code with the `normalize_coordinates` tool or `assets/build_preview_call.py` (convention names in
+  parentheses) using the preview metadata (`output_width`/`output_height`, `crop`).
 - Rotated boxes: request `(cx, cy, w, h, theta)` **or** 4 corners, convert with
   `rotated_bbox_to_polygon`, and verify rectangularity with `is_rectangle`
   ([assets/check_rectangle.py](assets/check_rectangle.py)).

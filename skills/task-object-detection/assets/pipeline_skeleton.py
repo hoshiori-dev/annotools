@@ -12,8 +12,7 @@ WORKSPACE = Path("workspaces/<task>")
 DB = WORKSPACE / "data" / "dataset.db"
 RUN_ID = 1  # created by the pipeline start-up (a `runs` row per execution; foreign keys require it)
 MAX_ROUNDS = 3  # confirmed with the user in the interview
-CONFIG = json.loads(Path("config/default.json").read_text())
-CONVENTION = CONFIG.get("coordinates", "pixels")  # pixels | gpt | thousand | thousand_yx (build_preview_call)
+CONVENTION = "pixels"  # overwritten in main() from config/default.json: pixels | gpt | thousand | thousand_yx
 CONFIDENCE_FLOOR = 0.5
 
 
@@ -75,7 +74,8 @@ async def _detect(
     conn: sqlite3.Connection, vision: VisionTools, item_id: int, uri: str, prompts: dict, classes: set[str]
 ) -> None:
     image, meta = vision.look_at_item(uri, grid={})
-    proposal = await call_model(prompts["propose"], [image, f"Image id: {item_id}; shown size: {meta['output_size']}"])
+    shown = f"shown size: {meta['output_width']}x{meta['output_height']}"
+    proposal = await call_model(prompts["propose"], [image, f"Image id: {item_id}; {shown}"])
     boxes = clean(proposal.get("boxes", []), meta, classes)
     rounds, done = 0, False
     while rounds < MAX_ROUNDS and boxes and not done:
@@ -120,7 +120,10 @@ async def _detect(
 async def main(workers: int = 4) -> None:
     conn = sqlite3.connect(DB)
     conn.execute("PRAGMA foreign_keys = ON")
-    vision = VisionTools(WORKSPACE, **CONFIG.get("preview", {}))  # per-model size from config/
+    global CONVENTION
+    config = json.loads(Path("config/default.json").read_text())  # {"preview": {...}, "coordinates": "..."}
+    CONVENTION = config.get("coordinates", CONVENTION)
+    vision = VisionTools(WORKSPACE, **config.get("preview", {}))  # per-model size from config/
     prompts = {name: (Path("spec/prompts") / f"{name}.md").read_text() for name in ("propose", "correct")}
     classes = set(json.loads(Path("config/classes.json").read_text()))
     pending = conn.execute("SELECT id, uri FROM items_pending").fetchall()

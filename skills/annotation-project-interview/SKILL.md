@@ -55,7 +55,7 @@ counts, image sizes, available models, existing data) are yours to look up; deci
 <project>/
   CONTEXT.md            agent entry for this project (not AGENTS.md)
   spec/                 task.md (goal, classes, output contract, QC), prompts/
-  config/               model, effort, budget, parallelism (one file per environment)
+  config/               default.json: model, effort, preview {max_width, max_height}, coordinates, budget, workers
   template/             workspace template copied per dataset
   skills/               skills the execution agent may load
   src/                  pipeline code (SDK agent, tools, export)

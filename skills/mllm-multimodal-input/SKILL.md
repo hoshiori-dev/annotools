@@ -84,8 +84,8 @@ Rule: sample sparser (`fps`) before sampling smaller; 32 frames at 768 px is alr
 
 Normalized 0–1 is the **storage** convention only. Each model answers best in the frame it was trained
 on; asking for anything else degrades localization (Claude documents this explicitly). Prompt in the
-native convention, then convert with `normalize_coordinates(coordinates, base_width, base_height, crop,
-axis_order)` — `base` is the frame the model used, `crop` the applied crop from the preview metadata.
+native convention, then convert with `normalize_coordinates(coordinates, base_width, base_height,
+crop=…, axis_order=…)` — `base` is the frame the model used, `crop` the applied crop from the preview metadata.
 
 | Model | Native convention (vendor statement, verified 2026-08-27) | Prompt wording | Convert with |
 |---|---|---|---|
@@ -137,4 +137,5 @@ Anything that varies per item (file names, timestamps, item ids) goes after the 
 
 - Read [references/sources.md](references/sources.md) when you need the vendor page for a number.
 - The annotools tool specs (parameter names, metadata keys) live in the annotools repository under
-  `.agents/knowledge/spec/`; this skill only depends on `output_size`, `crop`, and `scale` from the metadata.
+  `.agents/knowledge/spec/` (GitHub: hoshiori-dev/annotools); this skill depends only on the preview
+  metadata keys `output_width`, `output_height`, `crop`, and `scale`.
