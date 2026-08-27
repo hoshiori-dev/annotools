@@ -13,7 +13,7 @@ SQLite 上构建 agentic 数据标注管道的 skills 与示例。
 
 ## 状态
 
-建设中——里程碑 P4（skills）完成；接下来是示例项目。规划中的 MCP 工具已全部可用。进度见
+建设中——各里程碑均已实现；示例项目等待首次实际运行以填写用量记录。规划中的 MCP 工具已全部可用。进度见
 [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1)。
 
 ## 安装
@@ -53,8 +53,8 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 （设计树访谈 + 工作区脚手架）、`sqlite-annotation-store`（库表、工具契约、导出）、`mllm-multimodal-input`
 （各模型 token 成本、坐标约定、缓存布局）、`localization-annotation-guide`（网格 → 提议 → 校验 → 修正 → 入库循环）、
 `agent-vision-tools`（基于库层为 Claude Agent SDK / Codex SDK 执行 agent 构建的工具）、`task-image-captioning` 与
-`task-object-detection`（含提示词与管道骨架的任务脚手架）。`examples/` 将提供两种 SDK 的完整示例项目（图片 caption、
-物体检测），并记录实际用量。
+`task-object-detection`（含提示词与管道骨架的任务脚手架）。`examples/` 提供四个完整示例项目——图片 caption 与物体检测，各有 Claude Agent SDK 与 Codex SDK 版本——各含
+`CONTEXT.md`、规范、测试与首次运行后填写的用量记录。
 
 ## 开发
 
