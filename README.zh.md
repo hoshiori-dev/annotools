@@ -13,7 +13,7 @@ SQLite 上构建 agentic 数据标注管道的 skills 与示例。
 
 ## 状态
 
-建设中——里程碑 P0（harness）。MCP 服务可以启动，但尚未注册任何工具。进度见
+建设中——里程碑 P1（核心库与图片工具）。`preview_image` 已可用；表中其余工具为规划中。进度见
 [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1)。
 
 ## 安装
@@ -45,7 +45,7 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 | `preview_video` / `preview_video_grid` | 按 N fps 抽帧 → 预览 |
 | `clip_audio` | 音频切片与重采样 |
 
-规范文档位于 `docs/spec/`。
+规范文档位于 `docs/spec/`（共享约定：`docs/spec/mcp-overview.md`）。
 
 ## Skills 与示例
 

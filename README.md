@@ -15,7 +15,7 @@ the Claude Agent SDK or the Codex SDK.
 
 ## Status
 
-Under construction — milestone P0 (harness). The MCP server starts but registers no tools yet. Follow
+Under construction — milestone P1 (core library and image tools). `preview_image` is available; the rest of the table is planned. Follow
 the [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1).
 
 ## Install
@@ -47,7 +47,7 @@ the three shapes: `.mcp.json` (Claude Code), `.codex/config.toml` (Codex), `open
 | `preview_video` / `preview_video_grid` | frame sampling at N fps → previews |
 | `clip_audio` | clip and resample audio |
 
-Specifications live in `docs/spec/`.
+Specifications live in `docs/spec/` (shared conventions: `docs/spec/mcp-overview.md`).
 
 ## Skills and examples
 
