@@ -2,6 +2,9 @@
 
 import math
 from collections.abc import Sequence
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 Box = tuple[float, float, float, float]
 PixelBox = tuple[int, int, int, int]
@@ -80,3 +83,72 @@ def fit_size(
     if not allow_upscale:
         out_w, out_h = min(out_w, width), min(out_h, height)
     return (out_w, out_h)
+
+
+class RotatedBox(BaseModel):
+    """A rotated box: normalized centre and size plus a clockwise rotation about the centre."""
+
+    cx: float = Field(description="Centre x, normalized 0-1")
+    cy: float = Field(description="Centre y, normalized 0-1")
+    w: float = Field(description="Width, normalized (> 0)")
+    h: float = Field(description="Height, normalized (> 0)")
+    theta: float = Field(
+        description="Clockwise rotation about the centre (image coordinates, y down); unit set by angle_unit"
+    )
+
+
+def rotated_box_to_corners(
+    box: RotatedBox,
+    *,
+    angle_unit: Literal["degrees", "radians"] = "degrees",
+    aspect_ratio: float = 1.0,
+    name: str = "box",
+) -> list[float]:
+    """Return the 4 corners of ``box`` as ``[x1, y1, ..., x4, y4]``, clockwise from the unrotated top-left.
+
+    Rotation is performed in an isotropic frame (x scaled by ``aspect_ratio`` = source width / height) so
+    boxes on non-square images rotate without shear. Corners are not clipped to [0, 1].
+
+    Raises:
+        ValueError: naming ``name`` for a non-positive size, a centre outside [0, 1], or a bad aspect ratio.
+    """
+    if aspect_ratio <= 0:
+        raise ValueError(f"aspect_ratio must be > 0, got {aspect_ratio}")
+    if box.w <= 0:
+        raise ValueError(f"{name}.w must be > 0, got {box.w}")
+    if box.h <= 0:
+        raise ValueError(f"{name}.h must be > 0, got {box.h}")
+    if not 0.0 <= box.cx <= 1.0:
+        raise ValueError(f"{name}.cx={box.cx} is outside [0, 1]")
+    if not 0.0 <= box.cy <= 1.0:
+        raise ValueError(f"{name}.cy={box.cy} is outside [0, 1]")
+    theta = box.theta if angle_unit == "radians" else math.radians(box.theta)
+    cos_t, sin_t = math.cos(theta), math.sin(theta)
+    half_w, half_h = box.w * aspect_ratio / 2, box.h / 2
+    corners: list[float] = []
+    for dx, dy in ((-half_w, -half_h), (half_w, -half_h), (half_w, half_h), (-half_w, half_h)):
+        # clockwise rotation with y pointing down is the standard rotation matrix
+        rx, ry = dx * cos_t - dy * sin_t, dx * sin_t + dy * cos_t
+        corners.extend((box.cx + rx / aspect_ratio, box.cy + ry))
+    return corners
+
+
+def is_rectangle(points: Sequence[float], *, angle_tol_deg: float = 2.0, length_tol: float = 0.02) -> bool:
+    """Whether the flat ``[x1, y1, ..., x4, y4]`` polygon is a rectangle within tolerances.
+
+    Adjacent edges must be perpendicular within ``angle_tol_deg`` and opposite edges equal in length
+    within ``length_tol`` (relative). Anything other than 4 points returns False.
+    """
+    if len(points) != 8:
+        return False
+    pts = [(points[i], points[i + 1]) for i in range(0, 8, 2)]
+    edges = [(pts[(i + 1) % 4][0] - pts[i][0], pts[(i + 1) % 4][1] - pts[i][1]) for i in range(4)]
+    lengths = [math.hypot(*e) for e in edges]
+    if min(lengths) == 0:
+        return False
+    for i in range(4):
+        a, b = edges[i], edges[(i + 1) % 4]
+        cos_angle = (a[0] * b[0] + a[1] * b[1]) / (lengths[i] * lengths[(i + 1) % 4])
+        if abs(math.degrees(math.acos(max(-1.0, min(1.0, cos_angle)))) - 90) > angle_tol_deg:
+            return False
+    return all(abs(lengths[i] - lengths[i + 2]) / max(lengths[i], lengths[i + 2]) <= length_tol for i in range(2))
