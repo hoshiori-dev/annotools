@@ -1,7 +1,7 @@
 ---
 name: readme-bilingual-sync
 description: >-
-  Keeps README.md and README.zh.md as faithful mirrors. Use whenever either README is edited, when
+  Keeps README.md and README.zh.md as faithful mirrors. Use when either README is edited, when
   `just readme-check` or the CI lint job reports the READMEs out of sync, when a new MCP tool or install
   path must be documented, or when the user asks to "update the README". Not for other docs under docs/.
 ---
