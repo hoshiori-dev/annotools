@@ -1,0 +1,137 @@
+# Release: verify -> build -> smoke -> publish to GHCR (PyPI placeholder, disabled).
+# Trigger: a GitHub release whose tag is v<version> matching pyproject.toml.
+# Pre-release (tag contains '-', e.g. v0.2.0-rc1) publishes only the version tag; a full release
+# also updates <major>.<minor> and latest.
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - name: Tag must match pyproject version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: uv run --no-project --with packaging scripts/check_release_version.py "$TAG"
+
+  verify:
+    needs: check-version
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - run: uv build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: annotools:release
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - run: docker save annotools:release -o image.tar
+      - uses: actions/upload-artifact@v7
+        with:
+          name: image
+          path: image.tar
+          if-no-files-found: error
+
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - name: Smoke test the wheel in a fresh environment
+        run: |
+          uv venv smoke-venv
+          uv pip install --python smoke-venv dist/*.whl
+          smoke-venv/bin/annotools --help
+          smoke-venv/bin/python scripts/smoke_stdio.py smoke-venv/bin/annotools
+      - uses: actions/download-artifact@v8
+        with:
+          name: image
+      - run: docker load -i image.tar
+      - run: uv sync --group dev
+      - name: Smoke test the container image
+        run: uv run pytest -m container
+        env:
+          ANNOTOOLS_IMAGE: annotools:release
+
+  publish-ghcr:
+    needs: smoke
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+          # semver patterns skip major.minor for pre-releases; latest=auto skips pre-releases too.
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          flavor: latest=auto
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  publish-pypi:
+    # PLACEHOLDER — intentionally disabled. To enable:
+    # 1. Configure Trusted Publishing on pypi.org and test.pypi.org for this repository/workflow.
+    # 2. Create `pypi` and `testpypi` environments in the repository settings.
+    # 3. Set the repository variable PYPI_PUBLISH_ENABLED to "true" (Settings > Secrets and variables > Actions).
+    if: vars.PYPI_PUBLISH_ENABLED == 'true'
+    needs: smoke
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.release.prerelease && 'testpypi' || 'pypi' }}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@v1.14.2
+        with:
+          repository-url: ${{ github.event.release.prerelease && 'https://test.pypi.org/legacy/' || 'https://upload.pypi.org/legacy/' }}

@@ -1,0 +1,124 @@
+# CI: lint/format/typecheck on every push and PR; unit + container tests on main pushes and PRs
+# (latest PR commit only). `ci-gate` is the single job required by the main ruleset.
+# Also callable from release.yml (workflow_call) as the pre-release verification.
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  UV_FROZEN: "1"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+      - run: uv sync --group dev
+      - run: uv run ruff check .
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+      - run: uv sync --group dev
+      - run: uv run ruff format --check .
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+      - run: uv sync --group dev --all-extras
+      - run: uv run ty check
+
+  pr-title:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test-unit:
+    # Runs for PRs, pushes to main, and when called from release.yml.
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --group dev --all-extras
+      - run: uv run pytest -m "not container" --cov --cov-report=term
+
+  test-container:
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: annotools:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+      - run: uv sync --group dev
+      - run: uv run pytest -m container
+        env:
+          ANNOTOOLS_IMAGE: annotools:ci
+
+  ci-gate:
+    # Aggregator: a skipped job reports success, so this job inspects every result explicitly.
+    if: always()
+    needs: [lint, format, typecheck, pr-title, test-unit, test-container]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check dependency results
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+        run: |
+          echo "$RESULTS"
+          if echo "$RESULTS" | grep -Eq '"result": "(failure|cancelled)"'; then
+            echo "ERROR: A required job failed or was cancelled."; exit 1
+          fi
+          # Tests must actually have run wherever this gate protects a merge.
+          if [ "$EVENT" = "pull_request" ] || [ "$REF" = "refs/heads/main" ] || [ "$EVENT" = "release" ]; then
+            for job in test-unit test-container; do
+              if ! echo "$RESULTS" | grep -A1 "\"$job\"" | grep -q '"result": "success"'; then
+                echo "ERROR: $job did not succeed."; exit 1
+              fi
+            done
+          fi
