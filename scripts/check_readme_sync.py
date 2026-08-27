@@ -1,7 +1,8 @@
 """Check that README.md and README.zh.md have the same section structure and code blocks.
 
-Compares heading depth sequence, the number of headings, and fenced code blocks (language + content),
-so a change to one README that is not mirrored in the other fails fast. Prose is not compared.
+Compares the heading depth sequence and fenced code blocks (language + content with trailing `#`
+comments removed, so comments may be translated), so a change to one README that is not mirrored in the
+other fails fast. Prose is not compared.
 Exit 0 when in sync, 1 with a diff-style report otherwise.
 """
 
@@ -11,12 +12,17 @@ from pathlib import Path
 
 HEADING = re.compile(r"^(#{1,6})\s", re.MULTILINE)
 FENCE = re.compile(r"^```(\w*)\n(.*?)^```", re.MULTILINE | re.DOTALL)
+COMMENT = re.compile(r"\s+#.*$", re.MULTILINE)
+
+
+def normalize(code: str) -> str:
+    return COMMENT.sub("", code).strip()
 
 
 def structure(path: Path) -> tuple[list[int], list[tuple[str, str]]]:
     text = path.read_text(encoding="utf-8")
     return [len(m.group(1)) for m in HEADING.finditer(text)], [
-        (m.group(1), m.group(2).strip()) for m in FENCE.finditer(text)
+        (m.group(1), normalize(m.group(2))) for m in FENCE.finditer(text)
     ]
 
 
