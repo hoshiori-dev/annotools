@@ -30,6 +30,10 @@ review:
 export:
     uv run scripts/export_captions.py --db {{db}} --out {{workspace}}/output/captions.jsonl
 
+# Refresh the pinned skill copies from the annotools repository
+sync-skills:
+    for s in annotation-project-interview sqlite-annotation-store agent-vision-tools task-image-captioning mllm-multimodal-input; do rm -rf skills/$s && cp -r ../../skills/$s skills/; done; git -C ../.. rev-parse --short HEAD > skills/PINNED.txt
+
 # Lint, types, tests
 check:
     uv run ruff check . && uv run ruff format --check . && uv run ty check && uv run pytest -q

@@ -26,23 +26,14 @@ SCHEMA_VERSION = "1"
 
 
 def load(conn: sqlite3.Connection) -> tuple[list[dict], list[dict]]:
-    items = conn.execute(
-        "SELECT id, uri, media_type, width, height, duration, split, meta_json FROM items ORDER BY id"
-    ).fetchall()
+    items = conn.execute("SELECT id, uri, media_type, width, height, duration, split, meta_json FROM items ORDER BY id").fetchall()
     ann = conn.execute(
         "SELECT item_id, kind, key, label, confidence, rounds, payload_json FROM final_annotations ORDER BY item_id, kind, key"
     ).fetchall()
     by_item: dict[int, list[dict]] = {}
     for item_id, kind, key, label, confidence, rounds, payload in ann:
         by_item.setdefault(item_id, []).append(
-            {
-                "kind": kind,
-                "key": key,
-                "label": label,
-                "confidence": confidence,
-                "rounds": rounds,
-                "payload": json.loads(payload),
-            }
+            {"kind": kind, "key": key, "label": label, "confidence": confidence, "rounds": rounds, "payload": json.loads(payload)}
         )
     records, skipped = [], []
     for item_id, uri, media_type, width, height, duration, split, meta_json in items:
@@ -76,40 +67,12 @@ def write(records: list[dict], fmt: str, out_dir: Path, name: str) -> Path:
         with path.open("w", encoding="utf-8", newline="") as fh:
             writer = csv.writer(fh)
             writer.writerow(
-                [
-                    "uri",
-                    "media_type",
-                    "width",
-                    "height",
-                    "duration",
-                    "split",
-                    "meta_json",
-                    "kind",
-                    "key",
-                    "label",
-                    "confidence",
-                    "rounds",
-                    "payload_json",
-                ]
+                ["uri", "media_type", "width", "height", "duration", "split", "meta_json", "kind", "key", "label", "confidence", "rounds", "payload_json"]
             )
             for rec in records:
                 for a in rec["annotations"]:
                     writer.writerow(
-                        [
-                            rec["uri"],
-                            rec["media_type"],
-                            rec["width"],
-                            rec["height"],
-                            rec["duration"],
-                            rec["split"],
-                            json.dumps(rec["meta"]),
-                            a["kind"],
-                            a["key"],
-                            a["label"],
-                            a["confidence"],
-                            a["rounds"],
-                            json.dumps(a["payload"]),
-                        ]
+                        [rec["uri"], rec["media_type"], rec["width"], rec["height"], rec["duration"], rec["split"], json.dumps(rec["meta"]), a["kind"], a["key"], a["label"], a["confidence"], a["rounds"], json.dumps(a["payload"])]
                     )
     elif fmt == "parquet":
         try:
@@ -118,9 +81,7 @@ def write(records: list[dict], fmt: str, out_dir: Path, name: str) -> Path:
         except ImportError as exc:
             raise SystemExit("export: error: parquet needs pyarrow (pip install pyarrow)") from exc
         path = out_dir / f"{name}.parquet"
-        table = pa.Table.from_pylist(
-            [{**rec, "meta": json.dumps(rec["meta"]), "annotations": json.dumps(rec["annotations"])} for rec in records]
-        )
+        table = pa.Table.from_pylist([{**rec, "meta": json.dumps(rec["meta"]), "annotations": json.dumps(rec["annotations"])} for rec in records])
         pq.write_table(table, path)
     elif fmt == "webdataset":
         path = out_dir / f"{name}.tar"
@@ -153,10 +114,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"export: error: {args.db} is not an annotools store ({exc}); run init_db.py first", file=sys.stderr)
         return 2
     if version != SCHEMA_VERSION:
-        print(
-            f"export: error: schema_version {version!r} is not {SCHEMA_VERSION}; run init_db.py or migrate",
-            file=sys.stderr,
-        )
+        print(f"export: error: schema_version {version!r} is not {SCHEMA_VERSION}; run init_db.py or migrate", file=sys.stderr)
         return 2
     records, skipped = load(conn)
     conn.close()
