@@ -14,16 +14,16 @@ from packaging.version import Version
 def main(tag: str) -> int:
     """Compare ``tag`` with the version declared in pyproject.toml."""
     if not tag.startswith("v"):
-        print(f"::error::Release tag {tag!r} must start with 'v'.")
+        print(f"ERROR: Release tag {tag!r} must start with 'v'.")
         return 1
     project_version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
     try:
         tag_version = Version(tag[1:])
     except ValueError:
-        print(f"::error::Release tag {tag!r} is not a valid version (expected v<major>.<minor>.<patch>[-rcN]).")
+        print(f"ERROR: Release tag {tag!r} is not a valid version (expected v<major>.<minor>.<patch>[-rcN]).")
         return 1
     if tag_version != Version(project_version):
-        print(f"::error::Tag version {tag_version} does not match pyproject.toml version {project_version}.")
+        print(f"ERROR: Tag version {tag_version} does not match pyproject.toml version {project_version}.")
         return 1
     print(f"Tag {tag} matches pyproject.toml version {project_version}.")
     return 0
