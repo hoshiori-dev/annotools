@@ -152,3 +152,92 @@ def is_rectangle(points: Sequence[float], *, angle_tol_deg: float = 2.0, length_
         if abs(math.degrees(math.acos(max(-1.0, min(1.0, cos_angle)))) - 90) > angle_tol_deg:
             return False
     return all(abs(lengths[i] - lengths[i + 2]) / max(lengths[i], lengths[i + 2]) <= length_tol for i in range(2))
+
+
+AxisOrder = Literal["xy", "yx"]
+Coordinates = Sequence[Sequence[float]]
+
+
+def _check_base(base_width: float, base_height: float, name: str) -> None:
+    if base_width <= 0 or base_height <= 0:
+        raise ValueError(f"{name}: base_width and base_height must be > 0, got {(base_width, base_height)}")
+
+
+def _pairs(entry: Sequence[float], index: int, name: str, axis_order: AxisOrder) -> list[tuple[float, float]]:
+    """Split a flat entry into (x, y) pairs, swapping when the entry is written y-first."""
+    if len(entry) % 2:
+        raise ValueError(f"{name}[{index}]: expected an even number of values, got {len(entry)}")
+    values = iter(float(v) for v in entry)
+    pairs = list(zip(values, values, strict=True))  # consecutive (x, y) pairs
+    return [(y, x) for x, y in pairs] if axis_order == "yx" else pairs
+
+
+def normalize_coordinates(
+    coordinates: Coordinates,
+    base_width: float,
+    base_height: float,
+    *,
+    crop: Sequence[float] | None = None,
+    axis_order: AxisOrder = "xy",
+    name: str = "coordinates",
+) -> list[list[float]]:
+    """Map coordinates given in a model's frame to normalized [0, 1] coordinates of the uncropped source.
+
+    Each entry is a flat ``x, y, x, y, …`` list (a point, a box, or a polygon) expressed in a frame of
+    ``base_width`` x ``base_height``: the preview's ``output_width``/``output_height`` for models that
+    answer in pixels of the image they saw, or 1000 (or 999) for models that answer in a fixed 0-1000
+    space. ``crop`` is the applied crop reported by the preview (``[x_min, y_min, x_max, y_max]``) and
+    maps the cropped view back into the full source. ``axis_order="yx"`` reads every pair as ``y, x``
+    (Gemini's ``[ymin, xmin, ymax, xmax]``); the result is always ``x, y`` and clamped to [0, 1].
+
+    Raises:
+        ValueError: naming ``name[i]`` for an odd-length entry, or ``name`` for a non-positive base or
+            an invalid crop.
+    """
+    _check_base(base_width, base_height, name)
+    x0, y0, x1, y1 = validate_normalized_box(crop, name="crop") if crop is not None else FULL_FRAME
+    span_x, span_y = x1 - x0, y1 - y0
+    result: list[list[float]] = []
+    for index, entry in enumerate(coordinates):
+        flat: list[float] = []
+        for x, y in _pairs(entry, index, name, axis_order):
+            nx = x0 + x / base_width * span_x
+            ny = y0 + y / base_height * span_y
+            flat += [min(1.0, max(0.0, nx)), min(1.0, max(0.0, ny))]
+        result.append(flat)
+    return result
+
+
+def denormalize_coordinates(
+    coordinates: Coordinates,
+    base_width: float,
+    base_height: float,
+    *,
+    crop: Sequence[float] | None = None,
+    axis_order: AxisOrder = "xy",
+    name: str = "coordinates",
+) -> list[list[float]]:
+    """Inverse of :func:`normalize_coordinates`: source-normalized coordinates → the model's frame.
+
+    Input entries are ``x, y, …`` in [0, 1] relative to the uncropped source; the output is expressed in
+    the ``base_width`` x ``base_height`` frame of the (cropped) view, written ``y, x`` per pair when
+    ``axis_order="yx"``. Values are not rounded or clamped: a point outside ``crop`` maps outside the frame.
+
+    Raises:
+        ValueError: naming ``name[i]`` for an odd-length entry or a value outside [0, 1], or ``name`` for
+            a non-positive base or an invalid crop.
+    """
+    _check_base(base_width, base_height, name)
+    x0, y0, x1, y1 = validate_normalized_box(crop, name="crop") if crop is not None else FULL_FRAME
+    span_x, span_y = x1 - x0, y1 - y0
+    result: list[list[float]] = []
+    for index, entry in enumerate(coordinates):
+        flat: list[float] = []
+        for x, y in _pairs(entry, index, name, "xy"):
+            if not (0.0 <= x <= 1.0 and 0.0 <= y <= 1.0):
+                raise ValueError(f"{name}[{index}]: ({x}, {y}) is outside [0, 1]")
+            bx = (x - x0) / span_x * base_width
+            by = (y - y0) / span_y * base_height
+            flat += [by, bx] if axis_order == "yx" else [bx, by]
+        result.append(flat)
+    return result

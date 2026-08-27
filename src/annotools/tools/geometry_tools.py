@@ -4,8 +4,35 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
+from annotools import geometry
 from annotools.geometry import RotatedBox, rotated_box_to_corners
 from annotools.server import mcp
+from annotools.tools.common import CropParam
+
+CoordinatesParam = Annotated[
+    list[list[float]],
+    Field(
+        min_length=1,
+        description="Entries of flat x, y, x, y, ... values (point, box, polygon); y, x per pair when axis_order='yx'",
+    ),
+]
+BaseWidthParam = Annotated[
+    float,
+    Field(
+        gt=0,
+        description="Width of the frame the coordinates refer to: the preview output_width, or 1000 for 0-1000 outputs",
+    ),
+]
+BaseHeightParam = Annotated[float, Field(gt=0, description="Height of that frame: output_height, or 1000")]
+AxisOrderParam = Annotated[
+    Literal["xy", "yx"], Field(description="Pair order in the base frame (yx for Gemini's [ymin, xmin, ymax, xmax])")
+]
+
+
+class CoordinatesResult(BaseModel):
+    """Converted entries, same shape as the input."""
+
+    coordinates: list[list[float]] = Field(description="One flat list per input entry")
 
 
 class PolygonsResult(BaseModel):
@@ -33,3 +60,46 @@ def rotated_bbox_to_polygon(
         for i, box in enumerate(boxes)
     ]
     return PolygonsResult(polygons=polygons)
+
+
+@mcp.tool
+def normalize_coordinates(
+    coordinates: CoordinatesParam,
+    base_width: BaseWidthParam,
+    base_height: BaseHeightParam,
+    crop: CropParam = None,
+    axis_order: AxisOrderParam = "xy",
+) -> CoordinatesResult:
+    """Convert a model's coordinates into the storage convention (normalized 0-1, x-first, uncropped source).
+
+    Ask each model in its native convention, then pass its answer here with the frame it used: for pixel
+    answers (Claude, Qwen2.5-VL) base_width/base_height are the preview's output_width/output_height; for
+    0-1000 answers (Gemini, Qwen3-VL) or 0-999 (GPT) use 1000 or 999. Pass the preview's crop so a zoomed
+    view maps back into the full image. Results are clamped to [0, 1].
+    """
+    return CoordinatesResult(
+        coordinates=geometry.normalize_coordinates(
+            coordinates, base_width, base_height, crop=crop, axis_order=axis_order
+        )
+    )
+
+
+@mcp.tool
+def denormalize_coordinates(
+    coordinates: CoordinatesParam,
+    base_width: BaseWidthParam,
+    base_height: BaseHeightParam,
+    crop: CropParam = None,
+    axis_order: AxisOrderParam = "xy",
+) -> CoordinatesResult:
+    """Convert stored normalized coordinates into a model's frame (pixels of a preview or a 0-1000 space).
+
+    The inverse of normalize_coordinates: the input is normalized 0-1 relative to the uncropped source,
+    the output is in the base_width x base_height frame of the given crop (y-first pairs when
+    axis_order='yx'). Values are not clamped, so a point outside the crop maps outside the frame.
+    """
+    return CoordinatesResult(
+        coordinates=geometry.denormalize_coordinates(
+            coordinates, base_width, base_height, crop=crop, axis_order=axis_order
+        )
+    )
