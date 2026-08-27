@@ -7,7 +7,7 @@ and keeps the last N lines per job, so multi-megabyte logs stay out of
 agent context.
 
 Usage:
-    python3 scripts/run_log_digest.py --repo OWNER/REPO --run-id ID [--tail N]
+    python3 .agents/skills/github-project-workflow/scripts/run_log_digest.py --repo OWNER/REPO --run-id ID [--tail N]
 
     --repo    Repository as OWNER/REPO (e.g. octocat/hello-world).
     --run-id  Numeric workflow run id (databaseId from `gh run list`).
@@ -49,8 +49,8 @@ def run_gh(args: list) -> "subprocess.CompletedProcess":
     except FileNotFoundError:
         log(
             "error: gh not found — install and authenticate the GitHub CLI "
-            "(https://cli.github.com/), or use the MCP column of the skill's "
-            "Actions table instead."
+            "(https://cli.github.com/), or read the failed jobs with "
+            "`gh run view <id> --log-failed` once it is available."
         )
         sys.exit(1)
 

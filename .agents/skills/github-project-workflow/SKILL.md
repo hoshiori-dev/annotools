@@ -50,7 +50,7 @@ Every publishable write (issue, comment, PR body, release notes) runs this gate 
 
 1. `just check` green locally; push; wait for checks: `gh pr checks <n>` — poll with an `until` loop,
    never a fixed sleep.
-2. Red check: `python3 scripts/run_log_digest.py --repo hoshiori-dev/annotools --run-id <id>` (see
+2. Red check: `python3 .agents/skills/github-project-workflow/scripts/run_log_digest.py --repo hoshiori-dev/annotools --run-id <id>` (see
    [scripts/run_log_digest.py](scripts/run_log_digest.py)) or `gh run view <id> --log-failed`; never
    fetch the full log, never weaken or delete a check to make it pass. Job ↔ command map:
    `.agents/knowledge/platform-settings.md`.

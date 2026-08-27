@@ -16,8 +16,9 @@ description: >-
    Done when: every criterion names a command, test, or observable output.
 2. **Spec.** Write or update `docs/spec/<feature>.md` following `.agents/knowledge/spec-format.md`
    (Goal, Interface, Behavior, Acceptance criteria, Out of scope, References); start from
-   [assets/spec-template.md](assets/spec-template.md). Shared parameter groups
-   (`PreviewOptions`, `GridOptions`) are defined once in `docs/spec/mcp-overview.md` and referenced.
+   [assets/spec-template.md](assets/spec-template.md). Define shared parameter groups
+   (`PreviewOptions`, `GridOptions`) once in `docs/spec/mcp-overview.md` (create it with the first tool
+   spec) and reference them from every tool spec.
    Defaults must match `annotools.config`. Copy the acceptance criteria into the issue if they changed.
 3. **Tests first.** One test per acceptance criterion, named `test_ac<n>_<slug>`, in
    `tests/test_<module>.py`. Use generated fixtures (`PIL.Image.new`, numpy arrays) — no committed
