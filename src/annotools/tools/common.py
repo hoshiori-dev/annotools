@@ -1,19 +1,22 @@
 """Parameter models and helpers shared by the MCP tool wrappers."""
 
 import json
-from typing import Annotated, Any, Literal, cast
+from typing import Annotated, Any, Literal
 
 from fastmcp.utilities.types import Image as McpImage
 from pydantic import BaseModel, Field
 
-from annotools import config
+from annotools.config import get_settings
 from annotools.image.preview import PreviewResult, encode, preview
 from annotools.io import load_image, write_bytes
+
+settings = get_settings()
+
 
 OutputFormat = Literal["jpeg", "png", "webp"]
 GridMode = Literal["ratio", "fixed"]
 GridColor = Literal["white", "black", "invert"]
-DEFAULT_OUTPUT_FORMAT: OutputFormat = cast(OutputFormat, config.DEFAULT_OUTPUT_FORMAT)
+DEFAULT_OUTPUT_FORMAT: OutputFormat = settings.output_format
 
 # Annotated parameter types reused by every tool signature so descriptions and constraints reach the schema.
 SourceParam = Annotated[
@@ -45,9 +48,9 @@ class PreviewOptions(BaseModel):
 
     source: SourceParam
     crop: CropParam = None
-    target_pixels: TargetPixelsParam = None
-    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH
-    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT
+    target_pixels: TargetPixelsParam = settings.target_pixels
+    max_width: MaxWidthParam = settings.max_width
+    max_height: MaxHeightParam = settings.max_height
     allow_upscale: AllowUpscaleParam = False
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT
     save_to: SaveToParam = None

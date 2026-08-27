@@ -39,9 +39,9 @@ Modules marked *(planned)* are tracked by issue #1 and its milestones; design dr
 
 ```text
 src/annotools/
-  cli.py            argparse entrypoint: `annotools [--http] [--host] [--port]`
+  cli.py            argparse entrypoint: `annotools [--http] [--host] [--port] [--max-width …]` (settings flags)
   server.py         FastMCP("annotools") instance; tool modules register onto it
-  config.py         defaults (768×768 max preview, border 2, point 3, grid 10×10, opacity 0.5); ANNOTOOLS_* env
+  config.py         `Settings` (pydantic-settings): 384×384 max preview, grid 10×10, line 2, point 3; flags > ANNOTOOLS_* env
   io.py             open_bytes(uri) via fsspec; decode to PIL
   geometry.py       normalized↔pixel coordinates, crop math, rotated box → 4 corners, is_rectangle
   color.py          text → stable color hash, color parsing, inversion
@@ -80,12 +80,11 @@ skills/ examples/   (planned) publishable skills; independent example projects (
 
 - Normalized coordinates everywhere (frontier MLLMs localize better with size-independent coordinates);
   revisit only if a target training format demands absolute pixels at the tool boundary.
-- 768 px long side by default (owner decision): a conservative ceiling that keeps every frontier model's
-  per-image cost bounded while preserving enough detail for localization. It is *not* a single Gemini
-  tile — Gemini bills ≤ 384 px images as one unit and tiles larger ones; OpenAI tiles at 512 px. Per-model
-  sweet spots are decided in `.agents/knowledge/mllm-token-budget.md` on the facts in
-  `.agents/knowledge/references/mllm-models.md`; tools accept
-  `max_width`/`max_height` per call so a pipeline can pick a cheaper size.
+- 384 px preview limit by default (owner decision, 2026-08-27): the largest size Gemini bills as a
+  single 258-token unit (`references/mllm-models.md`). Claude, GPT patch models, and Qwen bill by area
+  and read 768–1024 px previews well, so a deployment picks its size for the model it serves through
+  `annotools --max-width/--max-height` or `ANNOTOOLS_MAX_WIDTH/HEIGHT`; every preview tool also accepts
+  `max_width`/`max_height` per call. Recommended sizes per model: `skills/mllm-multimodal-input`.
 - Library layer independent of FastMCP so execution agents can reuse it without an MCP client.
 - SQLite is the assumed annotation store in skills and examples; nothing in the library depends on it.
 - Rotated boxes are exchanged as DOTA-style 8 numbers (4 corners); `theta` defaults to degrees.

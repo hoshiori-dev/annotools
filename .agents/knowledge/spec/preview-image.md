@@ -32,9 +32,10 @@ Returns: `[Image, metadata]` with the base metadata keys.
 
 ## Acceptance criteria
 
-1. `test_ac1_downscale_fits_limits`: 4000×3000 → 768×576; for every width in 769–4607 the long side
-   is exactly 768 (`test_fit_size_hits_limit_exactly`).
-2. `test_ac2_no_upscale_by_default`: 400×300 → 400×300; `allow_upscale=True` → 768×576.
+1. `test_ac1_downscale_fits_limits`: 4000×3000 → 384×288 with the default settings; for every width in
+   769–4607 the long side is exactly 768 at `max_width=768` (`test_fit_size_hits_limit_exactly`).
+2. `test_ac2_no_upscale_by_default`: 300×200 → 300×200; `allow_upscale=True` → 384×256 (768×576 with
+   `max_width=max_height=768`).
 3. `test_ac3_target_pixels`: `target_pixels=100_000` on 4000×3000 → area ≤ 100 000 and within `max_*`.
 4. `test_ac4_crop_normalized`: `crop=(0.25, 0.25, 0.75, 0.75)` on 800×600 → 400×300; metadata `crop`
    echoes the box and `scale` is 1.0. `test_ac4b_crop_reports_applied_box`: a crop that does not fall on

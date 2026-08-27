@@ -18,7 +18,7 @@ def pix(image, x: int, y: int) -> tuple[int, ...]:
 
 
 def render(width=768, height=768, crop=None, objects=(), **kwargs):
-    result = preview(make_image(width, height), crop=crop)
+    result = preview(make_image(width, height), crop=crop, max_width=768, max_height=768)
     return draw_bboxes(result, list(objects), **kwargs)
 
 
@@ -57,7 +57,7 @@ def test_ac4_colors():
 
 
 def test_ac5_grid_plus_boxes():
-    result = preview(make_image(768, 768))
+    result = preview(make_image(768, 768), max_width=768, max_height=768)
     result.image = draw_grid(result.image, GridOptions(color="black")).image
     img = draw_bboxes(result, [BBoxObject(bbox=(0.1, 0.1, 0.5, 0.5))]).image
     assert pix(img, 77, 200) == BLUE

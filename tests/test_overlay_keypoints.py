@@ -17,7 +17,9 @@ def pix(image, x: int, y: int) -> tuple[int, ...]:
 
 
 def render(width=768, height=768, crop=None, objects=(), **kwargs):
-    return draw_keypoints(preview(make_image(width, height), crop=crop), list(objects), **kwargs)
+    return draw_keypoints(
+        preview(make_image(width, height), crop=crop, max_width=768, max_height=768), list(objects), **kwargs
+    )
 
 
 def test_ac1_dot_pixels():

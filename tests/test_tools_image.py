@@ -14,10 +14,10 @@ async def test_ac7_tool_returns_image_and_metadata(mcp_server, image_file):
     assert isinstance(text, TextContent)
     meta = json.loads(text.text)
     assert meta["original_size"] == [1600, 1200]
-    assert meta["output_size"] == [768, 576]
+    assert meta["output_size"] == [384, 288]
     assert meta["crop"] == [0, 0, 1, 1]
     assert meta["format"] == "jpeg"
-    assert meta["scale"] == pytest.approx(768 / 1600)
+    assert meta["scale"] == pytest.approx(384 / 1600)
 
 
 async def test_schema_carries_descriptions_and_constraints(mcp_server):
@@ -61,3 +61,11 @@ async def test_preview_options_schema_matches_tool_aliases(mcp_server):
         assert tool_props[key].get("description") == model_props[key].get("description"), key
         for constraint in ("minimum", "maximum"):
             assert tool_props[key].get(constraint) == model_props[key].get(constraint), (key, constraint)
+
+
+async def test_tool_schema_default_max_width_is_384(mcp_server):
+    async with Client(mcp_server) as client:
+        tools = {t.name: t for t in await client.list_tools()}
+    props = tools["preview_image"].inputSchema["properties"]
+    assert props["max_width"]["default"] == 384 and props["max_height"]["default"] == 384
+    assert tools["preview_image_grid"].inputSchema["properties"]["columns"]["default"] == 10

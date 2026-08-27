@@ -72,7 +72,7 @@ def test_ac5_invalid_options(kwargs):
 
 async def test_ac6_tool_metadata(mcp_server, image_file):
     async with Client(mcp_server) as client:
-        result = await client.call_tool("preview_image_grid", {"source": str(image_file(400, 200))})
+        result = await client.call_tool("preview_image_grid", {"source": str(image_file(300, 150))})
     meta = json.loads(result.content[1].text)
     assert meta["grid"]["step_x"] == 0.1 and meta["grid"]["columns"] == 10
-    assert meta["output_size"] == [400, 200]
+    assert meta["output_size"] == [300, 150]

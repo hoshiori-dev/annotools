@@ -1,6 +1,11 @@
 {
   "mcpServers": {
     "fastmcp-docs": { "type": "http", "url": "https://gofastmcp.com/mcp" },
-    "annotools": { "type": "stdio", "command": "uv", "args": ["run", "annotools"] }
+    "annotools": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "annotools"],
+      "env": { "ANNOTOOLS_MAX_WIDTH": "768", "ANNOTOOLS_MAX_HEIGHT": "768" }
+    }
   }
 }

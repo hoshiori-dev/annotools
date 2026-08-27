@@ -11,8 +11,26 @@ conventions and parameter groups every tool spec reuses; a tool spec only descri
 - All coordinates in parameters and metadata are normalized floats in `[0.0, 1.0]` relative to the
   **uncropped** source image (x → width, y → height). Pixel coordinates never cross the tool boundary.
 - Colors are CSS/PIL color names (`blue`, `red`) or `#RRGGBB`; default `blue`.
-- Defaults live in `annotools.config` and can be overridden with `ANNOTOOLS_<NAME>` environment
-  variables at server start (e.g. `ANNOTOOLS_MAX_PREVIEW_WIDTH=1024`).
+- Defaults live in `annotools.config.Settings` (pydantic-settings) and are resolved once at server start:
+  `annotools` command-line flags (`--max-width 768`) override `ANNOTOOLS_<FIELD>` environment variables
+  (`ANNOTOOLS_MAX_WIDTH=768`), which override the built-in values. Empty environment values are ignored;
+  invalid values fail at startup naming the field. The resolved values are the defaults shown in every
+  tool schema. (Breaking change, 2026-08-27: the earlier `ANNOTOOLS_MAX_PREVIEW_WIDTH`/`HEIGHT` and
+  `ANNOTOOLS_DEFAULT_*` names are no longer read.) Choose them for the model the agent uses (`skills/mllm-multimodal-input`): 384 keeps a
+  Gemini image at one 258-token unit; Claude, GPT patch models, and Qwen bill by area and read 768–1024 px
+  previews well.
+
+| Setting (env `ANNOTOOLS_<UPPER>`, flag `--<kebab>`) | Default | Meaning |
+|---|---|---|
+| `max_width`, `max_height` | 384, 384 | preview limits (`PreviewOptions.max_*`) |
+| `target_pixels` | null | preview area cap |
+| `grid_columns`, `grid_rows` | 10, 10 | grid cells |
+| `grid_mode` | `ratio` | `ratio` or `fixed` (`fixed` requires both widths below) |
+| `grid_column_width`, `grid_row_width` | null | cell size in output pixels for `fixed` |
+| `grid_opacity`, `grid_line_width` | 0.5, 1 | grid line rendering |
+| `line_width`, `point_diameter` | 2, 3 | overlay outline width and dot diameter |
+| `color` | `blue` | default overlay color |
+| `output_format`, `jpeg_quality` | `jpeg`, 90 | encoding |
 
 ## `PreviewOptions` (every preview tool)
 
@@ -20,9 +38,9 @@ conventions and parameter groups every tool spec reuses; a tool spec only descri
 |---|---|---|---|
 | `source` | str | — | local path or fsspec URL (`file://`, `s3://`, `gs://`, `http(s)://`, `memory://`) |
 | `crop` | `[x_min, y_min, x_max, y_max]` \| null | null | normalized; `x_min < x_max`, `y_min < y_max`; zoom into a region |
-| `target_pixels` | int \| null | null | ≥ 1; output area cap, combined with `max_*` (smallest wins) |
-| `max_width` | int | 768 | ≥ 1 |
-| `max_height` | int | 768 | ≥ 1 |
+| `target_pixels` | int \| null | null (setting) | ≥ 1; output area cap, combined with `max_*` (smallest wins) |
+| `max_width` | int | 384 (setting) | ≥ 1 |
+| `max_height` | int | 384 (setting) | ≥ 1 |
 | `allow_upscale` | bool | false | when false the output never exceeds the (cropped) source size |
 | `output_format` | `"jpeg"` \| `"png"` \| `"webp"` | `"jpeg"` | JPEG quality 90; alpha is flattened onto white for JPEG |
 | `save_to` | str \| null | null | also write the encoded bytes to this path/URL |

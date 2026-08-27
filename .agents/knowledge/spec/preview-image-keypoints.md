@@ -29,7 +29,7 @@ Returns: `[Image, metadata]` with the base keys, `grid` when drawn, and `objects
 
 ## Acceptance criteria
 
-1. `test_ac1_dot_pixels`: point (0.5, 0.5), diameter 3 on 768×768 white → blue at (384, 384) and its
+1. `test_ac1_dot_pixels`: point (0.5, 0.5), diameter 3 on 768×768 white (`max_*=768`) → blue at (384, 384) and its
    4-neighbours, white at distance 4.
 2. `test_ac2_label_offset`: with a label, non-white pixels appear right of the dot and the dot centre
    stays `color`.

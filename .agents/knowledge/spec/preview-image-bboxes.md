@@ -31,7 +31,7 @@ Returns: `[Image, metadata]` with the base keys, `grid` when a grid was drawn, a
 
 ## Acceptance criteria
 
-1. `test_ac1_box_pixels`: bbox (0.1, 0.1, 0.5, 0.5) on a 768×768 white preview → blue pixels on all four
+1. `test_ac1_box_pixels`: bbox (0.1, 0.1, 0.5, 0.5) on a 768×768 white preview (`max_width=max_height=768`) → blue pixels on all four
    edges at the mapped coordinates, white just inside and outside the 2 px band.
 2. `test_ac2_label_rendered`: a label produces non-white pixels above the box; without a label the area
    above the box stays white.

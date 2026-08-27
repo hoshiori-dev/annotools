@@ -6,12 +6,14 @@ from typing import Any, Literal
 import numpy as np
 from PIL import Image, ImageDraw
 
-from annotools import config
 from annotools.color import color_from_text, to_hex
+from annotools.config import get_settings
 from annotools.geometry import fit_size
 from annotools.image.overlay import _draw_label
 from annotools.image.preview import PreviewResult
 from annotools.io import load_image
+
+settings = get_settings()
 
 # Keep in step with .agents/knowledge/spec/preview-image-segmentation.md.
 MASK_MODES = {"L", "P", "I", "I;16", "I;16B", "I;16L"}
@@ -83,9 +85,9 @@ def overlay_mask(
     annotation: Literal["label", "legend"] | str = "label",
     id_names: dict[int, str] | None = None,
     alpha: float = 0.5,
-    line_width: int = config.DEFAULT_LINE_WIDTH,
-    max_width: int = config.MAX_PREVIEW_WIDTH,
-    max_height: int = config.MAX_PREVIEW_HEIGHT,
+    line_width: int = settings.line_width,
+    max_width: int = settings.max_width,
+    max_height: int = settings.max_height,
     target_pixels: int | None = None,
 ) -> PreviewResult:
     """Blend the ID ``mask`` over ``result.image`` and annotate regions with labels or a legend.

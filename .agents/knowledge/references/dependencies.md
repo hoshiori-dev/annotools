@@ -10,7 +10,7 @@ and add it here.
 | FastMCP | 3.4.7 | https://gofastmcp.com (servers/tools, media helpers; `fastmcp-docs` MCP) | `server.py`, `tools/*` |
 | MCP SDK (`mcp`) | 1.29.1 | https://github.com/modelcontextprotocol/python-sdk | content types in tests (`ImageContent`, `TextContent`) |
 | pydantic | 2.13.4 | https://docs.pydantic.dev | parameter models, `Annotated[..., Field]` aliases in `tools/common.py` |
-| pydantic-settings | 2.15.0 (transitive until #54 adds it) | https://docs.pydantic.dev/latest/concepts/pydantic_settings/ | `config.py` (`Settings`), `cli.py` (`CliSettingsSource`) — lands with #54 |
+| pydantic-settings | 2.15.0 | https://docs.pydantic.dev/latest/concepts/pydantic_settings/ | `config.py` (`Settings`), `cli.py` (`CliSettingsSource`) |
 | Pillow | 12.3.0 | https://pillow.readthedocs.io | `io.py`, `image/*` |
 | numpy | 2.5.2 | https://numpy.org/doc | `image/grid.py`, `image/segmentation.py`, `audio.py` |
 | fsspec | 2026.7.0 | https://filesystem-spec.readthedocs.io | `io.py` (`open_bytes`, `write_bytes`) |
@@ -31,7 +31,7 @@ and add it here.
 - Parameter descriptions come from `Annotated[type, Field(description=...)]`; constraints (`ge`, `le`)
   surface in the input schema (`test_preview_options_schema_matches_tool_aliases` guards drift).
 
-## pydantic-settings 2.15 (used from #54 on; verified against the library, 2026-08-27)
+## pydantic-settings 2.15
 
 - `class Settings(BaseSettings)` with `model_config = SettingsConfigDict(env_prefix="ANNOTOOLS_",
   env_ignore_empty=True)`: env overrides defaults, empty env values are ignored, init kwargs beat env.

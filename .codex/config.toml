@@ -4,3 +4,5 @@ url = "https://gofastmcp.com/mcp"
 [mcp_servers.annotools]
 command = "uv"
 args = ["run", "annotools"]
+# Codex runs GPT models: raise the 384 px default (see README "Use as an MCP server").
+env = { ANNOTOOLS_MAX_WIDTH = "768", ANNOTOOLS_MAX_HEIGHT = "768" }

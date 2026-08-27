@@ -24,7 +24,7 @@ def near(image, x: int, y: int, color, radius: int = 2) -> bool:
 
 
 def render(objects, **kwargs):
-    return draw_polygons(preview(make_image(768, 768)), objects, **kwargs).image
+    return draw_polygons(preview(make_image(768, 768), max_width=768, max_height=768), objects, **kwargs).image
 
 
 def test_ac1_outline_and_vertices():

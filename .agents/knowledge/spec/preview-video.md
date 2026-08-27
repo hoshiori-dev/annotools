@@ -46,7 +46,7 @@ first frame plus `frames: N`, `timestamps: [seconds…]`, `duration: seconds`, `
 2. `test_ac2_start_end`: `start=1, end=3` → 2 frames at ≈ 1 and 2 s.
 3. `test_ac3_max_frames_thinning`: `fps=10`, `max_frames=8` on 5 s → 8 frames, first at 0 s, evenly
    spaced; `thinned` true.
-4. `test_ac4_frames_previewed`: 1920×1080 frames → each ≤ 768 px long side; grid variant metadata has
+4. `test_ac4_frames_previewed`: 1920×1080 frames → each ≤ 384 px long side (384×216); grid variant metadata has
    `grid`.
 5. `test_ac5_missing_extra`: with `av` unimportable the library raises `ImportError` mentioning
    `annotools[media]`.
