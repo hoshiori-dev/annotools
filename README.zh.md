@@ -32,11 +32,18 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 `.codex/config.toml`（Codex）、`opencode.json`（OpenCode）。`annotools --http --port 8000` 提供 Streamable HTTP，
 用于共享或远程访问。
 
+预览默认值是可配置的设置：命令行参数覆盖 `ANNOTOOLS_*` 环境变量，环境变量覆盖内置值（`annotools --help`
+列出全部）。默认 384 px 是 Gemini 单计费单位的尺寸；面向 Claude、GPT 或 Qwen 时用更大的上限启动服务，例如
+`uv run annotools --max-width 768 --max-height 768`，或在 MCP 注册中设置
+`ANNOTOOLS_MAX_WIDTH=768 ANNOTOOLS_MAX_HEIGHT=768`（见 `.mcp.json`）。其他设置：`--target-pixels`、
+`--grid-columns`、`--grid-rows`、`--grid-mode`、`--grid-column-width`、`--grid-row-width`、`--line-width`、
+`--point-diameter`、`--color`、`--output-format`、`--jpeg-quality`。
+
 ## 工具（规划中）
 
 | 工具 | 用途 |
 |---|---|
-| `preview_image` | 裁剪 + 缩小到 768×768 以内（可配置） |
+| `preview_image` | 裁剪 + 缩小到 384×384 以内（可配置） |
 | `preview_image_grid` | 叠加半透明 10×10 网格的预览 |
 | `preview_image_bboxes` / `_keypoints` / `_polygons` | 基于归一化坐标的叠加层，可带标签 |
 | `preview_image_segmentation` | ID 掩码叠加，标签或图例模式 |

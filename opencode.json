@@ -2,6 +2,11 @@
   "$schema": "https://opencode.ai/config.json",
   "mcp": {
     "fastmcp-docs": { "type": "remote", "url": "https://gofastmcp.com/mcp", "enabled": true },
-    "annotools": { "type": "local", "command": ["uv", "run", "annotools"], "enabled": true }
+    "annotools": {
+      "type": "local",
+      "command": ["uv", "run", "annotools"],
+      "enabled": true,
+      "environment": { "ANNOTOOLS_MAX_WIDTH": "768", "ANNOTOOLS_MAX_HEIGHT": "768" }
+    }
   }
 }

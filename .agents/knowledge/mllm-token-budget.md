@@ -9,16 +9,15 @@ project decisions built on them. Update the reference first when a figure drifts
 
 ## Decisions
 
-- Default preview: fit within 768×768, downscale only (project decision, 2026-08-27). Rationale as
-  decided: one Gemini 768×768 tile; other frontier models size tokens by pixel area without tiling at
-  that size. **Verification note (Gemini docs, 2026-08-27):** the documented rule is 258 tokens when both
-  dimensions are ≤ 384 px; otherwise the image is tiled with crop unit ≈ floor(min(w, h) / 1.5) and
-  tiles = ceil(w / unit) × ceil(h / unit) at 258 tokens each — so a 768×432 preview costs 6 tiles
-  (1548 tokens) and a 768×768 one 4 tiles, while ≤ 384×384 costs 258. For Gemini the cheap point is
-  therefore ≤ 384 px on both sides (or the model's `media_resolution` setting), not 768. Keep 768 as the
-  default until the user revisits it; per-model sweet spots are in `references/mllm-models.md` and the
-  `mllm-multimodal-input` skill, and tools accept `max_width`/`max_height` per call.
-- Crop-zoom instead of upscaling: `crop` on a preview tool re-renders a region at up to 768 px, giving
+- Default preview: fit within 384×384, downscale only (project decision, 2026-08-27, replacing the
+  earlier 768 default). 384 is the largest size Gemini bills as one 258-token unit; a 768×768 preview is
+  4 Gemini tiles and 768×432 is 6 (`references/mllm-models.md`). Models that bill by area (Claude 28-px
+  patches, GPT 32-px patches, Qwen) lose detail at 384 for no saving, so deployments serving them raise
+  the limit at startup (`annotools --max-width 768 --max-height 768` or `ANNOTOOLS_MAX_WIDTH=768`);
+  per-model recommendations live in `skills/mllm-multimodal-input`. Every default is a
+  `annotools.config.Settings` field (flags > env > built-in) and tools accept `max_width`/`max_height`
+  per call.
+- Crop-zoom instead of upscaling: `crop` on a preview tool re-renders a region at up to the configured limit, giving
   detail without paying for the whole image at high resolution.
 - Grid default 10×10 (9 lines each way), 50 % white: dense enough to anchor coordinates, sparse enough
   not to occlude; adjust per task rather than globally.

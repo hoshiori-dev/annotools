@@ -30,7 +30,7 @@ Returns: `[Image, metadata]` with the base keys, `grid` when drawn, and `objects
 
 ## Acceptance criteria
 
-1. `test_ac1_outline_and_vertices`: triangle (0.1,0.1), (0.5,0.1), (0.1,0.5) on 768×768 white →
+1. `test_ac1_outline_and_vertices`: triangle (0.1,0.1), (0.5,0.1), (0.1,0.5) on 768×768 white (`max_*=768`) →
    `color` pixels at the segment midpoints and at each vertex; white at the triangle centroid.
 2. `test_ac2_point_indices`: with indices, non-white pixels near each vertex beyond the dot radius;
    with `show_point_index=False` the vertex neighbourhood outside the dot stays white.
