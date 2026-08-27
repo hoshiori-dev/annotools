@@ -4,8 +4,8 @@ Load this when choosing preview sizes, grid density, frame rates, or explaining 
 
 ## Source Of Truth
 
-Vendor documentation for each model (verify at implementation time; figures drift). This file records
-the decisions and the facts that justified them, with the verification date.
+`references/mllm-models.md` holds the vendor facts (dated, with URLs); this file records only the
+project decisions built on them. Update the reference first when a figure drifts.
 
 ## Decisions
 
@@ -16,8 +16,8 @@ the decisions and the facts that justified them, with the verification date.
   tiles = ceil(w / unit) × ceil(h / unit) at 258 tokens each — so a 768×432 preview costs 6 tiles
   (1548 tokens) and a 768×768 one 4 tiles, while ≤ 384×384 costs 258. For Gemini the cheap point is
   therefore ≤ 384 px on both sides (or the model's `media_resolution` setting), not 768. Keep 768 as the
-  default until the user revisits it; the `mllm-multimodal-input` skill (P4) must document the per-model
-  sweet spots and tools accept `max_width`/`max_height` per call.
+  default until the user revisits it; per-model sweet spots are in `references/mllm-models.md` and the
+  `mllm-multimodal-input` skill, and tools accept `max_width`/`max_height` per call.
 - Crop-zoom instead of upscaling: `crop` on a preview tool re-renders a region at up to 768 px, giving
   detail without paying for the whole image at high resolution.
 - Grid default 10×10 (9 lines each way), 50 % white: dense enough to anchor coordinates, sparse enough
@@ -25,13 +25,12 @@ the decisions and the facts that justified them, with the verification date.
 - Video default 1 fps with a `max_frames` cap (32): frames are billed like images; sample sparser
   before sampling smaller.
 - Prompt caching: keep static instructions and tool schemas first, put per-item metadata and media last
-  so batch runs share the longest possible cached prefix. Per-framework minimum cacheable prefix lengths
-  are recorded in the `mllm-multimodal-input` skill (P4), not here.
+  so batch runs share the longest possible cached prefix. Per-provider minimum cacheable prefix lengths
+  are in `references/mllm-models.md`.
 
 ## Per-model facts
 
-Token formulas, resolution tiers, coordinate conventions, and cache minimums for Gemini, Claude, GPT,
-and Qwen live in `skills/mllm-multimodal-input/SKILL.md` (sources with dates in its
-`references/sources.md`). Two facts that shape this project: Claude counts 28×28 patches (768 px long
-side ≈ 450–800 tokens) and answers localization in **pixel** coordinates of the image it saw, so ask
-models in their native convention and normalize in code (`skills/localization-annotation-guide`).
+See `references/mllm-models.md`. Two facts shape this project: Claude answers localization in pixel
+coordinates of the image it saw, Gemini in `[ymin, xmin, ymax, xmax]` × 1000 — so ask each model in its
+native convention and normalize in code (`skills/localization-annotation-guide`); and Gemini bills any
+image ≤ 384 px on both sides as one 258-token unit.

@@ -67,6 +67,15 @@ skills/ examples/   (planned) publishable skills; independent example projects (
 3. **Release** — GitHub release `v<version>` → CI workflow (verify) → wheel + image build → smoke tests
    → GHCR push; see `.github/workflows/release.yml`.
 
+## Knowledge Layers
+
+1. `.agents/knowledge/references/` — external facts (vendor token rules, coordinate conventions,
+   dependency APIs, SDK APIs) with a verification date and URL per entry. Nothing here is a decision.
+2. `.agents/knowledge/*.md` and this file's Decisions — project decisions that cite reference entries
+   rather than raw URLs.
+3. `skills/` — published derivatives for users; their `references/` files are trimmed copies of layer 1
+   and are refreshed when layer 1 changes.
+
 ## Decisions
 
 - Normalized coordinates everywhere (frontier MLLMs localize better with size-independent coordinates);
@@ -74,7 +83,8 @@ skills/ examples/   (planned) publishable skills; independent example projects (
 - 768 px long side by default (owner decision): a conservative ceiling that keeps every frontier model's
   per-image cost bounded while preserving enough detail for localization. It is *not* a single Gemini
   tile — Gemini bills ≤ 384 px images as one unit and tiles larger ones; OpenAI tiles at 512 px. Per-model
-  sweet spots and the verified formulas live in `.agents/knowledge/mllm-token-budget.md`; tools accept
+  sweet spots are decided in `.agents/knowledge/mllm-token-budget.md` on the facts in
+  `.agents/knowledge/references/mllm-models.md`; tools accept
   `max_width`/`max_height` per call so a pipeline can pick a cheaper size.
 - Library layer independent of FastMCP so execution agents can reuse it without an MCP client.
 - SQLite is the assumed annotation store in skills and examples; nothing in the library depends on it.
