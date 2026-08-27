@@ -39,8 +39,9 @@ families on the `annotools` library and register them with the SDK, all scoped t
 4. **Confine**: the workspace is the only path the tools accept — resolve every `item_uri` against
    `workspaces/<task>/` and refuse anything outside (see `_inside()` in the asset); disable file
    and shell built-ins; keep the DB path fixed in the tool closure, never a parameter.
-5. **Budget**: pass `max_width`/`max_height` from `config/` (per-model sweet spot from
-   `mllm-multimodal-input`); cap overlays per call; log `usage` per item.
+5. **Budget**: pass `max_width`/`max_height` from `config/` (the "Recommended startup size per model"
+   table in `mllm-multimodal-input`; the asset falls back to the annotools settings, whose default is
+   Gemini's 384); cap overlays per call; log `usage` per item.
    Done when: a dry run on 3 items shows the image inline in the agent transcript, the overlay call
    renders the agent's own boxes, and writes land in `dataset.db` with the run id.
 

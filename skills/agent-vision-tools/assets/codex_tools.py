@@ -10,12 +10,11 @@ import sys
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
-
 from vision_tools import VisionTools, metadata_text
 
 
 def build_server(workspace: str) -> FastMCP:
-    vision = VisionTools(workspace)
+    vision = VisionTools(workspace, max_width=768, max_height=768)  # GPT patch models: 768 per the size table
     mcp = FastMCP("vision")
 
     @mcp.tool(output_schema=None)

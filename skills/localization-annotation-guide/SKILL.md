@@ -17,9 +17,12 @@ description: >-
   source), polygons as flat `[x1, y1, …]`, rotated boxes as DOTA-style 8 numbers (4 corners,
   clockwise from top-left). This is the annotools convention and what the project's annotation store
   expects.
-- **Ask** each model in the convention it is trained for (`mllm-multimodal-input` → coordinate
-  table): Claude and Qwen answer in pixels of the image they saw; Gemini in `[ymin, xmin, ymax,
-  xmax]` × 1000. Convert in code with the preview metadata (`output_size`, `crop`, `scale`).
+- **Ask** each model in the convention it is trained for (`mllm-multimodal-input` → "Coordinate
+  conventions by model"): Claude and Qwen2.5-VL answer in pixels of the image they saw (`pixels`);
+  GPT/Codex in a fixed 0..999 `[x_min, y_min, x_max, y_max]` space (`gpt`); Gemini in
+  `[ymin, xmin, ymax, xmax]` × 1000 (`thousand_yx`); Qwen3-VL in 0–1000 xyxy (`thousand`). Convert in
+  code with the `normalize_coordinates` tool or `assets/build_preview_call.py` (convention names in
+  parentheses) using the preview metadata (`output_width`/`output_height`, `crop`).
 - Rotated boxes: request `(cx, cy, w, h, theta)` **or** 4 corners, convert with
   `rotated_bbox_to_polygon`, and verify rectangularity with `is_rectangle`
   ([assets/check_rectangle.py](assets/check_rectangle.py)).
@@ -64,8 +67,9 @@ description: >-
 
 - A model that returns normalized coordinates when asked for pixels (or vice versa) shifts every box
   — assert the value range before converting.
-- Claude resizes images above its tier limits and answers in the resized space; at the annotools
-  default (768 px) this never triggers, but a raised `max_width`/`max_height` or a raw upload would.
+- Claude resizes images above its tier limits and answers in the resized space; any annotools preview
+  ≤ 1092 px on both sides stays under the standard tier, but a larger `max_width`/`max_height` or a raw
+  upload would trigger it — then normalize by the resized size, not the original.
 - Rendering candidates without the grid loses the anchor the model used; keep `grid={}` in the
   verification call.
 - `preview_image_polygons` rejects coordinates outside 0–1 — clamp rotated-box corners first.

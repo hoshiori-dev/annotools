@@ -7,7 +7,10 @@ import sys
 import tarfile
 from pathlib import Path
 
-STORE = Path(__file__).resolve().parents[1] / "skills" / "sqlite-annotation-store"
+import pytest
+
+SKILLS = Path(__file__).resolve().parents[1] / "skills"
+STORE = SKILLS / "sqlite-annotation-store"
 
 
 def run(script: str, *args: str) -> subprocess.CompletedProcess:
@@ -111,3 +114,33 @@ def test_export_rejects_non_store_files(tmp_path):
     sqlite3.connect(empty).close()
     result = run("export.py", "--db", str(empty), "--format", "jsonl", "--out", str(tmp_path))
     assert result.returncode == 2
+
+
+def _build_preview_call():
+    import importlib.util
+
+    path = SKILLS / "localization-annotation-guide" / "assets" / "build_preview_call.py"
+    spec = importlib.util.spec_from_file_location("build_preview_call", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_to_normalized_conventions():
+    mod = _build_preview_call()
+    meta = {"output_width": 384, "output_height": 288, "crop": [0, 0, 1, 1]}
+    assert mod.to_normalized([96, 72, 192, 144], "pixels", meta) == pytest.approx([0.25, 0.25, 0.5, 0.5])
+    assert mod.to_normalized([0, 0, 999, 999], "gpt", meta) == pytest.approx([0, 0, 1, 1])
+    assert mod.to_normalized([250, 500, 750, 1000], "thousand", meta) == pytest.approx([0.25, 0.5, 0.75, 1])
+    # Gemini's y-first order is swapped into xyxy
+    assert mod.to_normalized([100, 200, 300, 400], "thousand_yx", meta) == pytest.approx([0.2, 0.1, 0.4, 0.3])
+    assert mod.to_normalized([100, 200, 300, 400], "gemini", meta) == pytest.approx([0.2, 0.1, 0.4, 0.3])
+
+
+def test_to_normalized_crop_and_legacy_meta():
+    mod = _build_preview_call()
+    meta = {"output_size": [400, 300], "crop": [0.25, 0.25, 0.75, 0.75]}
+    assert mod.to_normalized([0, 0, 400, 300], "pixels", meta) == pytest.approx([0.25, 0.25, 0.75, 0.75])
+    with pytest.raises(ValueError, match="unknown convention"):
+        mod.to_normalized([0, 0, 1, 1], "nope", meta)
