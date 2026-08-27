@@ -1,0 +1,9 @@
+{
+  "model": "gpt-5.6-terra",
+  "effort": "low",
+  "preview": {"max_width": 768, "max_height": 768, "output_format": "jpeg"},
+  "workers": 4,
+  "budgets": {"medium_words": 25, "short_words": 10},
+  "max_failures": 10,
+  "max_budget_usd_per_item": 0.05
+}
