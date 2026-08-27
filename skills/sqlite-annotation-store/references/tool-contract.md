@@ -27,7 +27,7 @@ Return: `{"review_id": int}`.
 
 ## Connection setup
 Run `PRAGMA foreign_keys = ON` on every connection (SQLite does not persist it); without it the
-`REFERENCES` clauses are not enforced. Set `updated_at` is handled by a trigger.
+`REFERENCES` clauses are not enforced. `updated_at` is maintained by a trigger.
 
 ## Guardrails
 - Tools take URIs, never bytes; the agent has no file-write tool outside `data/interim/`.

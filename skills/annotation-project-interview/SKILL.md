@@ -38,8 +38,7 @@ counts, image sizes, available models, existing data) are yours to look up; deci
    and ask only the branch for the chosen task family (caption length budget and focus order;
    class list with include/exclude rules and confusable pairs; keypoint skeleton; mask type;
    rotated-box angle convention; video sampling; audio segmentation rules), plus the shared
-   items: correction-round limit for localization [3], preview size per model, few-shot examples
-   the user can supply, tie-breaking rules.
+   items: correction-round limit for localization [3], preview size per model, tie-breaking rules.
 4. **Trial-label** 1–3 items by hand with the agreed prompt (use the annotools previews; show the
    image or its path with the result) and ask for corrections. Repeat until the user accepts.
    Done when: the user says the trial output is what they want.
