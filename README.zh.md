@@ -33,7 +33,7 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 用于共享或远程访问。
 
 预览默认值是可配置的设置：命令行参数覆盖 `ANNOTOOLS_*` 环境变量，环境变量覆盖内置值（`annotools --help`
-列出全部）。默认 384 px 是 Gemini 单计费单位的尺寸；面向 Claude、GPT 或 Qwen 时用更大的上限启动服务，例如
+列出全部；0.1 之前的 `ANNOTOOLS_MAX_PREVIEW_WIDTH` 等名称不再读取）。默认 384 px 是 Gemini 单计费单位的尺寸；面向 Claude、GPT 或 Qwen 时用更大的上限启动服务，例如
 `uv run annotools --max-width 768 --max-height 768`，或在 MCP 注册中设置
 `ANNOTOOLS_MAX_WIDTH=768 ANNOTOOLS_MAX_HEIGHT=768`（见 `.mcp.json`）。其他设置：`--target-pixels`、
 `--grid-columns`、`--grid-rows`、`--grid-mode`、`--grid-column-width`、`--grid-row-width`、`--line-width`、

@@ -2,8 +2,10 @@
 
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from annotools.color import parse_color
 
 OutputFormat = Literal["jpeg", "png", "webp"]
 GridMode = Literal["ratio", "fixed"]
@@ -36,6 +38,12 @@ class Settings(BaseSettings):
     color: str = Field("blue", description="Default overlay color (name or #RRGGBB)")
     output_format: OutputFormat = Field("jpeg", description="Default encoding of returned previews")
     jpeg_quality: int = Field(90, ge=1, le=100, description="JPEG quality")
+
+    @field_validator("color")
+    @classmethod
+    def _color_parses(cls, value: str) -> str:
+        parse_color(value, name="color")
+        return value
 
     @model_validator(mode="after")
     def _fixed_grid_needs_widths(self) -> "Settings":

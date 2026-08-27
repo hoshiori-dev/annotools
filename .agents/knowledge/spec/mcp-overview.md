@@ -15,7 +15,8 @@ conventions and parameter groups every tool spec reuses; a tool spec only descri
   `annotools` command-line flags (`--max-width 768`) override `ANNOTOOLS_<FIELD>` environment variables
   (`ANNOTOOLS_MAX_WIDTH=768`), which override the built-in values. Empty environment values are ignored;
   invalid values fail at startup naming the field. The resolved values are the defaults shown in every
-  tool schema. Choose them for the model the agent uses (`skills/mllm-multimodal-input`): 384 keeps a
+  tool schema. (Breaking change, 2026-08-27: the earlier `ANNOTOOLS_MAX_PREVIEW_WIDTH`/`HEIGHT` and
+  `ANNOTOOLS_DEFAULT_*` names are no longer read.) Choose them for the model the agent uses (`skills/mllm-multimodal-input`): 384 keeps a
   Gemini image at one 258-token unit; Claude, GPT patch models, and Qwen bill by area and read 768–1024 px
   previews well.
 

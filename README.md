@@ -36,7 +36,7 @@ the three shapes: `.mcp.json` (Claude Code), `.codex/config.toml` (Codex), `open
 `annotools --http --port 8000` serves Streamable HTTP for shared or remote use.
 
 Preview defaults are settings: flags override `ANNOTOOLS_*` environment variables, which override the
-built-in values (`annotools --help` lists them). The 384 px default is Gemini's single-unit size; for
+built-in values (`annotools --help` lists them; the pre-0.1 `ANNOTOOLS_MAX_PREVIEW_WIDTH` names are gone). The 384 px default is Gemini's single-unit size; for
 Claude, GPT, or Qwen start the server with a larger limit, e.g. `uv run annotools --max-width 768
 --max-height 768` or `ANNOTOOLS_MAX_WIDTH=768 ANNOTOOLS_MAX_HEIGHT=768` in the MCP registration
 (see `.mcp.json`). Other settings: `--target-pixels`, `--grid-columns`, `--grid-rows`, `--grid-mode`,

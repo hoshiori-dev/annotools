@@ -47,3 +47,16 @@ def test_invalid_flag_value_exits(capsys):
     with pytest.raises(SystemExit) as exc:
         parse(["--max-width", "0"])
     assert exc.value.code != 0
+
+
+def test_model_level_validation_error_is_reported(capsys):
+    with pytest.raises(SystemExit) as exc:
+        parse(["--grid-mode", "fixed"])
+    assert exc.value.code != 0
+    assert "grid_column_width" in capsys.readouterr().err
+
+
+def test_flag_name_in_error_uses_kebab_case(capsys):
+    with pytest.raises(SystemExit):
+        parse(["--grid-column-width", "0"])
+    assert "--grid-column-width:" in capsys.readouterr().err

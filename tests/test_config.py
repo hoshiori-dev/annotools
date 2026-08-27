@@ -45,3 +45,9 @@ def test_configure_before_resolution(monkeypatch):
     assert config.get_settings().max_width == 512
     config.reset_settings()
     assert config.get_settings().max_width == 384
+
+
+def test_color_is_validated():
+    with pytest.raises(ValidationError, match="color"):
+        Settings(color="notacolor")
+    assert Settings(color="#ff0000").color == "#ff0000"

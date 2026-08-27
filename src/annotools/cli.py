@@ -4,6 +4,7 @@ import argparse
 from collections.abc import Sequence
 
 from pydantic import ValidationError
+from pydantic_core import ErrorDetails
 from pydantic_settings import CliSettingsSource
 
 from annotools import __version__, config
@@ -33,8 +34,15 @@ def parse(argv: Sequence[str] | None = None) -> tuple[argparse.Namespace, Settin
     try:
         settings = Settings(_cli_settings_source=source(parsed_args=args))
     except ValidationError as exc:
-        parser.error("; ".join(f"--{e['loc'][0]}: {e['msg']}".replace("_", "-", 1) for e in exc.errors()))
+        parser.error("; ".join(_describe(error) for error in exc.errors()))
     return args, settings
+
+
+def _describe(error: ErrorDetails) -> str:
+    """Render one pydantic error as ``--flag: message`` (model-level errors have no field)."""
+    loc = error.get("loc") or ()
+    message = error["msg"].removeprefix("Value error, ")
+    return f"--{str(loc[0]).replace('_', '-')}: {message}" if loc else message
 
 
 def main(argv: Sequence[str] | None = None) -> None:
