@@ -26,12 +26,19 @@ def iou(a: list[float], b: list[float]) -> float:
 
 
 def clean(
-    boxes: list[dict[str, Any]], meta: dict[str, Any], classes: set[str]
+    boxes: list[dict[str, Any]], meta: dict[str, Any], classes: set[str], max_boxes: int = 20
 ) -> tuple[list[dict[str, Any]], list[str]]:
-    """Normalize, validate, and de-duplicate candidate boxes; returns (kept, rejection reasons)."""
+    """Normalize, validate, and de-duplicate candidate boxes; returns (kept, rejection reasons).
+
+    Duplicates (IoU > 0.9 with an earlier kept box) are rejected and the earlier box is kept unchanged, so the
+    indices the model reasons about stay stable; the message names the box it duplicates.
+    """
     kept: list[dict[str, Any]] = []
     rejected: list[str] = []
     for index, b in enumerate(boxes):
+        if len(kept) >= max_boxes:
+            rejected.append(f"{index}: over the {max_boxes}-box limit")
+            continue
         label = b.get("label")
         if label not in classes:
             rejected.append(f"{index}: unknown label {label!r}")
@@ -45,11 +52,9 @@ def clean(
             rejected.append(f"{index}: below 1 % of the image")
             continue
         confidence = float(b.get("confidence", 0.0))
-        dup = next((k for k in kept if iou(k["bbox"], bbox) > 0.9), None)
+        dup = next((i for i, k in enumerate(kept) if iou(k["bbox"], bbox) > 0.9), None)
         if dup is not None:
-            if confidence > dup["confidence"]:
-                dup.update({"bbox": bbox, "label": label, "confidence": confidence})
-            rejected.append(f"{index}: duplicate of an earlier box (IoU > 0.9)")
+            rejected.append(f"{index}: duplicate of kept box {dup} (IoU > 0.9); merge them yourself if needed")
             continue
         kept.append({"bbox": bbox, "label": label, "confidence": confidence})
     return kept, rejected

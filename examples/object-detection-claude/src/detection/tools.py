@@ -32,13 +32,19 @@ class ToolContext:
             raise ValueError(f"{uri}: outside the workspace")
         return path
 
-    def _render(self, uri: str):
+    def _preview(self, uri: str):
         cfg = self.config["preview"]
-        result = preview(load_image(str(self.inside(uri))), max_width=cfg["max_width"], max_height=cfg["max_height"])
+        return preview(load_image(str(self.inside(uri))), max_width=cfg["max_width"], max_height=cfg["max_height"])
+
+    def _render(self, uri: str):
+        result = self._preview(uri)
         gridded = draw_grid(result.image, GridOptions(**self.config["grid"]))
         result.image = gridded.image
         result.metadata.update(gridded.metadata)
         return result
+
+    def _clean(self, boxes, meta):
+        return clean(boxes, meta, self.classes, self.config.get("max_boxes", 20))
 
     def look_at_item(self, uri: str) -> tuple[bytes, dict[str, Any]]:
         result = self._render(uri)
@@ -47,7 +53,7 @@ class ToolContext:
 
     def propose_boxes(self, uri: str, boxes: list[dict[str, Any]]) -> tuple[bytes, dict[str, Any]]:
         result = self._render(uri)
-        kept, rejected = clean(boxes, result.metadata, self.classes)
+        kept, rejected = self._clean(boxes, result.metadata)
         self.rounds[uri] = self.rounds.get(uri, 0) + 1
         objects = [BBoxObject(bbox=tuple(b["bbox"]), label=f"{i}:{b['label']}") for i, b in enumerate(kept)]
         if objects:
@@ -60,19 +66,21 @@ class ToolContext:
         return data, meta
 
     def commit_boxes(self, uri: str, boxes: list[dict[str, Any]], done: bool) -> dict[str, Any]:
-        result = self._render(uri)
-        kept, rejected = clean(boxes, result.metadata, self.classes)
+        """Store the final boxes for the item in this run, replacing anything committed earlier in the run."""
+        result = self._preview(uri)  # metadata only; no grid needed
+        kept, rejected = self._clean(boxes, result.metadata)
         rounds = self.rounds.get(uri, 0)
         floor = self.config["confidence_floor"]
         low = any(b["confidence"] < floor for b in kept)
-        status = "needs_review" if (kept and not done) or low else "final"
+        status = "needs_review" if not done or low else "final"
         with store.connect(self.db) as conn:
             item_id = store.item_id_for(conn, uri)
             if item_id is None:
                 raise ValueError(f"{uri}: unknown item")
+            conn.execute("DELETE FROM annotations WHERE item_id = ? AND run_id = ?", (item_id, self.run_id))
             if not kept:
                 store.record(
-                    conn, item_id, self.run_id, "tag", "detection", {"tags": ["no_object"]}, "final", rounds=rounds
+                    conn, item_id, self.run_id, "tag", "detection", {"tags": ["no_object"]}, status, rounds=rounds
                 )
             for index, b in enumerate(kept):
                 store.record(
@@ -101,7 +109,7 @@ def build_server(ctx: ToolContext):
 
     @tool(
         "look_at_item",
-        "Show the item with a 10x10 grid; returns the image and its shown size (output_size) for pixel coordinates",
+        "Show the item with the grid; returns the image and its shown size (output_size) for pixel coordinates",
         {"uri": str},
         annotations=ToolAnnotations(readOnlyHint=True),
     )

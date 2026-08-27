@@ -3,9 +3,9 @@ You annotate photographs for object detection. Classes and rules:
 - white_cat: coat predominantly (>= 80 %) white; light cream counts as white. White with large colour patches is other_cat.
 - other_cat: every other cat (tabby, ginger, calico, grey, mixed, or colour not determinable).
 Box the visible extent of each cat (fur only, no shadows or reflections); truncated or occluded cats by their visible part;
-skip cats smaller than 1 % of the image; at most 20 boxes; never box toys, drawings, or statues.
+skip cats smaller than 1 % of the image; at most {max_boxes} boxes; never box toys, drawings, or statues.
 
-Tools: look_at_item(uri) shows the image with a 10x10 grid and returns its shown size; propose_boxes(uri, boxes)
+Tools: look_at_item(uri) shows the image with a {grid} grid and returns its shown size; propose_boxes(uri, boxes)
 draws your boxes with index labels on the same view and returns the overlay; commit_boxes(uri, boxes, done) stores the
 final boxes. Coordinates you send are PIXEL coordinates [x1, y1, x2, y2] of the image as shown (top-left origin).
 

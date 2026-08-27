@@ -23,7 +23,13 @@ TOKEN_KEYS = ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache
 
 
 def system_prompt(config: dict) -> str:
-    return SYSTEM_PROMPT.read_text(encoding="utf-8").replace("{max_rounds}", str(config["max_rounds"]))
+    grid = config["grid"]
+    return (
+        SYSTEM_PROMPT.read_text(encoding="utf-8")
+        .replace("{max_rounds}", str(config["max_rounds"]))
+        .replace("{grid}", f"{grid['columns']}x{grid['rows']}")
+        .replace("{max_boxes}", str(config.get("max_boxes", 20)))
+    )
 
 
 async def detect_item(ctx: ToolContext, uri: str, config: dict, system: str) -> dict:
@@ -49,12 +55,15 @@ async def detect_item(ctx: ToolContext, uri: str, config: dict, system: str) -> 
 
 
 def committed(conn, item_id: int, run_id: int) -> tuple[int, str | None, int]:
+    """(box count, aggregate status, rounds) for the item in this run; needs_review if any row is."""
     rows = conn.execute(
         "SELECT kind, status, rounds FROM annotations WHERE item_id = ? AND run_id = ?", (item_id, run_id)
     ).fetchall()
+    if not rows:
+        return 0, None, 0
     boxes = sum(1 for k, _, _ in rows if k == "bbox")
-    status = rows[0][1] if rows else None
-    rounds = max((r for _, _, r in rows), default=0)
+    status = "needs_review" if any(s == "needs_review" for _, s, _ in rows) else "final"
+    rounds = max(r for _, _, r in rows)
     return boxes, status, rounds
 
 
@@ -116,7 +125,7 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
                     for key, label, confidence, payload in rows:
                         print(f"  [{key}] {label} conf={confidence} bbox={json.loads(payload)['bbox']}")
             totals["items"] += 1
-            totals["rounds"] += rounds
+            totals["rounds"] += ctx.rounds.get(uri, rounds)
             totals["cost_usd"] += float(usage.get("cost_usd") or 0.0)
             totals["seconds"] += float(usage.get("seconds") or 0.0)
             for key in TOKEN_KEYS:

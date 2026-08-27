@@ -26,14 +26,17 @@ Toys, drawings, and statues of cats are not boxed.
 - Prompt layout: static class rules (cached) → item id and shown size → gridded image → question.
 
 ## Procedure
-Grid preview → propose → `look_at_annotations` (indexed overlay) → correct by index (≤ 3 rounds) →
-commit; per box `kind=bbox`, `key=<index>`, `label`, `confidence`, `rounds`.
+Grid preview (`look_at_item`) → propose (`propose_boxes`, indexed overlay) → correct by index (≤ 3
+rounds) → `commit_boxes`; per box `kind=bbox`, `key=<index>`, `label`, `confidence`, `rounds`. A commit
+replaces whatever the item had in this run.
 
 ## Quality control
-- Reject before rendering: unknown labels, boxes outside the image or with zero area, duplicates with
-  IoU > 0.9 (keep the higher confidence).
-- `final` when the model declares the overlay correct and every confidence ≥ 0.5; otherwise
-  `needs_review`. A negative answer (no cats) writes a `tag`/`no_object` row.
+- Before rendering: boxes are clamped to the image; unknown labels, boxes below 1 % of the image area,
+  duplicates (IoU > 0.9 with an earlier kept box — the earlier one is kept, the later rejected by index),
+  and boxes beyond `max_boxes` (20) are rejected and reported back to the model.
+- `final` only when the model declares the overlay correct (`done=true`) and every confidence ≥
+  `confidence_floor` (0.5); otherwise `needs_review` — including an empty commit with `done=false`. A
+  negative answer (`done=true`, no boxes) writes a `tag`/`no_object` row.
 - `just sanity` reports mean IoU against the COCO cat boxes (informational, not a gate).
 
 ## Output contract

@@ -51,7 +51,7 @@ def test_geometry():
         meta,
         set(CONFIG["classes"]),
     )
-    assert len(kept) == 1 and kept[0]["confidence"] == 0.95
+    assert len(kept) == 1 and kept[0]["confidence"] == 0.9  # the first box is kept; the duplicate is rejected
     assert [r.split(":")[0] for r in rejected] == ["1", "2", "3"]
 
 
@@ -121,3 +121,57 @@ def test_download_keeps_cat_boxes():
     }
     images = dl.cat_images(instances)
     assert [i["id"] for i in images] == [1] and images[0]["cat_boxes"] == [[0.1, 0.1, 0.5, 0.5]]
+
+
+def test_commit_supersedes_and_empty_not_done_needs_review(workspace):
+    from detection.pipeline import committed
+
+    ws, db = workspace
+    with store.connect(db) as conn:
+        run_id = store.start_run(conn, "m", {"system": "x"}, CONFIG)
+    ctx = ToolContext(ws, db, run_id, CONFIG)
+    uri = "data/raw/coco-cats/a.jpg"
+    assert ctx.commit_boxes(uri, [], done=False)["status"] == "needs_review"
+    with store.connect(db) as conn:
+        assert committed(conn, 1, run_id) == (0, "needs_review", 0)
+        assert conn.execute("SELECT COUNT(*) FROM items_pending").fetchone()[0] == 1
+    boxes = [{"label": "black_cat", "box": [76.8, 51.2, 384, 256], "confidence": 0.9}]
+    assert ctx.commit_boxes(uri, boxes, done=True)["status"] == "final"
+    with store.connect(db) as conn:
+        rows = conn.execute(
+            "SELECT kind, status FROM annotations WHERE item_id = 1 AND run_id = ?", (run_id,)
+        ).fetchall()
+        assert rows == [("bbox", "final")]  # the earlier no_object row is gone
+        assert committed(conn, 1, run_id) == (1, "final", 0)
+
+
+def test_duplicates_keep_the_first_box():
+    meta = {"output_size": [768, 512], "crop": [0, 0, 1, 1]}
+    kept, rejected = clean(
+        [
+            {"label": "black_cat", "box": [76.8, 51.2, 384, 256], "confidence": 0.5},
+            {"label": "white_cat", "box": [77, 51, 384, 256], "confidence": 0.95},
+        ],
+        meta,
+        set(CONFIG["classes"]),
+    )
+    assert kept[0]["label"] == "black_cat" and kept[0]["confidence"] == 0.5
+    assert rejected == ["1: duplicate of kept box 0 (IoU > 0.9); merge them yourself if needed"]
+    kept, rejected = clean(
+        [
+            {"label": "other_cat", "box": [10 * i, 10 * i, 300 + 10 * i, 300 + 10 * i], "confidence": 1.0}
+            for i in range(0, 40)
+        ],
+        meta,
+        set(CONFIG["classes"]),
+        max_boxes=3,
+    )
+    assert len(kept) <= 3 and any("limit" in r for r in rejected)
+
+
+def test_system_prompt_substitutions():
+    from detection.pipeline import system_prompt
+
+    prompt = system_prompt(CONFIG)
+    assert "{max_rounds}" not in prompt and "{grid}" not in prompt and "{max_boxes}" not in prompt
+    assert "10x10" in prompt and "at most 20 boxes" in prompt and "at most 3 times" in prompt

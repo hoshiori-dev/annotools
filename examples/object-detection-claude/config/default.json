@@ -6,6 +6,7 @@
   "workers": 4,
   "max_rounds": 3,
   "confidence_floor": 0.5,
+  "max_boxes": 20,
   "classes": ["black_cat", "white_cat", "other_cat"],
   "max_failures": 10,
   "max_budget_usd_per_item": 0.15
