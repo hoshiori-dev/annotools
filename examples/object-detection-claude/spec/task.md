@@ -21,8 +21,12 @@ Toys, drawings, and statues of cats are not boxed.
 
 ## Model and input
 - Model: Claude (`config/default.json`, default `claude-opus-5`); effort `medium`.
-- Preview: 768 px, 10×10 grid on every view; Claude answers in **pixel coordinates of the shown
-  image** (per `mllm-multimodal-input`); the pipeline normalizes through the preview metadata.
+- Preview: 768 px (`config/default.json` `preview`; Claude bills 28-px patches by area, so 768 ≈ 450–800
+  tokens — the `mllm-multimodal-input` size table), 10×10 grid on every view.
+- Coordinates (`config/default.json` `coordinates: "pixels"`): Claude answers in **pixel coordinates of
+  the shown image** — its docs say normalized requests work poorly — and the pipeline normalizes with
+  `annotools.geometry.normalize_coordinates` using `output_width`/`output_height` and `crop` from the
+  preview metadata.
 - Prompt layout: static class rules (cached) → item id and shown size → gridded image → question.
 
 ## Procedure

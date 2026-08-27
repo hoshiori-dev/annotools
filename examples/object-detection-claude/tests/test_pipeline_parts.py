@@ -8,7 +8,7 @@ import pytest
 from PIL import Image
 
 from detection import store
-from detection.geometry import clean, iou, pixels_to_normalized
+from detection.geometry import box_to_normalized, clean, iou
 from detection.tools import ToolContext
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,9 +37,13 @@ def workspace(tmp_path):
 
 
 def test_geometry():
-    meta = {"output_size": [768, 512], "crop": [0, 0, 1, 1]}
-    assert pixels_to_normalized([76.8, 51.2, 384, 256], meta) == pytest.approx([0.1, 0.1, 0.5, 0.5])
-    assert pixels_to_normalized([384, 256, 76.8, 51.2], meta) == pytest.approx([0.1, 0.1, 0.5, 0.5])  # swapped corners
+    meta = {"output_width": 768, "output_height": 512, "output_size": [768, 512], "crop": [0, 0, 1, 1]}
+    assert box_to_normalized([76.8, 51.2, 384, 256], meta) == pytest.approx([0.1, 0.1, 0.5, 0.5])
+    assert box_to_normalized([384, 256, 76.8, 51.2], meta) == pytest.approx([0.1, 0.1, 0.5, 0.5])  # swapped corners
+    assert box_to_normalized([0, 0, 999, 999], meta, "gpt") == pytest.approx([0, 0, 1, 1])
+    assert box_to_normalized([100, 200, 300, 400], meta, "thousand_yx") == pytest.approx([0.2, 0.1, 0.4, 0.3])
+    cropped = {"output_width": 400, "output_height": 300, "crop": [0.25, 0.25, 0.75, 0.75]}
+    assert box_to_normalized([0, 0, 400, 300], cropped) == pytest.approx([0.25, 0.25, 0.75, 0.75])
     assert iou([0, 0, 1, 1], [0, 0, 0.5, 1]) == pytest.approx(0.5)
     kept, rejected = clean(
         [

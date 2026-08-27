@@ -44,7 +44,8 @@ class ToolContext:
         return result
 
     def _clean(self, boxes, meta):
-        return clean(boxes, meta, self.classes, self.config.get("max_boxes", 20))
+        convention = self.config.get("coordinates", "pixels")
+        return clean(boxes, meta, self.classes, self.config.get("max_boxes", 20), convention)
 
     def look_at_item(self, uri: str) -> tuple[bytes, dict[str, Any]]:
         result = self._render(uri)
@@ -109,7 +110,7 @@ def build_server(ctx: ToolContext):
 
     @tool(
         "look_at_item",
-        "Show the item with the grid; returns the image and its shown size (output_size) for pixel coordinates",
+        "Show the item with the grid; returns the image and its shown size (output_width x output_height)",
         {"uri": str},
         annotations=ToolAnnotations(readOnlyHint=True),
     )
@@ -122,7 +123,7 @@ def build_server(ctx: ToolContext):
     @tool(
         "propose_boxes",
         "Draw candidate boxes on the gridded item and return the overlay. boxes: list of "
-        '{"label": class, "box": [x1, y1, x2, y2] pixels of the shown image, "confidence": 0-1}; '
+        '{"label": class, "box": [x1, y1, x2, y2] in pixels of the shown image, "confidence": 0-1}; '
         "boxes are indexed in the overlay",
         {"uri": str, "boxes": list},
     )

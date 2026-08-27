@@ -18,7 +18,8 @@ only what is visible.
 
 ## Model and input
 - Model: Claude (configured in `config/default.json`, default `claude-opus-5`); effort `low`.
-- Preview: `max_width`/`max_height` 768 (Claude cost ≈ 450–800 tokens per image); no grid.
+- Preview: `max_width`/`max_height` 768 (Claude cost ≈ 450–800 tokens per image; the annotools server
+  default is 384 for Gemini — see the `mllm-multimodal-input` size table); no grid.
 - Prompt layout: static rules (cached system prompt) → item id → image → question. Accepted trial
   outputs may be appended to the system prompt as examples once the trial passes.
 

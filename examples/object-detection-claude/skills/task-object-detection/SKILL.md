@@ -22,8 +22,10 @@ rounds (default 3 — confirm with the user in the interview).
    size), crowd handling. Write them into `spec/task.md`; they become the cached system prefix.
 2. **Prompts** from [assets/prompts/propose.md](assets/prompts/propose.md) and
    [assets/prompts/correct.md](assets/prompts/correct.md). Pick the coordinate wording for the model
-   (`mllm-multimodal-input`): pixels of the shown image for Claude/Qwen/GPT, `[ymin, xmin, ymax,
-   xmax]`×1000 for Gemini. Never ask a model to normalize.
+   (`mllm-multimodal-input` → "Coordinate conventions by model"): pixels of the shown image for
+   Claude/Qwen2.5-VL, a fixed 0..999 xyxy space for GPT/Codex, `[ymin, xmin, ymax, xmax]`×1000 for
+   Gemini, 0–1000 xyxy for Qwen3-VL; record the choice as `coordinates` in `config/`. Never ask a
+   model to normalize — `normalize_coordinates` (or `build_preview_call.to_normalized`) does it.
 3. **Trial**: 1–3 images through the full loop; write the final overlay bytes to
    `data/interim/trial/<item>.jpg` and show the user its path with the box list; adjust class rules;
    repeat until accepted.

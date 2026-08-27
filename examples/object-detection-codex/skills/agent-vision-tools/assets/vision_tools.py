@@ -8,11 +8,18 @@ import json
 from pathlib import Path
 from typing import Any
 
+from annotools.config import get_settings
 from annotools.image.grid import GridOptions, draw_grid
-from annotools.image.overlay import BBoxObject, KeypointObject, PolygonObject, draw_bboxes, draw_keypoints, draw_polygons
+from annotools.image.overlay import (
+    BBoxObject,
+    KeypointObject,
+    PolygonObject,
+    draw_bboxes,
+    draw_keypoints,
+    draw_polygons,
+)
 from annotools.image.preview import encode, preview
 from annotools.io import load_image
-
 
 DEFAULT_GRID = object()  # sentinel: "draw the default grid"; an explicit None suppresses it
 
@@ -20,9 +27,19 @@ DEFAULT_GRID = object()  # sentinel: "draw the default grid"; an explicit None s
 class VisionTools:
     """Preview and overlay helpers confined to one workspace."""
 
-    def __init__(self, workspace: str | Path, max_width: int = 768, max_height: int = 768, output_format: str = "jpeg") -> None:
+    def __init__(
+        self,
+        workspace: str | Path,
+        max_width: int | None = None,
+        max_height: int | None = None,
+        output_format: str | None = None,
+    ) -> None:
+        """Sizes default to the annotools settings (ANNOTOOLS_MAX_WIDTH/HEIGHT); pass the per-model size from config/."""
+        settings = get_settings()
         self.workspace = Path(workspace).resolve()
-        self.max_width, self.max_height, self.output_format = max_width, max_height, output_format
+        self.max_width = max_width or settings.max_width
+        self.max_height = max_height or settings.max_height
+        self.output_format = output_format or settings.output_format
 
     def _inside(self, uri: str) -> Path:
         path = (self.workspace / uri).resolve() if not Path(uri).is_absolute() else Path(uri).resolve()
@@ -31,7 +48,9 @@ class VisionTools:
         return path
 
     def _render(self, uri: str, crop, grid: dict[str, Any] | None):
-        result = preview(load_image(str(self._inside(uri))), crop=crop, max_width=self.max_width, max_height=self.max_height)
+        result = preview(
+            load_image(str(self._inside(uri))), crop=crop, max_width=self.max_width, max_height=self.max_height
+        )
         if grid is not None:
             gridded = draw_grid(result.image, GridOptions(**grid))
             result.image = gridded.image
