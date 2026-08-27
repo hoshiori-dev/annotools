@@ -1,0 +1,88 @@
+[project]
+name = "annotools"
+version = "0.1.0"
+description = "MCP server and library that help agents view and annotate multimodal data within a token budget"
+readme = "README.md"
+license = "Apache-2.0"
+authors = [
+    { name = "Aoi", email = "82735346+ryan-minato@users.noreply.github.com" }
+]
+requires-python = ">=3.12"
+keywords = ["mcp", "annotation", "dataset", "multimodal", "agent"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+    "fastmcp>=3.4.7",
+    "fsspec>=2026.7.0",
+    "numpy>=2.3",
+    "pillow>=12.0",
+    "pydantic>=2.11",
+]
+
+[project.optional-dependencies]
+media = ["av>=18"]
+
+[project.urls]
+Homepage = "https://github.com/hoshiori-dev/annotools"
+Issues = "https://github.com/hoshiori-dev/annotools/issues"
+
+[project.scripts]
+annotools = "annotools.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.12.6,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.0",
+    "pytest-cov>=7.1.0",
+    "pytest-mock>=3.15.1",
+    "ruff>=0.16.4",
+    "ty>=0.0.75",
+    "zensical>=0.0.57",
+]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = [".agents", "skills", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "N", "D", "RUF"]
+ignore = ["D203", "D213"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"]
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = 80
+
+[tool.ty.src]
+include = ["src", "tests"]
+exclude = [".agents", "scripts", "skills", "examples"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+asyncio_mode = "auto"
+markers = ["container: tests that need a docker daemon (deselected by default)"]
+
+[tool.coverage.run]
+source = ["annotools"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
