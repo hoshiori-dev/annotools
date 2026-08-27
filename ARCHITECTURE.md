@@ -35,21 +35,23 @@ Two kinds of agents use the project:
 
 ## Layout
 
+Modules marked *(planned)* are defined by the approved plan (`docs/plan/`) and land in milestones P1–P6.
+
 ```text
 src/annotools/
   cli.py            argparse entrypoint: `annotools [--http] [--host] [--port]`
   server.py         FastMCP("annotools") instance; tool modules register onto it
-  config.py         defaults (768×768 max preview, border 2, point 3, grid 10×10, opacity 0.5); ANNOTOOLS_* env
-  io.py             open_bytes(uri) via fsspec; decode to PIL
-  geometry.py       normalized↔pixel coordinates, crop math, rotated box → 4 corners, is_rectangle
-  color.py          text → stable color hash, color parsing, inversion
-  image/            preview (crop+resize), grid, overlay (bbox/keypoint/polygon), segmentation
-  video/            frame sampling by fps → image pipeline
-  audio/            clip + resample → WAV
-  tools/            MCP wrappers: image_tools, geometry_tools, video_tools, audio_tools
+  config.py         (planned) defaults (768×768 max preview, border 2, point 3, grid 10×10, opacity 0.5); ANNOTOOLS_* env
+  io.py             (planned) open_bytes(uri) via fsspec; decode to PIL
+  geometry.py       (planned) normalized↔pixel coordinates, crop math, rotated box → 4 corners, is_rectangle
+  color.py          (planned) text → stable color hash, color parsing, inversion
+  image/            (planned) preview (crop+resize), grid, overlay (bbox/keypoint/polygon), segmentation
+  video/            (planned) frame sampling by fps → image pipeline
+  audio/            (planned) clip + resample → WAV
+  tools/            (planned) MCP wrappers: image_tools, geometry_tools, video_tools, audio_tools
 tests/              unit tests with generated fixtures; container tests behind the `container` marker
-docs/spec/          one specification per MCP tool (goal, parameters, return, acceptance criteria)
-skills/             publishable skills; examples/ independent example projects (each with CONTEXT.md)
+docs/spec/          (planned) one specification per MCP tool (goal, parameters, return, acceptance criteria)
+skills/ examples/   (planned) publishable skills; independent example projects (each with CONTEXT.md)
 ```
 
 ## Key Flows
@@ -69,8 +71,11 @@ skills/             publishable skills; examples/ independent example projects (
 
 - Normalized coordinates everywhere (frontier MLLMs localize better with size-independent coordinates);
   revisit only if a target training format demands absolute pixels at the tool boundary.
-- 768 px long side by default: one Gemini tile; other frontier models do not tile at that size. Revisit
-  when the token-budget knowledge file records a different sweet spot.
+- 768 px long side by default (owner decision): a conservative ceiling that keeps every frontier model's
+  per-image cost bounded while preserving enough detail for localization. It is *not* a single Gemini
+  tile — Gemini bills ≤ 384 px images as one unit and tiles larger ones; OpenAI tiles at 512 px. Per-model
+  sweet spots and the verified formulas live in `.agents/knowledge/mllm-token-budget.md`; tools accept
+  `max_width`/`max_height` per call so a pipeline can pick a cheaper size.
 - Library layer independent of FastMCP so execution agents can reuse it without an MCP client.
 - SQLite is the assumed annotation store in skills and examples; nothing in the library depends on it.
 - Rotated boxes are exchanged as DOTA-style 8 numbers (4 corners); `theta` defaults to degrees.

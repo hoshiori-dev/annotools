@@ -57,7 +57,7 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 
 ```bash
 uv sync --all-extras
-just check          # lint、格式、类型、label 一致性、单元测试
+just check          # lint、格式、类型、label 一致性、README 同步、单元测试
 just docker-build && just test-container
 ```
 

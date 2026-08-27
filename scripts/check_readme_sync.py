@@ -12,7 +12,7 @@ from pathlib import Path
 
 HEADING = re.compile(r"^(#{1,6})\s", re.MULTILINE)
 FENCE = re.compile(r"^```(\w*)\n(.*?)^```", re.MULTILINE | re.DOTALL)
-COMMENT = re.compile(r"\s+#.*$", re.MULTILINE)
+COMMENT = re.compile(r"^[ \t]*#.*$|[ \t]+#.*$", re.MULTILINE)
 
 
 def normalize(code: str) -> str:

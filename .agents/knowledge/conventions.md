@@ -37,7 +37,8 @@ or CI job commands.
 - gitleaks runs locally with `.gitleaks.toml` (PII rules: e-mails, public IPs). Custom rules must use
   non-capturing groups — with capturing groups gitleaks compares group 1 against the allowlist, which then
   never matches. Its IPv6 rule also matches GitHub annotations like `::error::…`: print `ERROR:` instead.
-- Third-party GitHub Actions are pinned by tag; verify a tag exists before using it
+- Third-party GitHub Actions are pinned by tag (exception: `trufflesecurity/trufflehog@main`, the
+  owner-provided secret-scan workflow); verify a tag exists before using it
   (`gh api repos/<owner>/<repo>/git/ref/tags/<tag>`) — `astral-sh/setup-uv` and
   `pypa/gh-action-pypi-publish` publish no major-version tag.
 
@@ -45,6 +46,6 @@ or CI job commands.
 
 | Check | Command |
 |---|---|
-| Lint / format / types / taxonomy / unit tests | `just check` |
+| Lint / format / types / taxonomy / README sync / unit tests | `just check` |
 | Container tests | `just docker-build && just test-container` |
 | Workflow YAML | `actionlint` |

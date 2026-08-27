@@ -10,9 +10,9 @@ methodology; `examples/` show Claude Agent SDK and Codex SDK pipelines. See `ARC
 ```text
 src/annotools/        <- library layer (image/video/audio/geometry/color/io) + MCP wrappers (tools/, server.py)
 tests/                <- pytest; `container` marker needs docker
-docs/                 <- zensical site; docs/spec/ holds one spec per MCP tool; docs/plan/ the approved plan
-skills/               <- publishable skills (npx skills add hoshiori-dev/annotools); English
-examples/             <- independent example projects; each has its own CONTEXT.md
+docs/                 <- zensical site; docs/spec/ (planned, P1) one spec per MCP tool; docs/plan/ the approved plan
+skills/               <- (planned, P4) publishable skills (npx skills add hoshiori-dev/annotools); English
+examples/             <- (planned, P5/P6) independent example projects; each has its own CONTEXT.md
 .agents/knowledge/    <- agent knowledge base (this file routes into it)
 .agents/skills/       <- development skills (Claude Code sees them via .claude/skills symlink)
 .github/              <- workflows, issue forms, labels.json, release.yml, CODEOWNERS
@@ -63,7 +63,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 
 | Check | Command |
 |---|---|
-| Everything CI requires on a PR (lint, format, types, taxonomy, unit tests) | `just check` |
+| Everything CI requires on a PR (lint, format, types, taxonomy, README sync, unit tests) | `just check` |
 | Container tests (needs docker; build first with `just docker-build`) | `just test-container` |
 | Workflow YAML | `actionlint` (install via the official download script) |
 | Docs build | `just docs` |

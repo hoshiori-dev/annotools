@@ -19,7 +19,8 @@ Bugs, features, and tasks → the issue forms. Vulnerabilities → private vulne
    (`feat:`, `fix:`, `docs:`, `ci:`, `build:`, `chore:`, …).
 4. Keep `README.md` and `README.zh.md` in sync; write code, comments, docs, and PR text in English.
 5. Mark the PR ready when the template checklist is complete and checks are green. Reviews are welcome
-   but not required; the `ci-gate` and `secret-scan` checks are.
+   but not required; the `ci-gate` and `secret-scan` checks are (enforced once the `main` ruleset is
+   active — see `.agents/knowledge/platform-settings.md`).
 
 ## Merging and releases
 

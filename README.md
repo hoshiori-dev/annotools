@@ -60,7 +60,7 @@ detection) for both SDKs, each with its recorded usage.
 
 ```bash
 uv sync --all-extras
-just check          # lint, format, types, taxonomy, unit tests
+just check          # lint, format, types, taxonomy, README sync, unit tests
 just docker-build && just test-container
 ```
 

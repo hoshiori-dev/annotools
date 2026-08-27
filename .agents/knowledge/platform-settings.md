@@ -11,7 +11,7 @@ the default token.
 
 | Job (workflow) | Command | Runs on |
 |---|---|---|
-| `lint` (CI) | `uv run ruff check .` + `scripts/check_taxonomy.py` | every push, PR |
+| `lint` (CI) | `uv run ruff check .` + `scripts/check_taxonomy.py` + `scripts/check_readme_sync.py` | every push, PR |
 | `format` (CI) | `uv run ruff format --check .` | every push, PR |
 | `typecheck` (CI) | `uv run ty check` | every push, PR |
 | `pr-title` (CI) | Conventional Commits title check | PR |
