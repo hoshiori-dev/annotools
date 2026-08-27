@@ -59,13 +59,28 @@ def preview(
     if out_size != cropped_size:
         resample = Image.Resampling.LANCZOS if out_size[0] < cropped_size[0] else Image.Resampling.BICUBIC
         image = image.resize(out_size, resample)
-    metadata = {
-        "original_size": list(original_size),
-        "crop": [_num(v) for v in box],
-        "output_size": list(out_size),
-        "scale": out_size[0] / cropped_size[0],
-    }
+    metadata = size_metadata(original_size, box, out_size, out_size[0] / cropped_size[0])
     return PreviewResult(image=image, metadata=metadata, crop_pixels=px_box)
+
+
+def size_metadata(
+    original_size: tuple[int, int], crop: Box, output_size: tuple[int, int], scale: float
+) -> dict[str, Any]:
+    """Build the base metadata every preview carries: sizes as ``[w, h]`` pairs and as scalar keys.
+
+    The scalar keys (``original_width``, ``output_width``, …) repeat the pairs so a model can read them
+    without indexing; ``scale`` is output pixels per source pixel of the cropped view.
+    """
+    return {
+        "original_size": list(original_size),
+        "original_width": original_size[0],
+        "original_height": original_size[1],
+        "crop": [_num(v) for v in crop],
+        "output_size": list(output_size),
+        "output_width": output_size[0],
+        "output_height": output_size[1],
+        "scale": scale,
+    }
 
 
 def encode(image: Image.Image, output_format: str = settings.output_format) -> bytes:

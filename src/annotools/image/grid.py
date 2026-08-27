@@ -57,10 +57,19 @@ def draw_grid(image: Image.Image, options: GridOptions) -> PreviewResult:
     xs, columns = line_positions(width, options.columns, options.column_width, options.mode)
     ys, rows = line_positions(height, options.rows, options.row_width, options.mode)
     if options.mode == "fixed" and options.column_width is not None and options.row_width is not None:
-        step_x, step_y = options.column_width / width, options.row_width / height
+        cell_w, cell_h = float(options.column_width), float(options.row_width)
+        step_x, step_y = cell_w / width, cell_h / height
     else:
         step_x, step_y = 1 / columns, 1 / rows
-    grid_meta = {"columns": columns, "rows": rows, "step_x": step_x, "step_y": step_y}
+        cell_w, cell_h = width / columns, height / rows
+    grid_meta = {
+        "columns": columns,
+        "rows": rows,
+        "step_x": step_x,
+        "step_y": step_y,
+        "cell_width": cell_w,
+        "cell_height": cell_h,
+    }
     if options.opacity == 0 or (not xs and not ys):
         return PreviewResult(image=image, metadata={"grid": grid_meta})
     rgb = np.asarray(image.convert("RGB"), dtype=np.float32)

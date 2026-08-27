@@ -15,6 +15,8 @@ async def test_ac7_tool_returns_image_and_metadata(mcp_server, image_file):
     meta = json.loads(text.text)
     assert meta["original_size"] == [1600, 1200]
     assert meta["output_size"] == [384, 288]
+    assert (meta["output_width"], meta["output_height"]) == (384, 288)
+    assert (meta["original_width"], meta["original_height"]) == (1600, 1200)
     assert meta["crop"] == [0, 0, 1, 1]
     assert meta["format"] == "jpeg"
     assert meta["scale"] == pytest.approx(384 / 1600)

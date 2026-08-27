@@ -87,6 +87,8 @@ async def test_ac4_and_ac6_tool(mcp_server, hd_video_file):
     meta = json.loads(text.text)
     assert meta["frames"] == len(images) == 2
     assert meta["output_size"] == [384, 216] and meta["grid"]["columns"] == 10
+    assert (meta["output_width"], meta["output_height"], meta["original_width"]) == (384, 216, 1920)
+    assert meta["grid"]["cell_width"] == pytest.approx(38.4) and meta["grid"]["cell_height"] == pytest.approx(21.6)
     assert meta["timestamps"][0] == pytest.approx(0, abs=0.05)
 
 

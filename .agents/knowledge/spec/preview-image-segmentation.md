@@ -21,7 +21,8 @@ Parameters: `PreviewOptions`, `grid: GridOptions | null`, plus
 
 Returns: `[Image, metadata]` with the base keys, `grid` when drawn, `ids` (number of non-zero IDs
 present), and in legend mode `legend: [{"id", "name", "color"}]` plus `image_size: [w, h]` — the
-image area at the top of the composite. In legend mode `output_size` is the whole composite; the
+image area at the top of the composite. In legend mode `output_size` (and `output_width`/`output_height`)
+is the whole composite and `grid.cell_*`, if a grid was drawn, is rescaled to it; the
 inverse mapping of `mcp-overview.md` applies to `image_size` (and `scale` refers to it).
 
 ## Behavior
