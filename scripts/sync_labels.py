@@ -29,7 +29,7 @@ def fail(code, message):
 def run_gh(argv):
     """Run a gh command; return stdout, or exit 1 with gh's error."""
     try:
-        proc = subprocess.run(["gh"] + argv, capture_output=True, text=True, check=False)
+        proc = subprocess.run(["gh", *argv], capture_output=True, text=True, check=False)
     except FileNotFoundError:
         fail(1, "gh CLI not found. Install gh and run 'gh auth login'.")
     if proc.returncode != 0:

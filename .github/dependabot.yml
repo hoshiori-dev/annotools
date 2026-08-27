@@ -11,6 +11,3 @@ updates:
     schedule:
       interval: weekly
     labels: ["area/harness"]
-    groups:
-      dev-dependencies:
-        dependency-type: development

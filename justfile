@@ -42,7 +42,7 @@ test-container:
 
 # Check that every label referenced by forms/release.yml exists in .github/labels.json
 check-taxonomy:
-    uv run --with pyyaml scripts/check_taxonomy.py --labels .github/labels.json
+    uv run --with pyyaml==6.0.2 scripts/check_taxonomy.py --labels .github/labels.json
 
 # Show the label sync plan (dry run); apply with `just sync-labels --apply`
 sync-labels *args:

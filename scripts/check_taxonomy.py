@@ -2,20 +2,21 @@
 """Check that every label referenced anywhere in the repository's harness
 exists in the committed taxonomy.
 
-Copy into the target repository at scripts/check_taxonomy.py and run it as
-the `taxonomy / consistency` CI job. Sources checked against labels.json:
+Runs in `just check-taxonomy` and in the CI `lint` job. Sources checked
+against .github/labels.json:
 
 - .github/release.yml           category and exclude labels ('*' ignored)
 - .github/ISSUE_TEMPLATE/*.yml  top-level `labels:` (config.yml skipped)
-- .github/labeler.yml           top-level label keys
+- .github/labeler.yml           top-level label keys (if present)
+- .github/dependabot.yml        `labels:` of every update block
 
 A referenced-but-undefined label is exactly the failure GitHub never
 reports: forms and release.yml drop unknown labels silently.
 
 Dependency exception: parsing workflow-adjacent YAML requires PyYAML,
 which is not in the standard library. This is the repository's one
-documented script dependency: install with `pip install pyyaml==6.0.2`
-(the CI job does the same). --help works without it.
+documented script dependency: run it with `uv run --with pyyaml==6.0.2`
+(the justfile recipe and the CI job do the same). --help works without it.
 
 Usage:
     python3 scripts/check_taxonomy.py [--repo-root DIR] [--labels FILE]
@@ -110,6 +111,11 @@ def collect_references(root: Path) -> list:
     if labeler.is_file():
         for label in as_dict(load_yaml_file(labeler)):
             refs.append((str(label), labeler))
+    dependabot = root / ".github" / "dependabot.yml"
+    if dependabot.is_file():
+        for block in as_dict(load_yaml_file(dependabot)).get("updates") or []:
+            for label in (block or {}).get("labels") or []:
+                refs.append((str(label), dependabot))
     return refs
 
 
