@@ -35,7 +35,7 @@ export:
 
 # Refresh the pinned skill copies from the annotools repository
 sync-skills:
-    for s in annotation-project-interview sqlite-annotation-store agent-vision-tools task-object-detection localization-annotation-guide mllm-multimodal-input; do rm -rf skills/$s && cp -r ../../skills/$s skills/; done; git -C ../.. rev-parse --short HEAD > skills/PINNED.txt
+    for s in annotation-project-interview sqlite-annotation-store agent-vision-tools task-object-detection localization-annotation-guide mllm-multimodal-input; do rm -rf skills/$s && cp -r ../../skills/$s skills/; done; git -C ../.. log -1 --format=%h -- skills/ > skills/PINNED.txt
 
 # Lint, types, tests
 check:

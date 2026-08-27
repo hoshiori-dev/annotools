@@ -49,6 +49,12 @@ or CI job commands.
 
 ## Shell And Search Gotchas
 
+- gitleaks' IPv6 rule (pre-commit) flags Python extended slices (`seq[start` + two colons + `step]`) as
+  IPv6 literals — in code and in prose; pair values
+  with `it = iter(values); zip(it, it)` instead of weakening the rule.
+- Test scripts that ship inside `skills/` by loading them with `importlib.util.spec_from_file_location`
+  (see `tests/test_skill_scripts.py`); a `sys.path` import cannot be resolved by `ty`.
+
 - `rg` skips hidden directories: pass `--hidden` (and `--glob '!.git'`) or searches miss `.agents/` and
   `.github/`.
 - The devcontainer shell is zsh: unquoted `$var` does not word-split — pipe file lists through `xargs`;
