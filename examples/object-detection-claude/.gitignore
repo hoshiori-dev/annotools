@@ -1,0 +1,8 @@
+workspaces/*/data/raw/*
+!workspaces/*/data/raw/.gitkeep
+workspaces/*/data/interim/*
+!workspaces/*/data/interim/.gitkeep
+workspaces/*/data/*.db*
+workspaces/*/output/*
+!workspaces/*/output/.gitkeep
+.venv/

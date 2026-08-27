@@ -1,0 +1,30 @@
+# Project task runner — copy into the project root and adjust paths.
+
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+task := "<task>"
+db := "workspaces/" + task + "/data/dataset.db"
+
+default:
+    @just --list
+
+# Download raw data and create the SQLite store
+init:
+    uv run scripts/download.py --dest workspaces/{{task}}/data/raw
+    uv run scripts/init_db.py --db {{db}} --task {{task}}
+
+# Label 1-3 items and print previews + results for the user to check
+trial n="3":
+    uv run src/run.py --limit {{n}} --trial
+
+# Run the full pipeline
+run:
+    uv run src/run.py
+
+# Export the store to the agreed format
+export fmt="jsonl":
+    uv run scripts/export.py --db {{db}} --format {{fmt}} --out workspaces/{{task}}/output
+
+# Lint, types, tests
+check:
+    uv run ruff check . && uv run ruff format --check . && uv run pytest -q
