@@ -19,6 +19,8 @@ def box_to_normalized(box: list[float], meta: dict[str, Any], convention: str = 
     ``meta`` is the preview metadata of the view the model saw (``output_width``/``output_height``,
     ``crop``); ``convention`` selects the frame (see ``CONVENTIONS``). Swapped corners are reordered.
     """
+    if convention not in CONVENTIONS:
+        raise ValueError(f"unknown coordinates convention {convention!r}; expected one of {sorted(CONVENTIONS)}")
     base, axis_order = CONVENTIONS[convention]
     if base == "pixels":
         w, h = meta.get("output_width"), meta.get("output_height")

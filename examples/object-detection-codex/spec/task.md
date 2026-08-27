@@ -25,9 +25,9 @@ Toys, drawings, and statues of cats are not boxed.
   tokens — the `mllm-multimodal-input` size table), 10×10 grid on every view.
 - Coordinates (`config/default.json` `coordinates: "gpt"`): the model answers in a **fixed 0..999 space**
   `[x_min, y_min, x_max, y_max]`, the contract the OpenAI GPT-5.4 vision tips recommend; the pipeline
-  normalizes with `annotools.geometry.normalize_coordinates(base=999)`. Set `coordinates` to `pixels` and
+  normalizes with `annotools.geometry.normalize_coordinates` with base 999 × 999. Set `coordinates` to `pixels` and
   adjust `spec/prompts/system.md` to try pixel coordinates instead.
-- Prompt layout: static class rules (cached) → item id and shown size → gridded image → question.
+- Prompt layout: static class rules (cached) → item id → gridded image → question.
 
 ## Procedure
 Grid preview (`look_at_item`) → propose (`propose_boxes`, indexed overlay) → correct by index (≤ 3

@@ -34,7 +34,7 @@ with index labels on the same gridded view, counts a round), `commit_boxes` (sto
 label, confidence, and rounds; `needs_review` when the model ran out of rounds or any confidence is
 below 0.5; an empty list stores a `no_object` tag). The model answers `[x_min, y_min, x_max, y_max]` in a fixed 0..999 space (`config/default.json`
 `coordinates: "gpt"`, per the OpenAI GPT-5.4 vision tips); `geometry.py` normalizes with
-`annotools.geometry.normalize_coordinates(base=999)` through the preview `crop`. Set `coordinates` to
+`annotools.geometry.normalize_coordinates` with base 999 × 999 through the preview `crop`. Set `coordinates` to
 `pixels` (and reword `spec/prompts/system.md`) to compare against pixel answers; the 768 px preview
 follows the `mllm-multimodal-input` size table for GPT patch models.
 
