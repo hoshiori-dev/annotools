@@ -14,6 +14,9 @@ from annotools.image.preview import encode, preview
 from annotools.io import load_image
 
 
+DEFAULT_GRID = object()  # sentinel: "draw the default grid"; an explicit None suppresses it
+
+
 class VisionTools:
     """Preview and overlay helpers confined to one workspace."""
 
@@ -40,16 +43,26 @@ class VisionTools:
         result = self._render(uri, crop, grid)
         return encode(result.image, self.output_format), {**result.metadata, "format": self.output_format}
 
-    def look_at_annotations(self, uri: str, bboxes=None, keypoints=None, polygons=None, crop=None, grid=None):
-        """Overlay the agent's candidate annotations (normalized to the uncropped source)."""
-        result = self._render(uri, crop, grid if grid is not None else {})
+    def look_at_annotations(self, uri: str, bboxes=None, keypoints=None, polygons=None, crop=None, grid=DEFAULT_GRID):
+        """Overlay the agent's candidate annotations (normalized to the uncropped source).
+
+        ``bboxes``: ``[{"bbox": [x0, y0, x1, y1], "label"?: str, "color"?: str}]``; ``keypoints``:
+        ``[{"point": [x, y], ...}]``; ``polygons``: ``[{"points": [x1, y1, ...], ...}]``. ``grid`` defaults to the
+        10x10 grid the agent proposed on; pass ``None`` to suppress it.
+        """
+        result = self._render(uri, crop, {} if grid is DEFAULT_GRID else grid)
+        counts = {}
         if bboxes:
             result = draw_bboxes(result, [BBoxObject(**b) for b in bboxes])
+            counts["bboxes"] = len(bboxes)
         if keypoints:
             result = draw_keypoints(result, [KeypointObject(**k) for k in keypoints])
+            counts["keypoints"] = len(keypoints)
         if polygons:
             result = draw_polygons(result, [PolygonObject(**p) for p in polygons])
-        return encode(result.image, self.output_format), {**result.metadata, "format": self.output_format}
+            counts["polygons"] = len(polygons)
+        meta = {k: v for k, v in result.metadata.items() if k != "objects"}
+        return encode(result.image, self.output_format), {**meta, **counts, "format": self.output_format}
 
 
 def metadata_text(meta: dict[str, Any]) -> str:

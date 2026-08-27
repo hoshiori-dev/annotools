@@ -12,7 +12,7 @@ from vision_tools import VisionTools  # from the agent-vision-tools skill
 
 WORKSPACE = Path("workspaces/<task>")
 DB = WORKSPACE / "data" / "dataset.db"
-RUN_ID = 1  # created by the pipeline start-up (runs table)
+RUN_ID = 1  # created by the pipeline start-up (a `runs` row per execution; foreign keys require it)
 VARIANTS = {"medium": 40, "short": 15}  # token budgets from spec/task.md
 
 
@@ -29,7 +29,9 @@ def record(conn: sqlite3.Connection, item_id: int, kind: str, key: str, payload:
     conn.commit()
 
 
-async def caption_item(conn: sqlite3.Connection, vision: VisionTools, item_id: int, uri: str, prompts: dict) -> None:
+async def caption_item(vision: VisionTools, item_id: int, uri: str, prompts: dict) -> None:
+    conn = sqlite3.connect(DB)  # one connection per worker
+    conn.execute("PRAGMA foreign_keys = ON")
     try:
         image, _meta = vision.look_at_item(uri)
         long = await call_model(prompts["long"], [image, f"Image id: {item_id}"])
@@ -41,7 +43,11 @@ async def caption_item(conn: sqlite3.Connection, vision: VisionTools, item_id: i
         tags = json.loads(await call_model(prompts["tags"], [image, f"Image id: {item_id}"]))
         record(conn, item_id, "tag", "", {"tags": tags})
     except Exception as exc:  # noqa: BLE001 - every failure becomes a reviewable row
-        record(conn, item_id, "caption", "long", {"error": str(exc)}, status="needs_review")
+        # keep whatever was written, but nothing of this run may stay `final`: the item must remain pending
+        conn.execute("UPDATE annotations SET status = 'needs_review' WHERE item_id = ? AND run_id = ?", (item_id, RUN_ID))
+        record(conn, item_id, "caption", "error", {"error": str(exc)}, status="needs_review")
+    finally:
+        conn.close()
 
 
 async def main(workers: int = 8) -> None:
@@ -50,11 +56,12 @@ async def main(workers: int = 8) -> None:
     vision = VisionTools(WORKSPACE, max_width=768, max_height=768)
     prompts = {name: (Path("spec/prompts") / f"{name}.md").read_text() for name in ("long", "compress", "tags")}
     pending = conn.execute("SELECT id, uri FROM items_pending").fetchall()
+    conn.close()
     semaphore = asyncio.Semaphore(workers)
 
     async def guarded(item_id: int, uri: str) -> None:
         async with semaphore:
-            await caption_item(conn, vision, item_id, uri, prompts)
+            await caption_item(vision, item_id, uri, prompts)
 
     await asyncio.gather(*(guarded(i, u) for i, u in pending))
 

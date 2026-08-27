@@ -1,8 +1,8 @@
 ---
 name: agent-vision-tools
 description: >-
-  Builds the tools an execution agent uses to look at items, check its own annotations, and write
-  them — on top of the annotools library for the Claude Agent SDK and the Codex SDK, confined to
+  Builds the tools an execution agent uses to look at items and check its own annotations — on top
+  of the annotools library for the Claude Agent SDK and the Codex SDK, confined to
   the project workspace. Use when wiring an SDK pipeline that must "see" images, video frames, or
   overlays, when an execution agent needs record/update tools, or when deciding how an agent is
   kept inside workspaces/<task>/. Not for the annotools MCP server itself (that serves coding
@@ -17,10 +17,11 @@ families on the `annotools` library and register them with the SDK, all scoped t
 
 ## Workflow
 
-1. **Decide the tool set** from the task spec: `look_at_item` (preview with optional grid/crop),
-   `look_at_annotations` (overlay the agent's candidate boxes/points/polygons/mask), and the store
-   writers from the `sqlite-annotation-store` contract (`record_annotation`, `update_annotation`,
-   `mark_reviewed`). Captioning needs only `look_at_item` + `record_annotation`.
+1. **Decide the tool set** from the task spec: `look_at_item` (preview with optional grid/crop) and
+   `look_at_annotations` (overlay the agent's candidate boxes/points/polygons/mask) ship here. The
+   store writers (`record_annotation`, `update_annotation`, `mark_reviewed`) are specified by the
+   `sqlite-annotation-store` skill's tool contract and are implemented alongside these with the same
+   SDK wiring. Captioning needs only `look_at_item` plus the writers.
 2. **Implement on the library layer**: `annotools.io.load_image` → `annotools.image.preview.preview`
    → `annotools.image.grid.draw_grid` / `annotools.image.overlay.draw_bboxes` … →
    `annotools.image.preview.encode`. Return bytes; never call the MCP tools from the pipeline.

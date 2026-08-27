@@ -4,8 +4,8 @@ Run the server:   python codex_tools.py serve --workspace workspaces/coco-cats
 Use from Python:  see run_thread() below (openai-codex package).
 """
 
-import base64
 import json
+import os
 import sys
 
 from fastmcp import FastMCP
@@ -37,13 +37,14 @@ def run_thread(workspace: str, prompt: str) -> str:
     """Start a confined Codex thread with the vision MCP server registered through config."""
     from openai_codex import Codex, Sandbox  # pip install openai-codex
 
+    workspace = os.path.abspath(workspace)  # the server resolves paths against its own cwd: pass an absolute one
     config = {
         "mcp_servers": {"vision": {"command": sys.executable, "args": [__file__, "serve", "--workspace", workspace]}}
     }
     with Codex() as codex:
         thread = codex.thread_start(cwd=workspace, sandbox=Sandbox.workspace_write, config=config)
         result = thread.run(prompt)
-    return result.final_response if hasattr(result, "final_response") else str(result)
+    return result.final_response
 
 
 if __name__ == "__main__":
@@ -51,4 +52,3 @@ if __name__ == "__main__":
         build_server(sys.argv[3]).run()
     else:
         print(json.dumps({"usage": "codex_tools.py serve --workspace <dir>"}))
-        base64  # keep the import for wrappers that pack raw blocks

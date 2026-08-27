@@ -24,13 +24,15 @@ rounds (default 3 — confirm with the user in the interview).
    [assets/prompts/correct.md](assets/prompts/correct.md). Pick the coordinate wording for the model
    (`mllm-multimodal-input`): pixels of the shown image for Claude/Qwen/GPT, `[ymin, xmin, ymax,
    xmax]`×1000 for Gemini. Never ask a model to normalize.
-3. **Trial**: 1–3 images through the full loop; show the user the final overlay (`save_to`) with the
-   box list; adjust class rules; repeat until accepted.
+3. **Trial**: 1–3 images through the full loop; write the final overlay bytes to
+   `data/interim/trial/<item>.jpg` and show the user its path with the box list; adjust class rules;
+   repeat until accepted.
 4. **Pipeline** from [assets/pipeline_skeleton.py](assets/pipeline_skeleton.py): per item —
    `look_at_item(grid)` → propose → convert to normalized xyxy → `look_at_annotations` → correct by
    index (≤ N rounds) → `record_annotation` per box (`kind=bbox`, `key=<index>`, `label`,
-   `confidence`, `rounds`), `final` or `needs_review` when the loop hit the limit with the model
-   still unhappy or confidence < threshold.
+   `confidence`, `rounds`); `needs_review` when the loop hit the limit with the model still unhappy
+   **or** any box is below the confidence floor (a missing confidence counts as 0), else `final`. A
+   negative image writes one `tag` row (`key=detection`, `["no_object"]`) so it leaves `items_pending`.
 5. **Quality**: reject out-of-range or zero-area boxes and unknown labels before rendering; duplicate
    IoU > 0.9 → keep the higher confidence; sample 5 % for a second pass; track rounds per item.
 6. **Export**: `export.py --format jsonl` → one line per image, boxes under `annotations`; convert to

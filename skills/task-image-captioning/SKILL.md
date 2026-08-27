@@ -29,7 +29,8 @@ write. No grid, no correction loop; the cost lever is preview size and prompt ca
 4. **Pipeline** from [assets/pipeline_skeleton.py](assets/pipeline_skeleton.py): items from
    `items_pending`, N workers, per item: preview → long → compress ×2 → tags → four
    `record_annotation` calls (`kind=caption`, `key=long|medium|short`; `kind=tag`), status `final`;
-   failures → `needs_review` with the error in `payload.error`.
+   on any failure every row of the item in this run is set to `needs_review` and an error row
+   (`key=error`) is added, so the item stays pending and nothing good is overwritten.
 5. **Export**: `export.py --format jsonl` gives one line per image with the four annotations; map to
    the project's field names in a small post-step if the consumer wants flat keys.
    Done when: the trial passed, a full run finished with ≤ 1 % `needs_review`, and the README's usage
