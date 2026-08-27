@@ -2,11 +2,11 @@
 
 import io
 import wave
+from contextlib import ExitStack
 from typing import Any
 
+import fsspec
 import numpy as np
-
-from annotools.io import open_bytes
 
 
 def _av():
@@ -15,6 +15,20 @@ def _av():
     except ImportError as exc:
         raise ImportError("audio support requires PyAV: install annotools[media]") from exc
     return av
+
+
+def _open_container(av, uri: str, stack: ExitStack):
+    """Open ``uri`` with PyAV through a streamed fsspec handle; errors name the URI."""
+    try:
+        handle = stack.enter_context(fsspec.open(uri, "rb"))
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(f"cannot read {uri}: not found") from exc
+    except Exception as exc:  # backend-specific errors share no base class
+        raise OSError(f"cannot read {uri}: {exc}") from exc
+    try:
+        return stack.enter_context(av.open(handle))
+    except Exception as exc:
+        raise ValueError(f"{uri}: not a decodable media file ({exc})") from exc
 
 
 def clip(
@@ -35,13 +49,14 @@ def clip(
     """
     if start is not None and start < 0:
         raise ValueError(f"start must be >= 0, got {start}")
-    if end is not None and start is not None and end <= start:
-        raise ValueError(f"end ({end}) must be greater than start ({start})")
+    if end is not None and end <= (start or 0.0):
+        raise ValueError(f"end ({end}) must be greater than start ({start or 0.0})")
     if sample_rate is not None and sample_rate < 1:
         raise ValueError(f"sample_rate must be >= 1, got {sample_rate}")
     av = _av()
     begin = start or 0.0
-    with av.open(io.BytesIO(open_bytes(uri))) as container:
+    with ExitStack() as stack:
+        container = _open_container(av, uri, stack)
         if not container.streams.audio:
             raise ValueError(f"{uri}: no audio stream")
         stream = container.streams.audio[0]
@@ -54,8 +69,8 @@ def clip(
             raise ValueError(f"start ({begin}) is beyond the source duration ({source_duration:.3f} s)")
         stop = min(end, source_duration) if end is not None and source_duration else end
         out_rate = sample_rate or stream.rate
-        channels = stream.channels
-        layout = "mono" if channels == 1 else "stereo"
+        layout = stream.layout.name  # keep the source channel layout (mono, stereo, 5.1, ...)
+        channels = stream.layout.nb_channels
         resampler = av.AudioResampler(format="s16", layout=layout, rate=out_rate)
         if begin > 0:
             container.seek(int(begin / stream.time_base), stream=stream, backward=True, any_frame=False)
@@ -71,10 +86,10 @@ def clip(
                 pcm = out.to_ndarray()  # (channels, samples) for planar? s16 is packed: (1, samples*channels)
                 pcm = pcm.reshape(-1, channels) if pcm.ndim == 2 and pcm.shape[0] == 1 else pcm.T
                 out_t = float(out.time) if out.time is not None else t
-                skip = int(max(0.0, begin - out_t) * out_rate)
+                skip = round(max(0.0, begin - out_t) * out_rate)
                 keep = pcm[skip:]
                 if stop is not None:
-                    limit = int(max(0.0, stop - max(out_t, begin)) * out_rate)
+                    limit = round(max(0.0, stop - max(out_t, begin)) * out_rate)
                     keep = keep[:limit]
                 if len(keep):
                     chunks.append(keep.astype(np.int16))

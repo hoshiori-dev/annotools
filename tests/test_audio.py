@@ -48,6 +48,41 @@ def test_ac2_resample(audio_file):
     assert wav_info(clip(str(audio_file), end=1)[0])[1] == 44100
 
 
+def test_ac6_multichannel_kept(tmp_path):
+    path = tmp_path / "six.wav"
+    rate = 16000
+    frames = np.tile(np.arange(6, dtype=np.int16) * 1000, (rate * 2, 1))  # 2 s, channel i holds value i*1000
+    with wave.open(str(path), "wb") as wav:
+        wav.setnchannels(6)
+        wav.setsampwidth(2)
+        wav.setframerate(rate)
+        wav.writeframes(frames.tobytes())
+    data, meta = clip(str(path), start=0.5, end=1.5)
+    duration, out_rate, channels = wav_info(data)
+    assert (channels, out_rate, meta["channels"]) == (6, rate, 6)
+    assert duration == pytest.approx(1.0, abs=0.01)
+    with wave.open(io.BytesIO(data)) as wav:
+        first = np.frombuffer(wav.readframes(1), dtype=np.int16)
+    assert first.tolist() == [0, 1000, 2000, 3000, 4000, 5000]
+
+
+def test_ac7_errors_name_source(tmp_path, audio_file):
+    junk = tmp_path / "junk.bin"
+    junk.write_bytes(b"not audio at all" * 100)
+    with pytest.raises(ValueError, match=r"junk\.bin"):
+        clip(str(junk))
+    with pytest.raises(ValueError, match=r"end \(0\)"):
+        clip(str(audio_file), end=0)
+    with pytest.raises(FileNotFoundError, match=r"missing\.wav"):
+        clip(str(tmp_path / "missing.wav"))
+
+
+def test_sample_exact_length(audio_file):
+    data, _ = clip(str(audio_file), end=3)
+    with wave.open(io.BytesIO(data)) as wav:
+        assert wav.getnframes() == 3 * 44100
+
+
 @pytest.mark.parametrize("kwargs", [{"start": 5, "end": 5}, {"start": -1}, {"start": 20}, {"sample_rate": 0}])
 def test_ac3_invalid_range(audio_file, kwargs):
     with pytest.raises(ValueError):

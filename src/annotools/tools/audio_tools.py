@@ -9,7 +9,9 @@ from pydantic import Field
 from annotools.audio import clip
 from annotools.io import write_bytes
 from annotools.server import mcp
-from annotools.tools.common import SaveToParam, SourceParam
+from annotools.tools.common import SourceParam
+
+SaveWavParam = Annotated[str | None, Field(description="Also write the WAV file to this path or fsspec URL")]
 
 
 @mcp.tool(output_schema=None)
@@ -20,7 +22,7 @@ def clip_audio(
     sample_rate: Annotated[
         int | None, Field(ge=1, description="Resample to this rate; omit to keep the source rate")
     ] = None,
-    save_to: SaveToParam = None,
+    save_to: SaveWavParam = None,
 ) -> list[McpAudio | str]:
     """Cut a segment from an audio (or video) file, optionally resampled, and return it as 16-bit WAV.
 
