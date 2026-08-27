@@ -22,6 +22,9 @@ the default token.
 | `deploy` (Documentation) | `zensical build` → Pages | main push |
 | Release: `check-version` → `verify` → `build` → `smoke` → `publish-ghcr` (→ `publish-pypi` disabled) | see `release.yml` | release published |
 
+A commit on a PR branch produces two CI runs (push + pull_request); the push run shows the test jobs as
+`skipped` by design, while the pull_request run executes them — read the pull_request run.
+
 Rules: never weaken or delete a check to make it pass; a renamed job must be renamed in the ruleset in
 the same change. Read failed logs with `gh run view <id> --log-failed`, not the full log.
 
