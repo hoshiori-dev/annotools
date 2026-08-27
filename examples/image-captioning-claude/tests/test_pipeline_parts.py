@@ -94,5 +94,36 @@ def test_pipeline_verify_reports_missing(workspace):
         store.record(conn, 1, run_id, "caption", "long", {"text": "x"})
         from captioning.pipeline import verify
 
-        assert verify(conn, 1, run_id) == ["caption:medium", "caption:short", "tag"]
+        assert verify(conn, 1, run_id) == ["caption:medium missing", "caption:short missing", "tag missing"]
         assert sqlite3.connect(db).execute("SELECT COUNT(*) FROM runs").fetchone()[0] == 1
+
+
+def test_system_prompt_assembly():
+    from captioning.pipeline import load_prompts, system_prompt
+
+    config = json.loads((ROOT / "config" / "default.json").read_text())
+    text = system_prompt(load_prompts(), config)
+    assert "{budget}" not in text and "{previous}" not in text
+    assert f"at most {config['budgets']['medium_words']} words" in text
+    assert "record_tags" in text and "DONE" in text
+
+
+def test_failure_keeps_good_captions_and_item_pending(workspace):
+    from captioning.pipeline import fail_item, verify
+
+    _ws, db = workspace
+    with store.connect(db) as conn:
+        run_id = store.start_run(conn, "m", {"long": "x"}, {})
+        store.record(conn, 1, run_id, "caption", "long", {"text": "a long caption"})
+        fail_item(conn, 1, run_id, "tags failed")
+        rows = dict(
+            conn.execute("SELECT key, status FROM annotations WHERE item_id = 1 AND run_id = ?", (run_id,)).fetchall()
+        )
+        assert rows == {"long": "needs_review", "error": "needs_review"}
+        assert (
+            conn.execute("SELECT payload_json FROM annotations WHERE key = 'long'").fetchone()[0]
+            == '{"text": "a long caption"}'
+        )
+        assert conn.execute("SELECT COUNT(*) FROM items_pending").fetchone()[0] == 1
+        store.record(conn, 1, run_id, "caption", "medium", {"text": " ".join(["w"] * 40)})
+        assert any("over budget" in p for p in verify(conn, 1, run_id, {"medium": 25}))

@@ -19,14 +19,17 @@ only what is visible.
 ## Model and input
 - Model: Claude (configured in `config/default.json`, default `claude-opus-5`); effort `low`.
 - Preview: `max_width`/`max_height` 768 (Claude cost ≈ 450–800 tokens per image); no grid.
-- Prompt layout: static rules + 2 accepted trial examples (cached) → item id → image → question.
+- Prompt layout: static rules (cached system prompt) → item id → image → question. Accepted trial
+  outputs may be appended to the system prompt as examples once the trial passes.
 
 ## Procedure
 Linear, parallel (`workers` in config): preview → long → compress ×2 → tags → four writes.
 
 ## Quality control
-- Accept when all four variants are present and within budget; `needs_review` on any model or parse
-  error (the error is stored in `payload.error`).
+- Accept when all four variants are present and `medium`/`short` are within their word budgets;
+  otherwise every row of the item in this run is set to `needs_review` and an error row
+  (`caption`/`error`) records the reason — nothing already written is overwritten and the item stays
+  in `items_pending` for the next run.
 - Second pass: 5 % sample reviewed by a human via `just review` (prints image path + captions).
 
 ## Output contract
@@ -35,4 +38,5 @@ Linear, parallel (`workers` in config): preview → long → compress ×2 → ta
   `{"uri", "coco_id", "long", "medium", "short", "tags"}` (`scripts/export_captions.py`).
 
 ## Budget
-- ≤ 2 500 input + 400 output tokens per image; ≤ 4 workers; stop after 10 consecutive failures.
+- `max_budget_usd_per_item` 0.05 (SDK estimate, enforced per query); ≤ 4 workers; stop the run after
+  10 failures in a row (`max_failures`); token totals are reported in the run summary.

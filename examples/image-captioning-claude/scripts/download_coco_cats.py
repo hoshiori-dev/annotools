@@ -26,16 +26,17 @@ IMAGE_URL = "https://images.cocodataset.org/val2017/{file_name}"
 CAT_CATEGORY_ID = 17
 
 
-def fetch(url: str, dest: Path) -> Path:
+def fetch(url: str, dest: Path) -> tuple[Path, bool]:
+    """Return the local path and whether a download happened (cached files are reused)."""
     if dest.exists():
-        return dest
+        return dest, False
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_suffix(dest.suffix + ".part")
     with urllib.request.urlopen(url, timeout=120) as response, tmp.open("wb") as fh:
         while chunk := response.read(1 << 20):
             fh.write(chunk)
     tmp.replace(dest)
-    return dest
+    return dest, True
 
 
 def load_instances(zip_path: Path) -> dict:
@@ -64,22 +65,22 @@ def main(argv: list[str] | None = None) -> int:
         zip_path = (
             Path(args.annotations)
             if args.annotations
-            else fetch(ANNOTATIONS_URL, workspace / "data" / "interim" / "annotations_trainval2017.zip")
+            else fetch(ANNOTATIONS_URL, workspace / "data" / "interim" / "annotations_trainval2017.zip")[0]
         )
         images = cat_images(load_instances(zip_path))
-        if args.limit:
+        if args.limit is not None:
             images = images[: args.limit]
         conn = sqlite3.connect(db)
         conn.execute("PRAGMA foreign_keys = ON")
         downloaded = 0
         for img in images:
-            path = fetch(IMAGE_URL.format(file_name=img["file_name"]), raw / img["file_name"])
-            downloaded += 1
+            path, fetched = fetch(IMAGE_URL.format(file_name=img["file_name"]), raw / img["file_name"])
+            downloaded += fetched
             conn.execute(
                 "INSERT OR IGNORE INTO items(uri, media_type, width, height, meta_json) VALUES (?, 'image', ?, ?, ?)",
                 (str(path.relative_to(workspace)), img["width"], img["height"], json.dumps({"coco_id": img["id"]})),
             )
-        conn.commit()
+            conn.commit()  # per image: a later network failure keeps what was registered
         total = conn.execute("SELECT COUNT(*) FROM items").fetchone()[0]
         conn.close()
     except (OSError, sqlite3.Error, KeyError, zipfile.BadZipFile) as exc:

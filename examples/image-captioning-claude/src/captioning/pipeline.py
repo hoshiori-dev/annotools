@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKSPACE = ROOT / "workspaces" / "coco-cats"
 DB = WORKSPACE / "data" / "dataset.db"
 PROMPTS_DIR = ROOT / "spec" / "prompts"
+TOKEN_KEYS = ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
 
 
 def load_prompts() -> dict[str, str]:
@@ -27,14 +28,15 @@ def load_prompts() -> dict[str, str]:
 
 def system_prompt(prompts: dict[str, str], config: dict) -> str:
     budgets = config["budgets"]
+    compress = (
+        prompts["compress"].replace("{budget}", "<the given budget>").replace("{previous}", "<the previous caption>")
+    )
     return (
         "You caption one image per task using the tools. Steps: 1) call look_at_item with the given uri; "
         "2) write the long caption following these rules:\n" + prompts["long"] + "\n"
         f"3) call record_caption(variant='long'); 4) compress it to at most {budgets['medium_words']} words "
         f"(record_caption variant='medium') and then to at most {budgets['short_words']} words (variant='short') "
-        "following:\n"
-        + prompts["compress"].replace("{budget}", "<the given budget>").replace("{previous}", "<the previous caption>")
-        + "\n"
+        "following:\n" + compress + "\n"
         "5) produce tags following:\n" + prompts["tags"] + "\ncall record_tags. Finish with the single word DONE."
     )
 
@@ -42,6 +44,7 @@ def system_prompt(prompts: dict[str, str], config: dict) -> str:
 async def caption_item(ctx: ToolContext, uri: str, config: dict, system: str) -> dict:
     options = ClaudeAgentOptions(
         model=config["model"],
+        effort=config.get("effort"),
         system_prompt=system,
         cwd=str(ctx.workspace),
         tools=[],
@@ -60,15 +63,38 @@ async def caption_item(ctx: ToolContext, uri: str, config: dict, system: str) ->
     return usage
 
 
-def verify(conn, item_id: int, run_id: int) -> list[str]:
+def verify(conn, item_id: int, run_id: int, budgets: dict[str, int] | None = None) -> list[str]:
+    """Return what keeps the item from being accepted: missing variants/tags and captions over their word budget."""
     rows = conn.execute(
-        "SELECT kind, key FROM annotations WHERE item_id = ? AND run_id = ? AND status = 'final'", (item_id, run_id)
+        "SELECT kind, key, payload_json FROM annotations WHERE item_id = ? AND run_id = ? AND status = 'final'",
+        (item_id, run_id),
     ).fetchall()
-    have = {(k, key) for k, key in rows}
-    missing = [f"caption:{v}" for v in store.VARIANT_KEYS if ("caption", v) not in have]
+    have = {(k, key): json.loads(payload) for k, key, payload in rows}
+    problems = [f"caption:{v} missing" for v in store.VARIANT_KEYS if ("caption", v) not in have]
     if ("tag", "") not in have:
-        missing.append("tag")
-    return missing
+        problems.append("tag missing")
+    for variant, limit in (budgets or {}).items():
+        text = have.get(("caption", variant), {}).get("text", "")
+        if text and len(text.split()) > limit:
+            problems.append(f"caption:{variant} over budget ({len(text.split())} > {limit} words)")
+    return problems
+
+
+def fail_item(conn, item_id: int, run_id: int, reason: str) -> None:
+    """Demote every row of the item in this run and add an error row: nothing is overwritten, the item stays pending."""
+    conn.execute("UPDATE annotations SET status = 'needs_review' WHERE item_id = ? AND run_id = ?", (item_id, run_id))
+    conn.commit()
+    store.record(conn, item_id, run_id, "caption", "error", {"error": reason}, status="needs_review")
+
+
+def print_trial(conn, item_id: int, run_id: int, uri: str) -> None:
+    rows = conn.execute(
+        "SELECT key, payload_json FROM annotations WHERE item_id = ? AND run_id = ? ORDER BY kind, key",
+        (item_id, run_id),
+    ).fetchall()
+    print(f"\n== {WORKSPACE / uri}")
+    for key, payload in rows:
+        print(f"  {key or 'tags'}: {json.loads(payload)}")
 
 
 async def run(limit: int | None, trial: bool, config_path: Path) -> int:
@@ -80,51 +106,45 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
         items = store.pending_items(conn, limit)
     ctx = ToolContext(WORKSPACE, DB, run_id, config["preview"])
     semaphore = asyncio.Semaphore(1 if trial else config["workers"])
-    totals: dict[str, float] = {"items": 0, "cost_usd": 0.0, "needs_review": 0, "seconds": 0.0}
+    budgets = {"medium": config["budgets"]["medium_words"], "short": config["budgets"]["short_words"]}
+    totals: dict[str, float] = {"items": 0, "needs_review": 0, "cost_usd": 0.0, "seconds": 0.0}
+    totals.update(dict.fromkeys(TOKEN_KEYS, 0))
     failures = 0
+    stop = asyncio.Event()
 
     async def one(item_id: int, uri: str) -> None:
         nonlocal failures
         async with semaphore:
+            if stop.is_set():
+                return
             try:
                 usage = await caption_item(ctx, uri, config, system)
             except Exception as exc:
                 usage = {"cost_usd": 0.0, "seconds": 0.0, "error": str(exc)}
             with store.connect(DB) as conn:
-                missing = verify(conn, item_id, run_id)
-                if missing or "error" in usage:
-                    store.record(
-                        conn,
-                        item_id,
-                        run_id,
-                        "caption",
-                        "long",
-                        {"error": usage.get("error", f"missing {missing}")},
-                        status="needs_review",
-                    )
+                problems = verify(conn, item_id, run_id, budgets)
+                if problems or "error" in usage:
+                    fail_item(conn, item_id, run_id, str(usage.get("error") or "; ".join(problems)))
                     totals["needs_review"] += 1
                     failures += 1
                 else:
                     failures = 0
                 if trial:
-                    rows = conn.execute(
-                        "SELECT key, payload_json FROM annotations WHERE item_id = ? AND run_id = ? ORDER BY kind, key",
-                        (item_id, run_id),
-                    ).fetchall()
-                    print(f"\n== {WORKSPACE / uri}")
-                    for key, payload in rows:
-                        print(f"  {key or 'tags'}: {json.loads(payload)}")
+                    print_trial(conn, item_id, run_id, uri)
             totals["items"] += 1
             totals["cost_usd"] += float(usage.get("cost_usd") or 0.0)
             totals["seconds"] += float(usage.get("seconds") or 0.0)
-            if failures >= config["max_consecutive_failures"]:
-                raise RuntimeError(f"{failures} consecutive failures; stopping")
+            for key in TOKEN_KEYS:
+                totals[key] += int(usage.get(key) or 0)
+            if failures >= config["max_failures"] and not stop.is_set():
+                stop.set()
+                print(f"stopping: {failures} failures in a row (max_failures)", file=sys.stderr)
 
     await asyncio.gather(*(one(i, u) for i, u in items))
     with store.connect(DB) as conn:
         store.finish_run(conn, run_id)
-    print(json.dumps({"run_id": run_id, **totals}))
-    return 0
+    print(json.dumps({"run_id": run_id, "stopped_early": stop.is_set(), **totals}))
+    return 1 if stop.is_set() else 0
 
 
 def review(sample_rate: float = 0.05) -> int:

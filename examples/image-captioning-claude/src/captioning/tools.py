@@ -74,7 +74,7 @@ def build_server(ctx: ToolContext):
             data, meta = ctx.look_at_item(args["uri"])
         except (ValueError, OSError) as exc:
             return error(exc)
-        mime = "image/png" if meta["format"] == "png" else f"image/{meta['format']}"
+        mime = f"image/{meta['format']}"
         return {
             "content": [
                 {"type": "image", "data": base64.b64encode(data).decode("ascii"), "mimeType": mime},
