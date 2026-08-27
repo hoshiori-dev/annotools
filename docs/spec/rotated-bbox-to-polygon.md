@@ -32,7 +32,7 @@ the same frame as the input.
 3. Corners may fall outside [0, 1]; they are returned unclipped. `preview_image_polygons` rejects such
    coordinates, so callers clamp or shrink border boxes before previewing (a `clip` option is a possible
    follow-up).
-4. `is_rectangle(points, angle_tol_deg=2.0, length_tol=0.02)`: true when the polygon has 4 points,
+4. `is_rectangle(points, *, angle_tol_deg=2.0, length_tol=0.02)` (tolerances keyword-only): true when the polygon has 4 points,
    adjacent edges are perpendicular within `angle_tol_deg`, and opposite edges have equal length within
    `length_tol` (relative).
 - Error: empty `boxes`, `w`/`h` ≤ 0, `cx`/`cy` outside [0, 1], `aspect_ratio` ≤ 0 → `ValueError` naming

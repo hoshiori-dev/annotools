@@ -76,7 +76,7 @@ def test_is_rectangle_tolerances():
     skewed[2] += 0.2 * math.tan(math.radians(3))  # push the top-right corner sideways
     assert not is_rectangle(skewed)
     assert is_rectangle(skewed, angle_tol_deg=5.0, length_tol=0.05)
-    # opposite edges differing by 3 % fail at the default 2 % length tolerance
+    # each bottom corner moves 3 % of the edge, so opposite edges differ by ~5.7 %: fails the default 2 %
     trapezoid = [0.3, 0.4, 0.7, 0.4, 0.712, 0.6, 0.288, 0.6]
     assert not is_rectangle(trapezoid, angle_tol_deg=10.0)
     assert is_rectangle(trapezoid, angle_tol_deg=10.0, length_tol=0.1)
