@@ -41,16 +41,16 @@ Modules marked *(planned)* are defined by the approved plan (`docs/plan/`) and l
 src/annotools/
   cli.py            argparse entrypoint: `annotools [--http] [--host] [--port]`
   server.py         FastMCP("annotools") instance; tool modules register onto it
-  config.py         (planned) defaults (768×768 max preview, border 2, point 3, grid 10×10, opacity 0.5); ANNOTOOLS_* env
-  io.py             (planned) open_bytes(uri) via fsspec; decode to PIL
-  geometry.py       (planned) normalized↔pixel coordinates, crop math, rotated box → 4 corners, is_rectangle
-  color.py          (planned) text → stable color hash, color parsing, inversion
-  image/            (planned) preview (crop+resize), grid, overlay (bbox/keypoint/polygon), segmentation
-  video/            (planned) frame sampling by fps → image pipeline
-  audio/            (planned) clip + resample → WAV
-  tools/            (planned) MCP wrappers: image_tools, geometry_tools, video_tools, audio_tools
+  config.py         defaults (768×768 max preview, border 2, point 3, grid 10×10, opacity 0.5); ANNOTOOLS_* env
+  io.py             open_bytes(uri) via fsspec; decode to PIL
+  geometry.py       normalized↔pixel coordinates, crop math, rotated box → 4 corners, is_rectangle
+  color.py          text → stable color hash, color parsing, inversion
+  image/            preview (crop+resize), grid, overlay (bbox/keypoint/polygon), segmentation
+  video.py          frame sampling by fps → image pipeline (PyAV, media extra)
+  audio.py          (planned) clip + resample → WAV
+  tools/            MCP wrappers: image_tools, color_tools, geometry_tools, video_tools, audio_tools (planned)
 tests/              unit tests with generated fixtures; container tests behind the `container` marker
-docs/spec/          (planned) one specification per MCP tool (goal, parameters, return, acceptance criteria)
+docs/spec/          one specification per MCP tool (goal, parameters, return, acceptance criteria)
 skills/ examples/   (planned) publishable skills; independent example projects (each with CONTEXT.md)
 ```
 
