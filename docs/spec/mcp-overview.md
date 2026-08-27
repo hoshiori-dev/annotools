@@ -74,14 +74,16 @@ because `crop` is the applied box and `scale = output_width / (crop width in sou
 
 `source` is read through fsspec: local paths always work; `s3://`, `gs://`, `http(s)://` need the matching
 backend, installed by the `annotools[remote]` extra (`s3fs`, `gcsfs`, `aiohttp`, `requests`). `save_to`
-writes wherever fsspec can write; the server does not restrict paths — deploy it with the filesystem
-access you intend agents to have.
+writes wherever fsspec can write (parent directories are created for local paths); a failed write raises
+`OSError` naming the target and the tool returns no image. The server does not restrict paths — deploy
+it with the filesystem access you intend agents to have.
 
 ## Errors
 
 Invalid parameters raise `ValueError` naming the parameter (surfaced as an MCP tool error). A missing
-source raises `FileNotFoundError`, any other read failure `OSError`, and undecodable content `ValueError`;
-each message names the URI. Tools never return partial images.
+source raises `FileNotFoundError`; any other read failure (permissions, unknown protocol, missing backend
+or credentials) raises `OSError`; undecodable, truncated, or corrupt content raises `ValueError`; a failed
+`save_to` raises `OSError`. Each message names the URI. Tools never return partial images.
 
 ## References
 
