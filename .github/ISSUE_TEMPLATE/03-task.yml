@@ -1,0 +1,54 @@
+name: Task
+description: Planned annotools work with an agreed spec and executable acceptance criteria
+labels: ["status/needs-triage"]
+type: Task
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Content
+      description: The planned change, precisely. For an MCP tool or library feature, name the spec document under docs/spec/ (existing or to be written first).
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: The observable project state when this task is complete.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and references
+      description: Everything the executor needs that lives outside this issue — plan sections, the spec, the module being imitated (link it, not "like A"), constraints.
+    validations:
+      required: true
+  - type: textarea
+    id: direction
+    attributes:
+      label: Solution direction and breakdown
+      description: Architecture-level direction and work decomposition. Not line-by-line prescriptions.
+    validations:
+      required: false
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Executable, observable criteria — commands to run, tests that must pass, states to verify. Never "improve X".
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: Adjacent work this task must not absorb.
+    validations:
+      required: true
+  - type: textarea
+    id: cautions
+    attributes:
+      label: Cautions
+      description: Known hazards, fragile areas, rollback notes. Leave empty if none.
+    validations:
+      required: false

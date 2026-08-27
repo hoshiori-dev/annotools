@@ -1,0 +1,12 @@
+# Requests review from the listed owners; enforcement is the ruleset's require-code-owner-review
+# setting (not enabled — reviews are optional in this repository). The last matching pattern wins.
+# Validate with: gh api repos/hoshiori-dev/annotools/codeowners/errors
+# Keep patterns aligned with the area/* labels in .github/labels.json.
+
+*                 @ryan-minato
+/src/             @ryan-minato
+/skills/          @ryan-minato
+/examples/        @ryan-minato
+/docs/            @ryan-minato
+/.agents/         @ryan-minato
+/.github/         @ryan-minato

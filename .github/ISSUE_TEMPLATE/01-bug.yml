@@ -1,0 +1,33 @@
+name: Bug report
+description: annotools behaves differently from its documented or specified behavior
+labels: ["bug", "status/needs-triage"]
+type: Bug
+body:
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happens
+      description: The observed behavior, exactly. Paste tool output, tracebacks, or the returned image/metadata rather than paraphrasing.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+      description: The intended behavior, ideally with a link to the spec under docs/spec/. Together with the field above this is the acceptance baseline for the fix.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: How to reproduce
+      description: Smallest known sequence — MCP tool call with parameters, library call, or command.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and references
+      description: annotools version or commit, agent framework (Claude Code / Codex / OpenCode / SDK), Python version, OS, related issues.
+    validations:
+      required: false

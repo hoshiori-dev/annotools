@@ -1,0 +1,16 @@
+# Version updates only; Dependabot alerts are a repository setting.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: ["area/harness"]
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    labels: ["area/harness"]
+    groups:
+      dev-dependencies:
+        dependency-type: development

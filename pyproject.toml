@@ -64,6 +64,7 @@ convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["D"]
+"scripts/**" = ["D", "UP", "B", "SIM", "N", "RUF"]
 
 [tool.ruff.format]
 docstring-code-format = true

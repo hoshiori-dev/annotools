@@ -1,0 +1,21 @@
+[
+  {"name": "bug", "color": "d73a4a", "description": "Something isn't working"},
+  {"name": "enhancement", "color": "a2eeef", "description": "New feature or request"},
+  {"name": "documentation", "color": "0075ca", "description": "Improvements or additions to documentation"},
+  {"name": "duplicate", "color": "cfd3d7", "description": "This issue or pull request already exists"},
+  {"name": "good first issue", "color": "7057ff", "description": "Good for newcomers"},
+  {"name": "help wanted", "color": "008672", "description": "Extra attention is needed"},
+  {"name": "invalid", "color": "e4e669", "description": "This doesn't seem right"},
+  {"name": "question", "color": "d876e3", "description": "Further information is requested"},
+  {"name": "wontfix", "color": "ffffff", "description": "This will not be worked on"},
+  {"name": "priority/high", "color": "b60205", "description": "Handle before other open work"},
+  {"name": "priority/medium", "color": "fbca04", "description": "Normal priority"},
+  {"name": "priority/low", "color": "0e8a16", "description": "Nice to have; no schedule pressure"},
+  {"name": "status/needs-triage", "color": "ededed", "description": "New issue awaiting type and priority"},
+  {"name": "status/blocked", "color": "000000", "description": "Blocked on an external dependency or decision"},
+  {"name": "area/mcp", "color": "1d76db", "description": "src/annotools library layer and MCP tools"},
+  {"name": "area/skills", "color": "5319e7", "description": "Publishable skills under skills/"},
+  {"name": "area/examples", "color": "0052cc", "description": "Example projects under examples/"},
+  {"name": "area/harness", "color": "c5def5", "description": "AGENTS.md, knowledge base, .agents/, CI, release pipeline"},
+  {"name": "area/docs", "color": "0075ca", "description": "docs/ site and README"}
+]

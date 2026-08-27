@@ -40,8 +40,16 @@ test-cov:
 test-container:
     uv run pytest -m container
 
+# Check that every label referenced by forms/release.yml exists in .github/labels.json
+check-taxonomy:
+    uv run --with pyyaml scripts/check_taxonomy.py --labels .github/labels.json
+
+# Show the label sync plan (dry run); apply with `just sync-labels --apply`
+sync-labels *args:
+    uv run scripts/sync_labels.py --repo hoshiori-dev/annotools --file .github/labels.json {{args}}
+
 # Everything CI runs on a pull request (except container tests)
-check: lint format-check typecheck test
+check: lint format-check typecheck check-taxonomy test
 
 # Build the documentation site
 docs:

@@ -29,6 +29,7 @@ jobs:
           enable-cache: true
       - run: uv sync --group dev
       - run: uv run ruff check .
+      - run: uv run --with pyyaml scripts/check_taxonomy.py --labels .github/labels.json
 
   format:
     runs-on: ubuntu-latest
