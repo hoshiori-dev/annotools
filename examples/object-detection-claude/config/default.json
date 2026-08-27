@@ -1,0 +1,12 @@
+{
+  "model": "claude-opus-5",
+  "effort": "medium",
+  "preview": {"max_width": 768, "max_height": 768, "output_format": "jpeg"},
+  "grid": {"columns": 10, "rows": 10},
+  "workers": 4,
+  "max_rounds": 3,
+  "confidence_floor": 0.5,
+  "classes": ["black_cat", "white_cat", "other_cat"],
+  "max_consecutive_failures": 10,
+  "max_budget_usd_per_item": 0.15
+}
