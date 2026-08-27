@@ -7,10 +7,12 @@ from fastmcp.utilities.types import Image as McpImage
 from pydantic import BaseModel, Field
 
 from annotools import config
-from annotools.image.preview import PreviewResult, encode
+from annotools.image.preview import PreviewResult, encode, preview
 from annotools.io import load_image, write_bytes
 
 OutputFormat = Literal["jpeg", "png", "webp"]
+GridMode = Literal["ratio", "fixed"]
+GridColor = Literal["white", "black", "invert"]
 DEFAULT_OUTPUT_FORMAT: OutputFormat = cast(OutputFormat, config.DEFAULT_OUTPUT_FORMAT)
 
 # Annotated parameter types reused by every tool signature so descriptions and constraints reach the schema.
@@ -27,6 +29,8 @@ MaxHeightParam = Annotated[int, Field(ge=1, description="Maximum output height i
 AllowUpscaleParam = Annotated[bool, Field(description="Enlarge small images/regions up to the limits")]
 OutputFormatParam = Annotated[OutputFormat, Field(description="Encoding: jpeg (quality 90), png, or webp")]
 SaveToParam = Annotated[str | None, Field(description="Also write the encoded image to this path or fsspec URL")]
+LineWidthParam = Annotated[int, Field(ge=1, description="Outline width in output pixels")]
+PointDiameterParam = Annotated[int, Field(ge=1, description="Vertex/point dot diameter in output pixels")]
 
 
 class PreviewOptions(BaseModel):
@@ -44,9 +48,21 @@ class PreviewOptions(BaseModel):
     save_to: str | None = Field(default=None, description="Also write the encoded image to this path/URL")
 
 
-def load_source(options: PreviewOptions):
-    """Load the source image named by ``options``."""
-    return load_image(options.source)
+def render_preview(options: PreviewOptions) -> PreviewResult:
+    """Load the source named by ``options`` and render the plain preview."""
+    return preview(
+        load_image(options.source),
+        crop=options.crop,
+        target_pixels=options.target_pixels,
+        max_width=options.max_width,
+        max_height=options.max_height,
+        allow_upscale=options.allow_upscale,
+    )
+
+
+def preview_options(**kwargs: Any) -> PreviewOptions:
+    """Build ``PreviewOptions`` from a tool's flat keyword arguments."""
+    return PreviewOptions(**kwargs)
 
 
 def finish(result: PreviewResult, options: PreviewOptions, extra: dict[str, Any] | None = None) -> list[McpImage | str]:
