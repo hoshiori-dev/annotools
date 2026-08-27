@@ -29,7 +29,9 @@ the same frame as the input.
 2. Rotation happens in an isotropic frame: x is scaled by `aspect_ratio` before rotating and divided
    afterwards, so a box on a non-square image rotates without shearing. With the default 1.0 the
    result is exact only for square sources.
-3. Corners may fall outside [0, 1]; they are returned unclipped.
+3. Corners may fall outside [0, 1]; they are returned unclipped. `preview_image_polygons` rejects such
+   coordinates, so callers clamp or shrink border boxes before previewing (a `clip` option is a possible
+   follow-up).
 4. `is_rectangle(points, angle_tol_deg=2.0, length_tol=0.02)`: true when the polygon has 4 points,
    adjacent edges are perpendicular within `angle_tol_deg`, and opposite edges have equal length within
    `length_tol` (relative).

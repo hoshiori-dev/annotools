@@ -24,7 +24,8 @@ def rotated_bbox_to_polygon(
 ) -> PolygonsResult:
     """Convert rotated boxes (cx, cy, w, h, theta; theta clockwise) into DOTA-style 8-number corner polygons.
 
-    Use the result with preview_image_polygons or store it as the polygon annotation. Pass the source
+    Corners are not clipped: a box touching the border can yield coordinates outside 0-1, which
+    preview_image_polygons rejects — clamp or shrink such boxes before previewing them. Pass the source
     aspect ratio so rotation on non-square images does not shear.
     """
     polygons = [

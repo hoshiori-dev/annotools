@@ -92,7 +92,9 @@ class RotatedBox(BaseModel):
     cy: float = Field(description="Centre y, normalized 0-1")
     w: float = Field(description="Width, normalized (> 0)")
     h: float = Field(description="Height, normalized (> 0)")
-    theta: float = Field(description="Clockwise rotation about the centre (image coordinates, y down)")
+    theta: float = Field(
+        description="Clockwise rotation about the centre (image coordinates, y down); unit set by angle_unit"
+    )
 
 
 def rotated_box_to_corners(
@@ -131,7 +133,7 @@ def rotated_box_to_corners(
     return corners
 
 
-def is_rectangle(points: Sequence[float], angle_tol_deg: float = 2.0, length_tol: float = 0.02) -> bool:
+def is_rectangle(points: Sequence[float], *, angle_tol_deg: float = 2.0, length_tol: float = 0.02) -> bool:
     """Whether the flat ``[x1, y1, ..., x4, y4]`` polygon is a rectangle within tolerances.
 
     Adjacent edges must be perpendicular within ``angle_tol_deg`` and opposite edges equal in length

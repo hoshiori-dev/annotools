@@ -51,13 +51,35 @@ def test_ac5_aspect_ratio():
 
 @pytest.mark.parametrize(
     ("kwargs", "match"),
-    [({"w": 0}, r"boxes\[0\]\.w"), ({"cx": 1.5}, r"boxes\[0\]\.cx")],
-    ids=["zero-width", "cx-out-of-range"],
+    [
+        ({"w": 0}, r"boxes\[0\]\.w"),
+        ({"h": -0.1}, r"boxes\[0\]\.h"),
+        ({"cx": 1.5}, r"boxes\[0\]\.cx"),
+        ({"cy": -0.1}, r"boxes\[0\]\.cy"),
+    ],
+    ids=["zero-width", "negative-height", "cx-out-of-range", "cy-out-of-range"],
 )
 def test_invalid_box_raises(kwargs, match):
     box = RotatedBox(**{"cx": 0.5, "cy": 0.5, "w": 0.4, "h": 0.2, "theta": 0, **kwargs})
     with pytest.raises(ValueError, match=match):
         rotated_box_to_corners(box, name="boxes[0]")
+
+
+def test_bad_aspect_ratio_raises():
+    with pytest.raises(ValueError, match="aspect_ratio"):
+        rotated_box_to_corners(RotatedBox(cx=0.5, cy=0.5, w=0.4, h=0.2, theta=0), aspect_ratio=0)
+
+
+def test_is_rectangle_tolerances():
+    # 3 degrees of skew: rejected at the default 2 degrees, accepted at 5
+    skewed = rotated_box_to_corners(RotatedBox(cx=0.5, cy=0.5, w=0.4, h=0.2, theta=0))
+    skewed[2] += 0.2 * math.tan(math.radians(3))  # push the top-right corner sideways
+    assert not is_rectangle(skewed)
+    assert is_rectangle(skewed, angle_tol_deg=5.0, length_tol=0.05)
+    # opposite edges differing by 3 % fail at the default 2 % length tolerance
+    trapezoid = [0.3, 0.4, 0.7, 0.4, 0.712, 0.6, 0.288, 0.6]
+    assert not is_rectangle(trapezoid, angle_tol_deg=10.0)
+    assert is_rectangle(trapezoid, angle_tol_deg=10.0, length_tol=0.1)
 
 
 async def test_ac6_tool(mcp_server):
