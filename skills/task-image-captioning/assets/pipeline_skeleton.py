@@ -30,7 +30,7 @@ def record(conn: sqlite3.Connection, item_id: int, kind: str, key: str, payload:
 
 
 async def caption_item(vision: VisionTools, item_id: int, uri: str, prompts: dict) -> None:
-    conn = sqlite3.connect(DB)  # one connection per worker
+    conn = sqlite3.connect(DB)  # one connection per item (the semaphore caps them at `workers`)
     conn.execute("PRAGMA foreign_keys = ON")
     try:
         image, _meta = vision.look_at_item(uri)

@@ -52,8 +52,23 @@ def apply_edits(boxes: list[dict], edits: list[dict], meta: dict) -> list[dict]:
 
 
 async def detect_item(vision: VisionTools, item_id: int, uri: str, prompts: dict, classes: set[str]) -> None:
-    conn = sqlite3.connect(DB)  # one connection per worker: commits never publish another worker's partial writes
+    conn = sqlite3.connect(DB)  # one connection per item (the semaphore caps them at `workers`)
     conn.execute("PRAGMA foreign_keys = ON")
+    try:
+        await _detect(conn, vision, item_id, uri, prompts, classes)
+    except Exception as exc:  # noqa: BLE001 - a malformed model answer must not abort the run
+        conn.execute("UPDATE annotations SET status = 'needs_review' WHERE item_id = ? AND run_id = ?", (item_id, RUN_ID))
+        conn.execute(
+            "INSERT INTO annotations(item_id, run_id, kind, key, payload_json, status) VALUES (?,?,?,?,?,?) "
+            "ON CONFLICT(item_id, run_id, kind, key) DO UPDATE SET payload_json=excluded.payload_json, status=excluded.status",
+            (item_id, RUN_ID, "tag", "error", json.dumps({"tags": ["error"], "error": str(exc)}), "needs_review"),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+
+async def _detect(conn: sqlite3.Connection, vision: VisionTools, item_id: int, uri: str, prompts: dict, classes: set[str]) -> None:
     image, meta = vision.look_at_item(uri, grid={})
     proposal = await call_model(prompts["propose"], [image, f"Image id: {item_id}; shown size: {meta['output_size']}"])
     boxes = clean(proposal.get("boxes", []), meta, classes)
@@ -71,7 +86,8 @@ async def detect_item(vision: VisionTools, item_id: int, uri: str, prompts: dict
     if not boxes:  # negative image: record it explicitly so it leaves items_pending
         conn.execute(
             "INSERT INTO annotations(item_id, run_id, kind, key, payload_json, rounds, status) VALUES (?,?,?,?,?,?,?) "
-            "ON CONFLICT(item_id, run_id, kind, key) DO UPDATE SET payload_json=excluded.payload_json, status=excluded.status",
+            "ON CONFLICT(item_id, run_id, kind, key) DO UPDATE SET payload_json=excluded.payload_json, "
+            "rounds=excluded.rounds, status=excluded.status",
             (item_id, RUN_ID, "tag", "detection", json.dumps({"tags": ["no_object"]}), rounds, "final"),
         )
     for index, b in enumerate(boxes):
@@ -82,7 +98,6 @@ async def detect_item(vision: VisionTools, item_id: int, uri: str, prompts: dict
             (item_id, RUN_ID, "bbox", str(index), b["label"], json.dumps({"bbox": b["bbox"]}), b["confidence"], rounds, status),
         )
     conn.commit()
-    conn.close()
 
 
 async def main(workers: int = 4) -> None:
