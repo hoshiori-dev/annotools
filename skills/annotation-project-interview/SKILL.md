@@ -13,8 +13,9 @@ description: >-
 
 The interview is a design tree: every settled decision unlocks the questions that depend on it. Ask
 the whole frontier of unblocked questions in one numbered round with one recommendation each, wait,
-recompute, repeat. Facts (file counts, image sizes, available models, existing data) are yours to
-look up; decisions are the user's.
+recompute, repeat — read [references/design-tree.md](references/design-tree.md) when running a round
+(frontier rule, numbering, what counts as a fact vs. a decision, when the tree is done). Facts (file
+counts, image sizes, available models, existing data) are yours to look up; decisions are the user's.
 
 ## Workflow
 
@@ -31,6 +32,8 @@ look up; decisions are the user's.
    5. Budget: max cost or tokens per item, total items, parallelism [state a number].
    6. Quality bar: what makes an item acceptable, who reviews, sample rate for a second pass [5 %].
    7. Language of labels/captions and of the spec [English unless the data is language-specific].
+   8. Existing labels, few-shot examples, or a style reference the user can supply [none; the trial
+      round produces the first examples].
 3. **Round 2 — the branches** — read [references/task-branches.md](references/task-branches.md)
    and ask only the branch for the chosen task family (caption length budget and focus order;
    class list with include/exclude rules and confusable pairs; keypoint skeleton; mask type;
@@ -43,8 +46,9 @@ look up; decisions are the user's.
 5. **Write the spec and scaffold** only after consensus: `spec/task.md` from
    [assets/spec-template.md](assets/spec-template.md), `CONTEXT.md` from
    [assets/context-template.md](assets/context-template.md), the layout below, and the
-   `justfile` from [assets/justfile](assets/justfile). Then hand off to `sqlite-annotation-store`
-   (schema) and the task scaffold skill (`task-image-captioning`, `task-object-detection`).
+   `justfile` from [assets/justfile](assets/justfile). Then hand off to the `sqlite-annotation-store`
+   skill (schema) and the task scaffold skills (`task-image-captioning`, `task-object-detection`) of
+   this catalog.
 
 ## Project layout and invariants
 

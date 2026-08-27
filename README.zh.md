@@ -49,9 +49,10 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 
 ## Skills 与示例
 
-`skills/` 提供可安装的 skills（`npx skills add hoshiori-dev/annotools`）。已可用：`mllm-multimodal-input`
-（各模型 token 成本、坐标约定、缓存布局）与 `localization-annotation-guide`（网格 → 提议 → 校验 → 修正 → 入库循环）。
-规划中：标注任务需求访谈、SQLite 标注库表、agent 视觉工具、任务脚手架。`examples/` 将提供两种 SDK 的完整示例项目（图片 caption、
+`skills/` 提供可安装的 skills（`npx skills add hoshiori-dev/annotools`）。已可用：`annotation-project-interview`
+（设计树访谈 + 工作区脚手架）、`sqlite-annotation-store`（库表、工具契约、导出）、`mllm-multimodal-input`
+（各模型 token 成本、坐标约定、缓存布局）、`localization-annotation-guide`（网格 → 提议 → 校验 → 修正 → 入库循环）。
+规划中：agent 视觉工具、任务脚手架。`examples/` 将提供两种 SDK 的完整示例项目（图片 caption、
 物体检测），并记录实际用量。
 
 ## 开发

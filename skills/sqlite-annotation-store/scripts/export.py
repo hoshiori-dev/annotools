@@ -4,15 +4,17 @@
 Usage:
     python3 export.py --db dataset.db --format jsonl|csv|parquet|webdataset --out output/ [--name dataset]
 
-One record per item: {"uri", "media_type", "width", "height", "annotations": [{"kind", "key", "label",
-"confidence", ...payload}]}. csv flattens annotations to one row per annotation; webdataset writes a
-tar with <key>.json per item (the media file is referenced by uri, not copied). Items without final
+One record per item: {"uri", "media_type", "width", "height", "duration", "split", "meta", "annotations":
+[{"kind", "key", "label", "confidence", "rounds", "payload": {...}}]}. csv flattens annotations to one row
+per annotation; webdataset writes a tar with <key>.json per item where <key> is the sha1 of the uri (the
+media file is referenced by uri, not copied). Items without final
 annotations are listed under "skipped" in the JSON summary on stdout. Exit codes: 0 ok, 1 error, 2 bad
 arguments (including an unsupported schema version).
 """
 
 import argparse
 import csv
+import hashlib
 import io
 import json
 import sqlite3
@@ -31,7 +33,7 @@ def load(conn: sqlite3.Connection) -> tuple[list[dict], list[dict]]:
     by_item: dict[int, list[dict]] = {}
     for item_id, kind, key, label, confidence, rounds, payload in ann:
         by_item.setdefault(item_id, []).append(
-            {"kind": kind, "key": key, "label": label, "confidence": confidence, "rounds": rounds, **json.loads(payload)}
+            {"kind": kind, "key": key, "label": label, "confidence": confidence, "rounds": rounds, "payload": json.loads(payload)}
         )
     records, skipped = [], []
     for item_id, uri, media_type, width, height, duration, split, meta_json in items:
@@ -64,11 +66,14 @@ def write(records: list[dict], fmt: str, out_dir: Path, name: str) -> Path:
         path = out_dir / f"{name}.csv"
         with path.open("w", encoding="utf-8", newline="") as fh:
             writer = csv.writer(fh)
-            writer.writerow(["uri", "media_type", "width", "height", "kind", "key", "label", "confidence", "payload_json"])
+            writer.writerow(
+                ["uri", "media_type", "width", "height", "duration", "split", "meta_json", "kind", "key", "label", "confidence", "rounds", "payload_json"]
+            )
             for rec in records:
                 for a in rec["annotations"]:
-                    payload = {k: v for k, v in a.items() if k not in ("kind", "key", "label", "confidence", "rounds")}
-                    writer.writerow([rec["uri"], rec["media_type"], rec["width"], rec["height"], a["kind"], a["key"], a["label"], a["confidence"], json.dumps(payload)])
+                    writer.writerow(
+                        [rec["uri"], rec["media_type"], rec["width"], rec["height"], rec["duration"], rec["split"], json.dumps(rec["meta"]), a["kind"], a["key"], a["label"], a["confidence"], a["rounds"], json.dumps(a["payload"])]
+                    )
     elif fmt == "parquet":
         try:
             import pyarrow as pa
@@ -81,9 +86,9 @@ def write(records: list[dict], fmt: str, out_dir: Path, name: str) -> Path:
     elif fmt == "webdataset":
         path = out_dir / f"{name}.tar"
         with tarfile.open(path, "w") as tar:
-            for index, rec in enumerate(records):
+            for rec in records:
                 data = json.dumps(rec, ensure_ascii=False).encode("utf-8")
-                info = tarfile.TarInfo(f"{index:08d}.json")
+                info = tarfile.TarInfo(f"{hashlib.sha1(rec['uri'].encode('utf-8')).hexdigest()[:16]}.json")
                 info.size = len(data)
                 tar.addfile(info, io.BytesIO(data))
     else:
@@ -101,14 +106,23 @@ def main(argv: list[str] | None = None) -> int:
     if not Path(args.db).is_file():
         print(f"export: error: database not found: {args.db}", file=sys.stderr)
         return 2
-    conn = sqlite3.connect(args.db)
-    version = dict(conn.execute("SELECT key, value FROM meta").fetchall()).get("schema_version")
+    try:
+        conn = sqlite3.connect(args.db)
+        conn.execute("PRAGMA foreign_keys = ON")
+        version = dict(conn.execute("SELECT key, value FROM meta").fetchall()).get("schema_version")
+    except sqlite3.Error as exc:
+        print(f"export: error: {args.db} is not an annotools store ({exc}); run init_db.py first", file=sys.stderr)
+        return 2
     if version != SCHEMA_VERSION:
         print(f"export: error: schema_version {version!r} is not {SCHEMA_VERSION}; run init_db.py or migrate", file=sys.stderr)
         return 2
     records, skipped = load(conn)
     conn.close()
-    path = write(records, args.format, Path(args.out), args.name)
+    try:
+        path = write(records, args.format, Path(args.out), args.name)
+    except SystemExit as exc:
+        print(exc, file=sys.stderr)
+        return 1
     print(json.dumps({"path": str(path), "items": len(records), "skipped": skipped}))
     return 0
 

@@ -1,7 +1,7 @@
 -- annotools annotation store, schema version 1. Conventions: normalized 0-1 coordinates relative to the
 -- uncropped source; file pointers only (never binary data).
 PRAGMA journal_mode = WAL;
-PRAGMA foreign_keys = ON;
+-- foreign_keys is connection-scoped: every client must run `PRAGMA foreign_keys = ON` after connecting.
 
 CREATE TABLE IF NOT EXISTS meta (
     key   TEXT PRIMARY KEY,
@@ -11,11 +11,11 @@ CREATE TABLE IF NOT EXISTS meta (
 CREATE TABLE IF NOT EXISTS items (
     id         INTEGER PRIMARY KEY,
     uri        TEXT NOT NULL UNIQUE,          -- local path or fsspec URL
-    media_type TEXT NOT NULL,                 -- image | video | audio
+    media_type TEXT NOT NULL CHECK (media_type IN ('image','video','audio')),
     width      INTEGER,
     height     INTEGER,
     duration   REAL,                          -- seconds, for video/audio
-    split      TEXT DEFAULT 'train',
+    split      TEXT NOT NULL DEFAULT 'train' CHECK (split IN ('train','val','test','unsplit')),
     meta_json  TEXT DEFAULT '{}',
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
@@ -55,16 +55,22 @@ CREATE TABLE IF NOT EXISTS reviews (
     created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 
--- Final annotations from the latest run that produced a final row for each item.
+CREATE TRIGGER IF NOT EXISTS annotations_touch AFTER UPDATE ON annotations
+BEGIN
+    UPDATE annotations SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = NEW.id;
+END;
+
+-- Final annotations: for each (item, kind) the rows of the latest run that produced a final row of that
+-- kind, so a caption from run 1 survives a bbox-only run 2.
 CREATE VIEW IF NOT EXISTS final_annotations AS
 SELECT a.*
 FROM annotations a
 JOIN (
-    SELECT item_id, MAX(run_id) AS run_id
+    SELECT item_id, kind, MAX(run_id) AS run_id
     FROM annotations
     WHERE status = 'final'
-    GROUP BY item_id
-) latest ON latest.item_id = a.item_id AND latest.run_id = a.run_id
+    GROUP BY item_id, kind
+) latest ON latest.item_id = a.item_id AND latest.kind = a.kind AND latest.run_id = a.run_id
 WHERE a.status = 'final';
 
 CREATE VIEW IF NOT EXISTS items_pending AS

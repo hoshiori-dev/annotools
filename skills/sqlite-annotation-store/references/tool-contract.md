@@ -1,7 +1,7 @@
 # Execution-agent tool contract
 
-Three tools, implemented in the project's `src/` with the SDK's tool mechanism (`agent-vision-tools`
-shows the SDK wiring). All coordinates normalized 0–1 relative to the uncropped source.
+Three tools, implemented in the project's `src/` with the SDK's tool mechanism (the
+`agent-vision-tools` skill in this catalog shows the SDK wiring). All coordinates normalized 0–1 relative to the uncropped source.
 
 ## record_annotation
 Input: `item_uri`, `kind`, `key` (default `""`), `label`, `payload` (object per kind), `confidence`
@@ -21,9 +21,13 @@ Return: the updated row.
 
 ## mark_reviewed
 Input: `annotation_id`, `verdict` (`accept` | `reject` | `fix`), `note`.
-Behaviour: inserts into `reviews`; `reject` sets the annotation `status = 'rejected'`; `fix` sets
-`needs_review`.
+Behaviour: inserts into `reviews`; `accept` sets `status = 'final'` (this is how a `needs_review`
+row re-enters `final_annotations`); `reject` sets `rejected`; `fix` sets `needs_review`.
 Return: `{"review_id": int}`.
+
+## Connection setup
+Run `PRAGMA foreign_keys = ON` on every connection (SQLite does not persist it); without it the
+`REFERENCES` clauses are not enforced. Set `updated_at` is handled by a trigger.
 
 ## Guardrails
 - Tools take URIs, never bytes; the agent has no file-write tool outside `data/interim/`.
