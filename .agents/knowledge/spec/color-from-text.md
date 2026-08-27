@@ -21,7 +21,7 @@ Returns (structured): `{"hex": "#rrggbb", "rgb": [r, g, b]}` with `hex` lowercas
 1. `digest = sha256(text.encode("utf-8"))`.
 2. Hue = `digest[0:2]` as a big-endian integer / 65536 (a 0–1 hue as `colorsys` expects; × 360 for
    degrees); saturation = 0.75; lightness = 0.5. Two bytes give 65 536 hues, which already exceeds what
-   8-bit RGB can distinguish on one HSL ring, so the original "first 3 bytes" idea was reduced to 2.
+   8-bit RGB can distinguish on one HSL ring, so the "first 3 bytes" sketch in issue #24 was reduced to 2.
 3. Convert HSL → RGB (0–255, rounded) and format `hex`.
 
 No error conditions.

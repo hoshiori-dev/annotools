@@ -32,7 +32,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 - Never store binary data in an annotation database — store file pointers (fsspec URL or local path).
 - Changing anything under `examples/<project>/` requires reading that project's `CONTEXT.md` first;
   example projects do not use AGENTS.md.
-- Plans and design drafts are never committed; durable decisions go to `ARCHITECTURE.md` (Decisions) and
+- Planning documents and design drafts are never committed; durable decisions go to `ARCHITECTURE.md` (Decisions) and
   `.agents/knowledge/`, scope to the tracking issue.
 - Python: Google-style docstrings for public contracts, ruff + ty, pytest with real objects over mocks.
   Details in `.agents/knowledge/conventions.md`.
