@@ -36,9 +36,10 @@ and the item stays pending for the next run) and stops the run after 10 failures
 |---|---|
 | Model | _pending first full run_ |
 | Items | _pending_ |
-| Input / output tokens | _pending_ |
+| Input / cached / output / reasoning tokens | _pending_ |
 | Cost (USD, from the provider dashboard) | _pending_ |
 | Wall time | _pending_ |
 
-Fill this table from the JSON summary `just run` prints (`items`, `seconds`, token totals when the SDK
-reports them); the Codex SDK does not estimate cost, so take the amount from the provider dashboard.
+Fill this table from the JSON summary `just run` prints (`items`, `seconds`, `input_tokens`,
+`cached_input_tokens`, `output_tokens`, `reasoning_output_tokens` from `TurnResult.usage.total`); the Codex
+SDK does not estimate cost, so take the amount from the provider dashboard.

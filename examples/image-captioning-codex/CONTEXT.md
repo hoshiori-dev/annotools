@@ -15,7 +15,7 @@ directory is independent of the repository root: read this file first, not the r
 
 ## Rules
 - Never modify `data/raw/`; the DB stores file pointers only.
-- The execution agent sees only `workspaces/coco-cats/` (Codex thread `cwd` + read-only sandbox; tool confinement in `src/captioning/tools.py`).
+- The MCP tools only accept paths inside `workspaces/coco-cats/` (`src/captioning/tools.py`); the Codex thread runs with `cwd` there in a read-only, network-off sandbox — that sandbox blocks writes, not reads, so the tools are the confinement boundary.
 - Changing `spec/` needs the user's confirmation; prompts and export follow the spec.
 - Development checks: `just check` (ruff, ty, pytest) — the repository CI does not run this project.
 - The justfile exports `UV_PROJECT_ENVIRONMENT=.venv`; when running `uv` directly, set it too.

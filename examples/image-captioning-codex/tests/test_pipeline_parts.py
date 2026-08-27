@@ -127,3 +127,38 @@ def test_failure_keeps_good_captions_and_item_pending(workspace):
         assert conn.execute("SELECT COUNT(*) FROM items_pending").fetchone()[0] == 1
         store.record(conn, 1, run_id, "caption", "medium", {"text": " ".join(["w"] * 40)})
         assert any("over budget" in p for p in verify(conn, 1, run_id, {"medium": 25}))
+
+
+async def test_mcp_server_contract(workspace):
+    from fastmcp import Client
+    from mcp.types import ImageContent, TextContent
+
+    from captioning.pipeline import flatten_usage, mcp_config
+    from captioning.tools import build_server
+
+    ws, db = workspace
+    with store.connect(db) as conn:
+        run_id = store.start_run(conn, "m", {"long": "x"}, {})
+    ctx = ToolContext(ws, db, run_id, {"max_width": 768, "max_height": 768, "output_format": "jpeg"})
+    async with Client(build_server(ctx)) as client:
+        names = {t.name for t in await client.list_tools()}
+        assert names == {"look_at_item", "record_caption", "record_tags"}
+        result = await client.call_tool("look_at_item", {"uri": "data/raw/coco-cats/a.jpg"})
+        image, text = result.content
+        assert isinstance(image, ImageContent) and isinstance(text, TextContent)
+        assert json.loads(text.text)["output_size"] == [768, 512]
+        recorded = await client.call_tool(
+            "record_caption", {"uri": "data/raw/coco-cats/a.jpg", "variant": "long", "text": "A cat."}
+        )
+        assert recorded.structured_content["variant"] == "long"
+        bad = await client.call_tool("look_at_item", {"uri": "../../etc/passwd"}, raise_on_error=False)
+        assert bad.is_error and "outside the workspace" in bad.content[0].text
+    config = mcp_config(ctx)
+    assert config["mcp_servers"]["captioning"]["args"][:2] == ["-m", "captioning.tools"]
+    assert flatten_usage({"total": {"input_tokens": 10, "output_tokens": 3}}) == {
+        "input_tokens": 10,
+        "cached_input_tokens": 0,
+        "output_tokens": 3,
+        "reasoning_output_tokens": 0,
+        "total_tokens": 0,
+    }

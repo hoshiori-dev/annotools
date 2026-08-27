@@ -38,5 +38,6 @@ Linear, parallel (`workers` in config): preview → long → compress ×2 → ta
   `{"uri", "coco_id", "long", "medium", "short", "tags"}` (`scripts/export_captions.py`).
 
 ## Budget
-- No per-item cost guard (the Codex SDK reports tokens, not cost); ≤ 4 workers; stop the run after
+- No per-item cost guard (the Codex SDK reports tokens, not cost); `max_seconds_per_item` 180 bounds a
+  runaway thread; ≤ 4 workers; stop the run after
   10 failures in a row (`max_failures`); token totals are reported in the run summary.

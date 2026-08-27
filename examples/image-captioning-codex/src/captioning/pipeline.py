@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKSPACE = ROOT / "workspaces" / "coco-cats"
 DB = WORKSPACE / "data" / "dataset.db"
 PROMPTS_DIR = ROOT / "spec" / "prompts"
-TOKEN_KEYS = ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
+TOKEN_KEYS = ("input_tokens", "cached_input_tokens", "output_tokens", "reasoning_output_tokens", "total_tokens")
 
 
 def load_prompts() -> dict[str, str]:
@@ -39,6 +39,17 @@ def system_prompt(prompts: dict[str, str], config: dict) -> str:
     )
 
 
+def flatten_usage(usage: object) -> dict[str, int]:
+    """Flatten a Codex ``ThreadTokenUsage`` (``usage.total`` breakdown) into the summary's token keys."""
+    total = getattr(usage, "total", None)
+    if total is None and isinstance(usage, dict):
+        total = usage.get("total")
+    if total is None:
+        return {}
+    read = total.get if isinstance(total, dict) else lambda k, d=None: getattr(total, k, d)
+    return {key: int(read(key, 0) or 0) for key in TOKEN_KEYS}
+
+
 def mcp_config(ctx: ToolContext) -> dict:
     """Codex config override registering the tools server (same shape as .codex/config.toml)."""
     args = [
@@ -57,7 +68,7 @@ def mcp_config(ctx: ToolContext) -> dict:
 
 
 async def caption_item(ctx: ToolContext, uri: str, config: dict, system: str) -> dict:
-    from openai_codex import Codex, Sandbox  # imported here so the tests do not need the SDK runtime
+    from openai_codex import ApprovalMode, Codex, Sandbox  # imported here so the tests do not need the SDK runtime
 
     started = time.time()
 
@@ -66,16 +77,18 @@ async def caption_item(ctx: ToolContext, uri: str, config: dict, system: str) ->
             thread = codex.thread_start(
                 model=config["model"],
                 sandbox=Sandbox.read_only,
+                approval_mode=ApprovalMode.deny_all,  # unattended: nothing outside the pre-approved MCP tools
                 cwd=str(ctx.workspace),
                 config=mcp_config(ctx),
                 base_instructions=system,
             )
             result = thread.run(f"Caption the item with uri {uri}.", effort=config.get("effort"))
-        usage = getattr(result, "usage", None)
-        usage_dict = usage if isinstance(usage, dict) else (vars(usage) if usage is not None else {})
-        return {"final_response": result.final_response, **usage_dict}
+        return {"final_response": result.final_response, **flatten_usage(getattr(result, "usage", None))}
 
-    usage = await asyncio.to_thread(run_sync)
+    try:
+        usage = await asyncio.wait_for(asyncio.to_thread(run_sync), timeout=config.get("max_seconds_per_item"))
+    except TimeoutError as exc:
+        raise RuntimeError(f"item exceeded max_seconds_per_item={config.get('max_seconds_per_item')}") from exc
     usage["cost_usd"] = 0.0  # the Codex SDK reports tokens, not cost; fill the README from the provider dashboard
     usage["seconds"] = round(time.time() - started, 1)
     return usage
