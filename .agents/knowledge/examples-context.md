@@ -19,6 +19,8 @@ Each example project's own `CONTEXT.md`; this file only states the repository-le
   SDK configuration enforces it.
 - Each example README records the real usage of one full run (tokens, cost, wall time) and the model used.
 - Examples are excluded from the root ruff/ty configuration; they carry their own checks.
+- `just sync-skills` copies the skills a project follows from `skills/` and writes the last commit that
+  touched `skills/` to `skills/PINNED.txt` (the skills' source commit, stable across rebases).
 
 ## Environment notes
 
