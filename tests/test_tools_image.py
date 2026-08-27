@@ -48,3 +48,11 @@ async def test_invalid_crop_is_tool_error(mcp_server, image_file):
         )
     assert result.is_error
     assert "crop" in result.content[0].text
+
+
+def test_preview_options_schema_matches_tool_aliases():
+    from annotools.tools.common import PreviewOptions
+
+    props = PreviewOptions.model_json_schema()["properties"]
+    assert "fsspec" in props["source"]["description"]
+    assert props["max_width"]["minimum"] == 1 and props["max_height"]["minimum"] == 1

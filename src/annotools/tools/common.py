@@ -38,18 +38,19 @@ PointDiameterParam = Annotated[int, Field(ge=1, description="Vertex/point dot di
 
 
 class PreviewOptions(BaseModel):
-    """Parameters shared by every preview tool (see docs/spec/mcp-overview.md)."""
+    """Parameters shared by every preview tool (see docs/spec/mcp-overview.md).
 
-    source: str = Field(description="Local path or fsspec URL of the image")
-    crop: tuple[float, float, float, float] | None = Field(
-        default=None, description="Normalized (x_min, y_min, x_max, y_max) region to zoom into"
-    )
-    target_pixels: int | None = Field(default=None, ge=1, description="Cap on output area in pixels")
-    max_width: int = Field(default=config.MAX_PREVIEW_WIDTH, ge=1)
-    max_height: int = Field(default=config.MAX_PREVIEW_HEIGHT, ge=1)
-    allow_upscale: bool = Field(default=False, description="Allow enlarging small images/regions up to the limits")
-    output_format: OutputFormat = Field(default=DEFAULT_OUTPUT_FORMAT)
-    save_to: str | None = Field(default=None, description="Also write the encoded image to this path/URL")
+    Field types reuse the ``*Param`` aliases above so the tool schema and this model cannot drift apart.
+    """
+
+    source: SourceParam
+    crop: CropParam = None
+    target_pixels: TargetPixelsParam = None
+    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH
+    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT
+    allow_upscale: AllowUpscaleParam = False
+    output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT
+    save_to: SaveToParam = None
 
 
 def render_preview(options: PreviewOptions) -> PreviewResult:
