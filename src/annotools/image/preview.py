@@ -38,7 +38,11 @@ def preview(
     original_size = image.size
     box = validate_normalized_box(crop, name="crop") if crop is not None else FULL_FRAME
     if box != FULL_FRAME:
-        image = image.crop(normalized_box_to_pixels(box, *original_size))
+        px_box = normalized_box_to_pixels(box, *original_size)
+        image = image.crop(px_box)
+        # Report the box that was actually applied (rounded outward to whole source pixels).
+        width, height = original_size
+        box = (px_box[0] / width, px_box[1] / height, px_box[2] / width, px_box[3] / height)
     cropped_size = image.size
     out_size = fit_size(
         *cropped_size,
@@ -67,7 +71,7 @@ def encode(image: Image.Image, output_format: str = config.DEFAULT_OUTPUT_FORMAT
     """
     if output_format not in FORMATS:
         raise ValueError(f"output_format must be one of {sorted(FORMATS)}, got {output_format!r}")
-    if output_format == "jpeg" and image.mode != "RGB":
+    if output_format == "jpeg" and image.mode not in ("RGB", "L"):
         rgba = image.convert("RGBA")
         background = Image.new("RGBA", rgba.size, "white")
         image = Image.alpha_composite(background, rgba).convert("RGB")

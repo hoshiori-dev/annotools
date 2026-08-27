@@ -37,3 +37,15 @@ def test_validate_box_rejects_bad_values(box):
 def test_box_to_pixels_rounds_outward():
     assert normalized_box_to_pixels((0.25, 0.25, 0.75, 0.75), 800, 600) == (200, 150, 600, 450)
     assert normalized_box_to_pixels((0.001, 0.001, 0.999, 0.999), 100, 100) == (0, 0, 100, 100)
+
+
+@pytest.mark.parametrize("width", range(769, 4608, 37))
+def test_fit_size_hits_limit_exactly(width):
+    w, h = fit_size(width, 384, max_width=768, max_height=768)
+    assert w == 768 and h == round(384 * 768 / width)
+
+
+def test_fit_size_never_exceeds_target_pixels():
+    for width, height in ((1023, 767), (999, 1001), (4000, 3000)):
+        w, h = fit_size(width, height, max_width=10_000, max_height=10_000, target_pixels=250_000)
+        assert w * h <= 250_000

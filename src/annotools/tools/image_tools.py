@@ -3,19 +3,33 @@
 from annotools import config
 from annotools.image.preview import preview
 from annotools.server import mcp
-from annotools.tools.common import McpImage, OutputFormat, PreviewOptions, finish, load_source
+from annotools.tools.common import (
+    DEFAULT_OUTPUT_FORMAT,
+    AllowUpscaleParam,
+    CropParam,
+    MaxHeightParam,
+    MaxWidthParam,
+    McpImage,
+    OutputFormatParam,
+    PreviewOptions,
+    SaveToParam,
+    SourceParam,
+    TargetPixelsParam,
+    finish,
+    load_source,
+)
 
 
 @mcp.tool(output_schema=None)
 def preview_image(
-    source: str,
-    crop: tuple[float, float, float, float] | None = None,
-    target_pixels: int | None = None,
-    max_width: int = config.MAX_PREVIEW_WIDTH,
-    max_height: int = config.MAX_PREVIEW_HEIGHT,
-    allow_upscale: bool = False,
-    output_format: OutputFormat = "jpeg",
-    save_to: str | None = None,
+    source: SourceParam,
+    crop: CropParam = None,
+    target_pixels: TargetPixelsParam = None,
+    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
+    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    allow_upscale: AllowUpscaleParam = False,
+    output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
+    save_to: SaveToParam = None,
 ) -> list[McpImage | str]:
     """Downscale an image (optionally zoomed to a normalized crop box) to fit a token budget.
 

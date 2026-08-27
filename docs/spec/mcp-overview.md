@@ -60,19 +60,28 @@ Every preview tool returns two content blocks in this order:
 | Key | Meaning |
 |---|---|
 | `original_size` | `[width, height]` of the uncropped source after EXIF orientation |
-| `crop` | the applied normalized box, or the full frame `[0, 0, 1, 1]` |
+| `crop` | the **applied** normalized box — the request rounded outward to whole source pixels — or the full frame `[0, 0, 1, 1]` |
 | `output_size` | `[width, height]` of the returned image |
 | `scale` | output pixels per source pixel (`output_width / cropped_source_width`) |
 | `format` | the encoded format |
 | `saved_to` | the `save_to` value when used, else absent |
 
 Tools add keys (`grid`, `objects`, …) documented in their own spec. To map an output pixel `(px, py)`
-back: `x = crop.x_min + px / output_width × (crop.x_max − crop.x_min)` and likewise for `y`.
+back: `x = crop.x_min + px / output_width × (crop.x_max − crop.x_min)` and likewise for `y` — exact
+because `crop` is the applied box and `scale = output_width / (crop width in source pixels)`.
+
+## Sources and `save_to`
+
+`source` is read through fsspec: local paths always work; `s3://`, `gs://`, `http(s)://` need the matching
+backend, installed by the `annotools[remote]` extra (`s3fs`, `gcsfs`, `aiohttp`, `requests`). `save_to`
+writes wherever fsspec can write; the server does not restrict paths — deploy it with the filesystem
+access you intend agents to have.
 
 ## Errors
 
-Invalid parameters raise `ValueError` naming the parameter (surfaced as an MCP tool error);
-unreadable sources raise `FileNotFoundError` with the URI. Tools never return partial images.
+Invalid parameters raise `ValueError` naming the parameter (surfaced as an MCP tool error). A missing
+source raises `FileNotFoundError`, any other read failure `OSError`, and undecodable content `ValueError`;
+each message names the URI. Tools never return partial images.
 
 ## References
 

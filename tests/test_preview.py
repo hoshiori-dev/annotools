@@ -1,5 +1,6 @@
 import io
 
+import numpy as np
 import pytest
 from PIL import Image
 
@@ -33,6 +34,27 @@ def test_ac4_crop_normalized():
     assert result.metadata["scale"] == pytest.approx(1.0)
 
 
+def test_ac4b_crop_reports_applied_box():
+    result = preview(make_image(1070, 802), crop=(0.5003, 0.5, 0.5107, 0.51), allow_upscale=True)
+    x0, y0, x1, y1 = result.metadata["crop"]
+    assert (round(x0 * 1070), round(y0 * 802), round(x1 * 1070), round(y1 * 802)) == (535, 401, 547, 410)
+    assert result.metadata["scale"] == pytest.approx(result.image.width / 12)
+
+
+def test_exif_orientation_applied(tmp_path):
+    from PIL import Image as PILImage
+
+    from annotools.io import load_image
+
+    path = tmp_path / "rot.jpg"
+    img = make_image(20, 10)
+    exif = PILImage.Exif()
+    exif[0x0112] = 6  # rotate 90 degrees clockwise on display
+    img.save(path, exif=exif)
+    assert load_image(str(path)).size == (10, 20)
+    assert preview(load_image(str(path))).metadata["original_size"] == [10, 20]
+
+
 @pytest.mark.parametrize("crop", [(0.5, 0, 0.5, 1), (0, 0, 1.2, 1)])
 def test_ac5_invalid_crop_raises(crop):
     with pytest.raises(ValueError, match="crop"):
@@ -41,7 +63,14 @@ def test_ac5_invalid_crop_raises(crop):
 
 def test_encode_jpeg_flattens_alpha():
     data = encode(make_image(10, 10, color=(255, 0, 0, 0), mode="RGBA"), "jpeg")
-    assert Image.open(io.BytesIO(data)).mode == "RGB"
+    decoded = Image.open(io.BytesIO(data))
+    assert decoded.mode == "RGB"
+    assert (np.asarray(decoded)[5, 5] > 250).all()  # transparent red flattened onto white
+
+
+def test_encode_keeps_grayscale():
+    data = encode(make_image(10, 10, color=128, mode="L"), "jpeg")
+    assert Image.open(io.BytesIO(data)).mode == "L"
 
 
 def test_encode_rejects_unknown_format():

@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from fastmcp import Client
 from mcp.types import ImageContent, TextContent
 
@@ -16,6 +17,15 @@ async def test_ac7_tool_returns_image_and_metadata(mcp_server, image_file):
     assert meta["output_size"] == [768, 576]
     assert meta["crop"] == [0, 0, 1, 1]
     assert meta["format"] == "jpeg"
+    assert meta["scale"] == pytest.approx(768 / 1600)
+
+
+async def test_schema_carries_descriptions_and_constraints(mcp_server):
+    async with Client(mcp_server) as client:
+        tools = {t.name: t for t in await client.list_tools()}
+    props = tools["preview_image"].inputSchema["properties"]
+    assert "fsspec" in props["source"]["description"]
+    assert props["max_width"]["minimum"] == 1
 
 
 async def test_ac8_save_to_writes_file(mcp_server, image_file, tmp_path):

@@ -9,7 +9,7 @@ def mcp_server():
     return mcp
 
 
-def make_image(width: int, height: int, color: str | tuple[int, ...] = "white", mode: str = "RGB") -> Image.Image:
+def make_image(width: int, height: int, color: str | int | tuple[int, ...] = "white", mode: str = "RGB") -> Image.Image:
     return Image.new(mode, (width, height), color)
 
 

@@ -72,4 +72,11 @@ def fit_size(
         scale = min(scale, math.sqrt(target_pixels / (width * height)))
     if not allow_upscale:
         scale = min(scale, 1.0)
-    return (max(1, math.floor(width * scale)), max(1, math.floor(height * scale)))
+    # Round to the nearest pixel (floor undershoots binding limits by 1 px through floating point),
+    # then fall back to floor if rounding would break a cap.
+    out_w, out_h = max(1, round(width * scale)), max(1, round(height * scale))
+    if out_w > max_width or out_h > max_height or (target_pixels is not None and out_w * out_h > target_pixels):
+        out_w, out_h = max(1, math.floor(width * scale)), max(1, math.floor(height * scale))
+    if not allow_upscale:
+        out_w, out_h = min(out_w, width), min(out_h, height)
+    return (out_w, out_h)

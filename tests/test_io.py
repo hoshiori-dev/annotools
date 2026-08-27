@@ -14,6 +14,11 @@ def test_ac6_fsspec_source(image_file, tmp_path):
     assert load_image("memory://imgs/a.png").size == (5, 7)
     with pytest.raises(FileNotFoundError, match=r"missing\.png"):
         open_bytes(str(tmp_path / "missing.png"))
+    with pytest.raises(OSError, match=str(tmp_path)):
+        open_bytes(str(tmp_path))
+    (tmp_path / "text.txt").write_text("not an image")
+    with pytest.raises(ValueError, match=r"text\.txt"):
+        load_image(str(tmp_path / "text.txt"))
 
 
 def test_write_bytes_roundtrip(tmp_path):
