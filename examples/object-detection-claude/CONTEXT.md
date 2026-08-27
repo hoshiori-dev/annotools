@@ -7,7 +7,7 @@ directory is independent of the repository root: read this file first, not the r
 
 ## Map
 - `spec/task.md` — the contract (read first); `spec/prompts/system.md` — the cached system prompt
-- `config/default.json` — model, effort, preview/grid, classes, max rounds, confidence floor, workers, budgets
+- `config/default.json` — model, effort, preview/grid, coordinate convention (`coordinates`), classes, max rounds, confidence floor, workers, budgets
 - `src/detection/` — pipeline (`pipeline.py`), execution-agent tools (`tools.py`: look_at_item / propose_boxes / commit_boxes), geometry (`geometry.py`), store access (`store.py`)
 - `scripts/` — `download_coco_cats.py` (also keeps the COCO cat boxes in `meta_json` for the sanity check), `init_db.py` (from the store skill), `export_detections.py`, `sanity_iou.py`
 - `skills/` — the annotools skills this project follows (copies, pinned)

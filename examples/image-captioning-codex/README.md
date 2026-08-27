@@ -24,7 +24,7 @@ in this directory read `CONTEXT.md` first.
 
 One Codex thread per image (`cwd` = the workspace, read-only sandbox): the tools are a FastMCP stdio
 server (`python -m captioning.tools`) registered through the thread config; the agent calls
-`look_at_item` (annotools preview at 768 px), writes the long caption, compresses it twice, produces
+`look_at_item` (annotools preview at 768 px, the `mllm-multimodal-input` size for GPT patch models), writes the long caption, compresses it twice, produces
 tags, and records each with `record_caption` / `record_tags` (SQLite, schema from the
 `sqlite-annotation-store` skill). The pipeline verifies that all four variants
 exist and are within budget; on failure it sets the item's rows to `needs_review` (nothing is overwritten

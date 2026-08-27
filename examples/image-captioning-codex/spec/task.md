@@ -18,7 +18,8 @@ only what is visible.
 
 ## Model and input
 - Model: Codex/GPT (configured in `config/default.json`, default `gpt-5.6-terra`); effort `low`.
-- Preview: `max_width`/`max_height` 768 (patch-model cost ≈ 700 tokens per image); no grid.
+- Preview: `max_width`/`max_height` 768 (patch-model cost ≈ 700 tokens per image; the annotools server
+  default is 384 for Gemini — see the `mllm-multimodal-input` size table); no grid.
 - Prompt layout: static rules (cached system prompt) → item id → image → question. Accepted trial
   outputs may be appended to the system prompt as examples once the trial passes.
 

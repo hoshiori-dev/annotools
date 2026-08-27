@@ -1,21 +1,33 @@
-"""Coordinate helpers for the detection pipeline (pixels of the shown preview ↔ normalized source)."""
+"""Coordinate helpers for the detection pipeline (the model's frame ↔ normalized source)."""
 
-from typing import Any
+from typing import Any, Literal
+
+from annotools.geometry import normalize_coordinates
+
+# config "coordinates" -> (base: "pixels" = the shown preview, or a fixed space; pair order on the model side)
+CONVENTIONS: dict[str, tuple[str | float, Literal["xy", "yx"]]] = {
+    "pixels": ("pixels", "xy"),  # Claude, Qwen2.5-VL: pixels of the image as shown
+    "gpt": (999, "xy"),  # GPT / Codex: fixed 0..999 space (OpenAI GPT-5.4 vision tips)
+    "thousand": (1000, "xy"),  # Qwen3-VL and other x-first 0-1000 spaces
+    "thousand_yx": (1000, "yx"),  # Gemini: [ymin, xmin, ymax, xmax] * 1000
+}
 
 
-def pixels_to_normalized(box: list[float], meta: dict[str, Any]) -> list[float]:
-    """Map a pixel box of the shown preview to normalized xyxy of the uncropped source, clamped to [0, 1]."""
-    w, h = meta["output_size"]
-    cx0, cy0, cx1, cy1 = meta["crop"]
-    sx, sy = cx1 - cx0, cy1 - cy0
-    x0, y0, x1, y1 = box
-    out = [cx0 + x0 / w * sx, cy0 + y0 / h * sy, cx0 + x1 / w * sx, cy0 + y1 / h * sy]
-    out = [min(max(float(v), 0.0), 1.0) for v in out]
-    if out[0] > out[2]:
-        out[0], out[2] = out[2], out[0]
-    if out[1] > out[3]:
-        out[1], out[3] = out[3], out[1]
-    return out
+def box_to_normalized(box: list[float], meta: dict[str, Any], convention: str = "pixels") -> list[float]:
+    """Map a box from the model's frame to normalized xyxy of the uncropped source, clamped to [0, 1].
+
+    ``meta`` is the preview metadata of the view the model saw (``output_width``/``output_height``,
+    ``crop``); ``convention`` selects the frame (see ``CONVENTIONS``). Swapped corners are reordered.
+    """
+    base, axis_order = CONVENTIONS[convention]
+    if base == "pixels":
+        w, h = meta.get("output_width"), meta.get("output_height")
+        if w is None or h is None:
+            w, h = meta["output_size"]
+    else:
+        w = h = float(base)
+    ((x0, y0, x1, y1),) = normalize_coordinates([box], w, h, crop=meta.get("crop"), axis_order=axis_order)
+    return [min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)]
 
 
 def iou(a: list[float], b: list[float]) -> float:
@@ -26,7 +38,11 @@ def iou(a: list[float], b: list[float]) -> float:
 
 
 def clean(
-    boxes: list[dict[str, Any]], meta: dict[str, Any], classes: set[str], max_boxes: int = 20
+    boxes: list[dict[str, Any]],
+    meta: dict[str, Any],
+    classes: set[str],
+    max_boxes: int = 20,
+    convention: str = "pixels",
 ) -> tuple[list[dict[str, Any]], list[str]]:
     """Normalize, validate, and de-duplicate candidate boxes; returns (kept, rejection reasons).
 
@@ -47,7 +63,7 @@ def clean(
         if not (isinstance(raw, list) and len(raw) == 4):
             rejected.append(f"{index}: box must be [x1, y1, x2, y2]")
             continue
-        bbox = pixels_to_normalized([float(v) for v in raw], meta)
+        bbox = box_to_normalized([float(v) for v in raw], meta, convention)
         if (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]) < 0.01:
             rejected.append(f"{index}: below 1 % of the image")
             continue

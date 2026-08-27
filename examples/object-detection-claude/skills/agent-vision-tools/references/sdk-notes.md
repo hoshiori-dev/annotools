@@ -1,5 +1,7 @@
 # SDK notes (verified 2026-08-27)
 
+Derived from `.agents/knowledge/references/agent-sdks.md` in the annotools repository.
+
 ## Claude Agent SDK (Python `claude-agent-sdk`, TypeScript `@anthropic-ai/claude-agent-sdk`)
 - `@tool(name, description, schema)` handler returns `{"content": [...], "is_error"?: bool}`; content
   blocks: `text`, `image` (`data` base64 without prefix, `mimeType` required), `resource`,

@@ -12,7 +12,7 @@
 
 ## Model and input
 - Model: <id>; provider: <name>; reasoning effort: <tier>
-- Preview: `max_width`/`max_height` <px>; grid <cols×rows>; coordinate convention requested: <pixels | gemini-1000>
+- Preview: `max_width`/`max_height` <px>; grid <cols×rows>; coordinate convention requested: <pixels (Claude, Qwen2.5-VL) | gpt 0..999 | thousand_yx (Gemini) | thousand (Qwen3-VL)>
 - Prompt layout: static spec + examples (cached) → item metadata → image(s) → question
 
 ## Procedure

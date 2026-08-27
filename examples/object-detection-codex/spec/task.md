@@ -21,8 +21,12 @@ Toys, drawings, and statues of cats are not boxed.
 
 ## Model and input
 - Model: Codex/GPT (`config/default.json`, default `gpt-5.6-terra`); effort `medium`.
-- Preview: 768 px, 10×10 grid on every view; the model answers in **pixel coordinates of the shown
-  image** (per `mllm-multimodal-input`); the pipeline normalizes through the preview metadata.
+- Preview: 768 px (`config/default.json` `preview`; GPT patch models bill 32-px patches by area, 768 ≈ 700
+  tokens — the `mllm-multimodal-input` size table), 10×10 grid on every view.
+- Coordinates (`config/default.json` `coordinates: "gpt"`): the model answers in a **fixed 0..999 space**
+  `[x_min, y_min, x_max, y_max]`, the contract the OpenAI GPT-5.4 vision tips recommend; the pipeline
+  normalizes with `annotools.geometry.normalize_coordinates(base=999)`. Set `coordinates` to `pixels` and
+  adjust `spec/prompts/system.md` to try pixel coordinates instead.
 - Prompt layout: static class rules (cached) → item id and shown size → gridded image → question.
 
 ## Procedure

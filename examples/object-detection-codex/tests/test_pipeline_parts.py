@@ -8,7 +8,7 @@ import pytest
 from PIL import Image
 
 from detection import store
-from detection.geometry import clean, iou, pixels_to_normalized
+from detection.geometry import box_to_normalized, clean, iou
 from detection.tools import ToolContext
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,9 +37,13 @@ def workspace(tmp_path):
 
 
 def test_geometry():
-    meta = {"output_size": [768, 512], "crop": [0, 0, 1, 1]}
-    assert pixels_to_normalized([76.8, 51.2, 384, 256], meta) == pytest.approx([0.1, 0.1, 0.5, 0.5])
-    assert pixels_to_normalized([384, 256, 76.8, 51.2], meta) == pytest.approx([0.1, 0.1, 0.5, 0.5])  # swapped corners
+    meta = {"output_width": 768, "output_height": 512, "output_size": [768, 512], "crop": [0, 0, 1, 1]}
+    assert box_to_normalized([76.8, 51.2, 384, 256], meta) == pytest.approx([0.1, 0.1, 0.5, 0.5])
+    assert box_to_normalized([384, 256, 76.8, 51.2], meta) == pytest.approx([0.1, 0.1, 0.5, 0.5])  # swapped corners
+    assert box_to_normalized([0, 0, 999, 999], meta, "gpt") == pytest.approx([0, 0, 1, 1])
+    assert box_to_normalized([100, 200, 300, 400], meta, "thousand_yx") == pytest.approx([0.2, 0.1, 0.4, 0.3])
+    cropped = {"output_width": 400, "output_height": 300, "crop": [0.25, 0.25, 0.75, 0.75]}
+    assert box_to_normalized([0, 0, 400, 300], cropped) == pytest.approx([0.25, 0.25, 0.75, 0.75])
     assert iou([0, 0, 1, 1], [0, 0, 0.5, 1]) == pytest.approx(0.5)
     kept, rejected = clean(
         [
@@ -64,7 +68,7 @@ def test_tools_loop_and_export(workspace, tmp_path):
     ctx.trial_dir.mkdir(parents=True)
     data, meta = ctx.look_at_item("data/raw/coco-cats/a.jpg")
     assert meta["output_size"] == [768, 512] and meta["grid"]["columns"] == 10 and data[:2] == b"\xff\xd8"
-    boxes = [{"label": "black_cat", "box": [76.8, 51.2, 384, 256], "confidence": 0.9}]
+    boxes = [{"label": "black_cat", "box": [100, 100, 500, 500], "confidence": 0.9}]  # 0..999 space (coordinates=gpt)
     _, meta = ctx.propose_boxes("data/raw/coco-cats/a.jpg", boxes)
     assert meta["round"] == 1 and meta["kept"] == 1 and list(ctx.trial_dir.iterdir())
     result = ctx.commit_boxes("data/raw/coco-cats/a.jpg", boxes, done=True)
@@ -80,7 +84,7 @@ def test_tools_loop_and_export(workspace, tmp_path):
     assert export.returncode == 0, export.stderr
     record = json.loads(out.read_text().splitlines()[0])
     assert record["coco_id"] == 1 and record["boxes"][0]["label"] == "black_cat"
-    assert record["boxes"][0]["bbox"] == pytest.approx([0.1, 0.1, 0.5, 0.5])
+    assert record["boxes"][0]["bbox"] == pytest.approx([0.1, 0.1, 0.5, 0.5], abs=1e-3)  # 100/999, 500/999
     sanity = subprocess.run(
         [sys.executable, str(ROOT / "scripts" / "sanity_iou.py"), "--db", str(db)], capture_output=True, text=True
     )

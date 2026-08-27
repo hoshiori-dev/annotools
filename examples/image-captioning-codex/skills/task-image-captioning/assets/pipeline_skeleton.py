@@ -42,9 +42,11 @@ async def caption_item(vision: VisionTools, item_id: int, uri: str, prompts: dic
             record(conn, item_id, "caption", key, {"text": previous})
         tags = json.loads(await call_model(prompts["tags"], [image, f"Image id: {item_id}"]))
         record(conn, item_id, "tag", "", {"tags": tags})
-    except Exception as exc:  # noqa: BLE001 - every failure becomes a reviewable row
+    except Exception as exc:
         # keep whatever was written, but nothing of this run may stay `final`: the item must remain pending
-        conn.execute("UPDATE annotations SET status = 'needs_review' WHERE item_id = ? AND run_id = ?", (item_id, RUN_ID))
+        conn.execute(
+            "UPDATE annotations SET status = 'needs_review' WHERE item_id = ? AND run_id = ?", (item_id, RUN_ID)
+        )
         record(conn, item_id, "caption", "error", {"error": str(exc)}, status="needs_review")
     finally:
         conn.close()
@@ -53,7 +55,7 @@ async def caption_item(vision: VisionTools, item_id: int, uri: str, prompts: dic
 async def main(workers: int = 8) -> None:
     conn = sqlite3.connect(DB)
     conn.execute("PRAGMA foreign_keys = ON")
-    vision = VisionTools(WORKSPACE, max_width=768, max_height=768)
+    vision = VisionTools(WORKSPACE, **json.loads(Path("config/default.json").read_text()).get("preview", {}))
     prompts = {name: (Path("spec/prompts") / f"{name}.md").read_text() for name in ("long", "compress", "tags")}
     pending = conn.execute("SELECT id, uri FROM items_pending").fetchall()
     conn.close()

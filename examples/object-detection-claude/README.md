@@ -3,7 +3,7 @@
 Box every cat in the COCO 2017 val images that contain cats — classes `black_cat`, `white_cat`,
 `other_cat` — with an execution agent built on the
 [Claude Agent SDK](https://code.claude.com/docs/en/agent-sdk/python). The agent looks at the
-[annotools](../../README.md) grid preview, proposes boxes in pixel coordinates of the shown image, sees
+[annotools](../../README.md) grid preview, proposes boxes in pixel coordinates of the shown image (Claude's documented preference), sees
 them rendered with index labels, corrects by index (at most 3 rounds), and commits to SQLite.
 
 ## Run
@@ -32,7 +32,8 @@ size), `propose_boxes` (cleans the candidates — class list, ≥ 1 % area, IoU-
 with index labels on the same gridded view, counts a round), `commit_boxes` (stores `bbox` rows with
 label, confidence, and rounds, replacing the item's earlier commit in this run; `needs_review` unless the
 model declared the overlay correct and every confidence is ≥ `confidence_floor`; an empty commit stores a
-`no_object` tag with the same status rule). Claude answers in pixel coordinates because its docs
+`no_object` tag with the same status rule). `config/default.json` sets `coordinates: "pixels"` and the 768 px preview from the
+`mllm-multimodal-input` size table; Claude answers in pixel coordinates because its docs
 say normalized requests work poorly; `geometry.py` maps them back through the preview metadata.
 
 ## Usage record

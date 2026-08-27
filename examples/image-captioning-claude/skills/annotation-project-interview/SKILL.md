@@ -55,7 +55,7 @@ counts, image sizes, available models, existing data) are yours to look up; deci
 <project>/
   CONTEXT.md            agent entry for this project (not AGENTS.md)
   spec/                 task.md (goal, classes, output contract, QC), prompts/
-  config/               model, effort, budget, parallelism (one file per environment)
+  config/               default.json: model, effort, preview {max_width, max_height}, coordinates, budget, workers
   template/             workspace template copied per dataset
   skills/               skills the execution agent may load
   src/                  pipeline code (SDK agent, tools, export)
@@ -76,7 +76,8 @@ counts, image sizes, available models, existing data) are yours to look up; deci
 
 - Asking "what classes do you want" without proposing a list stalls the interview; propose from the
   data (sample 20 items, look at them with `preview_image_grid`).
-- Preview size is a per-model decision (Gemini ≤ 384 px is one unit; Claude/GPT/Qwen ~450–800 tokens
-  at 768) — put it in `config/`, not in code.
+- Preview size and coordinate convention are per-model decisions (Gemini ≤ 384 px is one unit and
+  answers y-first 0–1000; Claude/Qwen2.5-VL pixels at 768; GPT 0..999) — put both in `config/`, not
+  in code (`mllm-multimodal-input`).
 - A correction-round limit that the user never confirmed becomes an unbounded loop in production.
 - Do not scaffold before the trial passes; a wrong spec in `spec/` propagates into every prompt.

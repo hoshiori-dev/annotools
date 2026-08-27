@@ -3,7 +3,7 @@
 Box every cat in the COCO 2017 val images that contain cats — classes `black_cat`, `white_cat`,
 `other_cat` — with an execution agent built on the
 [Codex SDK](https://github.com/openai/codex/tree/main/sdk/python) (`openai-codex`, which bundles the Codex runtime). The agent looks at the
-[annotools](../../README.md) grid preview, proposes boxes in pixel coordinates of the shown image, sees
+[annotools](../../README.md) grid preview, proposes boxes in a fixed 0..999 coordinate space (the OpenAI GPT-5.4 vision tips' contract), sees
 them rendered with index labels, corrects by index (at most 3 rounds), and commits to SQLite.
 
 ## Run
@@ -32,8 +32,11 @@ stdio server (`python -m detection.tools`) registered through the thread config:
 size), `propose_boxes` (cleans the candidates — class list, ≥ 1 % area, IoU-duplicate removal — draws them
 with index labels on the same gridded view, counts a round), `commit_boxes` (stores `bbox` rows with
 label, confidence, and rounds; `needs_review` when the model ran out of rounds or any confidence is
-below 0.5; an empty list stores a `no_object` tag). The model answers in pixel coordinates of the shown image; `geometry.py` maps them back through the
-preview metadata.
+below 0.5; an empty list stores a `no_object` tag). The model answers `[x_min, y_min, x_max, y_max]` in a fixed 0..999 space (`config/default.json`
+`coordinates: "gpt"`, per the OpenAI GPT-5.4 vision tips); `geometry.py` normalizes with
+`annotools.geometry.normalize_coordinates(base=999)` through the preview `crop`. Set `coordinates` to
+`pixels` (and reword `spec/prompts/system.md`) to compare against pixel answers; the 768 px preview
+follows the `mllm-multimodal-input` size table for GPT patch models.
 
 ## Usage record
 

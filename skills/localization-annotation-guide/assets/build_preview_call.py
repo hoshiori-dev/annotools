@@ -4,12 +4,12 @@ Candidates arrive in the model's convention; this converts them to annotools' no
 the preview metadata returned by preview_image_grid, and builds the objects list with index labels.
 """
 
-from typing import Any
+from typing import Any, Literal
 
 from annotools.geometry import normalize_coordinates
 
 # convention -> (base per axis: "pixels" uses the preview output size, a number is a fixed space; axis order)
-CONVENTIONS: dict[str, tuple[str | float, str]] = {
+CONVENTIONS: dict[str, tuple[str | float, Literal["xy", "yx"]]] = {
     "pixels": ("pixels", "xy"),  # Claude, Qwen2.5-VL: pixels of the shown preview
     "thousand": (1000, "xy"),  # Qwen3-VL and any x-first 0-1000 space
     "gpt": (999, "xy"),  # GPT-5.4+ / Codex: fixed 0..999 space per the OpenAI vision tips

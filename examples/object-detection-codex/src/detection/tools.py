@@ -49,7 +49,8 @@ class ToolContext:
         return result
 
     def _clean(self, boxes, meta):
-        return clean(boxes, meta, self.classes, self.config.get("max_boxes", 20))
+        convention = self.config.get("coordinates", "pixels")
+        return clean(boxes, meta, self.classes, self.config.get("max_boxes", 20), convention)
 
     def look_at_item(self, uri: str) -> tuple[bytes, dict[str, Any]]:
         result = self._render(uri)
@@ -109,13 +110,13 @@ def build_server(ctx: ToolContext) -> FastMCP:
 
     @mcp.tool(output_schema=None)
     def look_at_item(uri: str) -> list:
-        """Show the item with the grid; returns the image and its shown size (output_size) for pixel coordinates."""
+        """Show the item with the grid; returns the image and its metadata (shown size, grid cell size)."""
         data, meta = ctx.look_at_item(uri)
         return [McpImage(data=data, format=meta["format"]), json.dumps(meta)]
 
     @mcp.tool(output_schema=None)
     def propose_boxes(uri: str, boxes: list[dict]) -> list:
-        """Draw candidate boxes ({label, box: [x1, y1, x2, y2] pixels of the shown image, confidence}), indexed."""
+        """Draw candidate boxes ({label, box: [x_min, y_min, x_max, y_max] in 0..999 space, confidence}), indexed."""
         data, meta = ctx.propose_boxes(uri, boxes)
         return [McpImage(data=data, format=meta["format"]), json.dumps(meta)]
 
