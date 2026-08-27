@@ -10,25 +10,26 @@ from tests.conftest import make_image
 
 def test_ac1_downscale_fits_limits():
     result = preview(make_image(4000, 3000))
-    assert result.image.size == (768, 576)
+    assert result.image.size == (384, 288)
     assert result.metadata["original_size"] == [4000, 3000]
-    assert result.metadata["output_size"] == [768, 576]
-    assert result.metadata["scale"] == pytest.approx(768 / 4000)
+    assert result.metadata["output_size"] == [384, 288]
+    assert result.metadata["scale"] == pytest.approx(384 / 4000)
 
 
 def test_ac2_no_upscale_by_default():
-    assert preview(make_image(400, 300)).image.size == (400, 300)
-    assert preview(make_image(400, 300), allow_upscale=True).image.size == (768, 576)
+    assert preview(make_image(300, 200)).image.size == (300, 200)
+    assert preview(make_image(300, 200), allow_upscale=True).image.size == (384, 256)
+    assert preview(make_image(400, 300), max_width=768, max_height=768, allow_upscale=True).image.size == (768, 576)
 
 
 def test_ac3_target_pixels():
     result = preview(make_image(4000, 3000), target_pixels=100_000)
     w, h = result.image.size
-    assert w * h <= 100_000 and w <= 768 and h <= 768
+    assert w * h <= 100_000 and w <= 384 and h <= 384
 
 
 def test_ac4_crop_normalized():
-    result = preview(make_image(800, 600), crop=(0.25, 0.25, 0.75, 0.75))
+    result = preview(make_image(800, 600), crop=(0.25, 0.25, 0.75, 0.75), max_width=768, max_height=768)
     assert result.image.size == (400, 300)
     assert result.metadata["crop"] == [0.25, 0.25, 0.75, 0.75]
     assert result.metadata["scale"] == pytest.approx(1.0)

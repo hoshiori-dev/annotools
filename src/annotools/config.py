@@ -1,43 +1,73 @@
-"""Project-wide defaults. Every value can be overridden with an ``ANNOTOOLS_<NAME>`` environment variable."""
+"""Project-wide defaults, resolved once from CLI arguments, ``ANNOTOOLS_*`` environment variables, and code."""
 
-import os
+from typing import Literal
+
+from pydantic import Field, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+OutputFormat = Literal["jpeg", "png", "webp"]
+GridMode = Literal["ratio", "fixed"]
 
 
-def _env(name: str, default: int | float | str) -> int | float | str:
-    """Return ``ANNOTOOLS_<name>`` converted to the default's type, or the default.
+class Settings(BaseSettings):
+    """Defaults for every preview tool.
+
+    Precedence: ``annotools`` command-line flags (``--max-width``), then ``ANNOTOOLS_<FIELD>``
+    environment variables (``ANNOTOOLS_MAX_WIDTH``), then the values below. Empty environment values are
+    ignored.
+    """
+
+    model_config = SettingsConfigDict(env_prefix="ANNOTOOLS_", env_ignore_empty=True, extra="ignore")
+
+    max_width: int = Field(384, ge=1, description="Maximum preview width in pixels")
+    max_height: int = Field(384, ge=1, description="Maximum preview height in pixels")
+    target_pixels: int | None = Field(None, ge=1, description="Cap on preview area in pixels (null = none)")
+    grid_columns: int = Field(10, ge=1, description="Grid cells per row")
+    grid_rows: int = Field(10, ge=1, description="Grid cells per column")
+    grid_mode: GridMode = Field(
+        "ratio", description="ratio: equal cells; fixed: cells of grid_column_width x grid_row_width"
+    )
+    grid_column_width: int | None = Field(None, ge=1, description="Grid cell width in output pixels (fixed mode)")
+    grid_row_width: int | None = Field(None, ge=1, description="Grid cell height in output pixels (fixed mode)")
+    grid_opacity: float = Field(0.5, ge=0.0, le=1.0, description="Grid line opacity")
+    grid_line_width: int = Field(1, ge=1, description="Grid line width in output pixels")
+    line_width: int = Field(2, ge=1, description="Outline width of boxes and polygons in output pixels")
+    point_diameter: int = Field(3, ge=1, description="Keypoint and vertex dot diameter in output pixels")
+    color: str = Field("blue", description="Default overlay color (name or #RRGGBB)")
+    output_format: OutputFormat = Field("jpeg", description="Default encoding of returned previews")
+    jpeg_quality: int = Field(90, ge=1, le=100, description="JPEG quality")
+
+    @model_validator(mode="after")
+    def _fixed_grid_needs_widths(self) -> "Settings":
+        if self.grid_mode == "fixed" and (self.grid_column_width is None or self.grid_row_width is None):
+            raise ValueError("grid_column_width and grid_row_width are required when grid_mode='fixed'")
+        return self
+
+
+_settings: Settings | None = None
+
+
+def get_settings() -> Settings:
+    """Return the process-wide settings, resolving them from the environment on first use."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
+
+
+def configure(settings: Settings) -> None:
+    """Install settings resolved elsewhere (the CLI) before any tool module reads them.
 
     Raises:
-        ValueError: naming the variable when it cannot be converted.
+        RuntimeError: when ``get_settings()`` already ran, because module defaults were baked from it.
     """
-    raw = os.environ.get(f"ANNOTOOLS_{name}")
-    if raw is None or raw == "":
-        return default
-    try:
-        return type(default)(raw)
-    except ValueError as exc:
-        raise ValueError(f"ANNOTOOLS_{name}={raw!r} is not a valid {type(default).__name__}") from exc
+    global _settings
+    if _settings is not None:
+        raise RuntimeError("annotools settings were already resolved; configure() must run before importing tools")
+    _settings = settings
 
 
-def _positive(name: str, default: int) -> int:
-    value = int(_env(name, default))
-    if value < 1:
-        raise ValueError(f"ANNOTOOLS_{name} must be >= 1, got {value}")
-    return value
-
-
-MAX_PREVIEW_WIDTH: int = _positive("MAX_PREVIEW_WIDTH", 768)
-MAX_PREVIEW_HEIGHT: int = _positive("MAX_PREVIEW_HEIGHT", 768)
-DEFAULT_LINE_WIDTH: int = _positive("DEFAULT_LINE_WIDTH", 2)
-DEFAULT_POINT_DIAMETER: int = _positive("DEFAULT_POINT_DIAMETER", 3)
-GRID_COLUMNS: int = _positive("GRID_COLUMNS", 10)
-GRID_ROWS: int = _positive("GRID_ROWS", 10)
-GRID_OPACITY: float = float(_env("GRID_OPACITY", 0.5))
-GRID_LINE_WIDTH: int = _positive("GRID_LINE_WIDTH", 1)
-DEFAULT_COLOR: str = str(_env("DEFAULT_COLOR", "blue"))
-DEFAULT_OUTPUT_FORMAT: str = str(_env("DEFAULT_OUTPUT_FORMAT", "jpeg"))
-JPEG_QUALITY: int = _positive("JPEG_QUALITY", 90)
-
-if not 0.0 <= GRID_OPACITY <= 1.0:
-    raise ValueError(f"ANNOTOOLS_GRID_OPACITY must be within [0, 1], got {GRID_OPACITY}")
-if DEFAULT_OUTPUT_FORMAT not in ("jpeg", "png", "webp"):
-    raise ValueError(f"ANNOTOOLS_DEFAULT_OUTPUT_FORMAT must be jpeg, png, or webp, got {DEFAULT_OUTPUT_FORMAT!r}")
+def reset_settings() -> None:
+    """Forget the resolved settings (tests only)."""
+    global _settings
+    _settings = None

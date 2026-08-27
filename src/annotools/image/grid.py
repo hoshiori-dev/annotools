@@ -7,21 +7,29 @@ import numpy as np
 from PIL import Image
 from pydantic import BaseModel, Field, model_validator
 
-from annotools import config
+from annotools.config import get_settings
 from annotools.image.preview import PreviewResult
+
+settings = get_settings()
 
 
 class GridOptions(BaseModel):
     """Grid parameters shared by every tool that accepts ``grid`` (see .agents/knowledge/spec/mcp-overview.md)."""
 
-    columns: int = Field(default=config.GRID_COLUMNS, ge=1, description="Cells per row (columns-1 vertical lines)")
-    rows: int = Field(default=config.GRID_ROWS, ge=1, description="Cells per column (rows-1 horizontal lines)")
-    mode: Literal["ratio", "fixed"] = Field(default="ratio", description="ratio: equal cells; fixed: cells of given px")
-    column_width: int | None = Field(default=None, ge=1, description="Cell width in output px (fixed mode)")
-    row_width: int | None = Field(default=None, ge=1, description="Cell height in output px (fixed mode)")
+    columns: int = Field(default=settings.grid_columns, ge=1, description="Cells per row (columns-1 vertical lines)")
+    rows: int = Field(default=settings.grid_rows, ge=1, description="Cells per column (rows-1 horizontal lines)")
+    mode: Literal["ratio", "fixed"] = Field(
+        default=settings.grid_mode, description="ratio: equal cells; fixed: cells of given px"
+    )
+    column_width: int | None = Field(
+        default=settings.grid_column_width, ge=1, description="Cell width in output px (fixed mode)"
+    )
+    row_width: int | None = Field(
+        default=settings.grid_row_width, ge=1, description="Cell height in output px (fixed mode)"
+    )
     color: Literal["white", "black", "invert"] = Field(default="white")
-    opacity: float = Field(default=config.GRID_OPACITY, ge=0.0, le=1.0)
-    line_width: int = Field(default=config.GRID_LINE_WIDTH, ge=1)
+    opacity: float = Field(default=settings.grid_opacity, ge=0.0, le=1.0)
+    line_width: int = Field(default=settings.grid_line_width, ge=1)
 
     @model_validator(mode="after")
     def _fixed_needs_widths(self) -> "GridOptions":

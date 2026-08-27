@@ -158,6 +158,8 @@ async def test_string_keyed_id_names(mcp_server, image_file, tmp_path):
                 "mask_source": str(mask_path),
                 "annotation": "legend",
                 "id_names": {"1": "cat"},
+                "max_width": 768,
+                "max_height": 768,
             },
         )
     meta = json.loads(result.content[1].text)

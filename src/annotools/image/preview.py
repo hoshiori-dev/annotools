@@ -6,8 +6,10 @@ from typing import Any
 
 from PIL import Image
 
-from annotools import config
+from annotools.config import get_settings
 from annotools.geometry import FULL_FRAME, Box, fit_size, normalized_box_to_pixels, validate_normalized_box
+
+settings = get_settings()
 
 FORMATS = {"jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}
 MIME_TYPES = {"jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp"}
@@ -28,8 +30,8 @@ def preview(
     *,
     crop: Box | None = None,
     target_pixels: int | None = None,
-    max_width: int = config.MAX_PREVIEW_WIDTH,
-    max_height: int = config.MAX_PREVIEW_HEIGHT,
+    max_width: int = settings.max_width,
+    max_height: int = settings.max_height,
     allow_upscale: bool = False,
 ) -> PreviewResult:
     """Crop ``image`` to the normalized ``crop`` box and fit it inside the size limits.
@@ -66,7 +68,7 @@ def preview(
     return PreviewResult(image=image, metadata=metadata, crop_pixels=px_box)
 
 
-def encode(image: Image.Image, output_format: str = config.DEFAULT_OUTPUT_FORMAT) -> bytes:
+def encode(image: Image.Image, output_format: str = settings.output_format) -> bytes:
     """Encode ``image`` as ``jpeg`` (quality from config, alpha flattened on white), ``png``, or ``webp``.
 
     Raises:
@@ -79,7 +81,7 @@ def encode(image: Image.Image, output_format: str = config.DEFAULT_OUTPUT_FORMAT
         background = Image.new("RGBA", rgba.size, "white")
         image = Image.alpha_composite(background, rgba).convert("RGB")
     buffer = io.BytesIO()
-    kwargs: dict[str, Any] = {"quality": config.JPEG_QUALITY} if output_format == "jpeg" else {}
+    kwargs: dict[str, Any] = {"quality": settings.jpeg_quality} if output_format == "jpeg" else {}
     image.save(buffer, format=FORMATS[output_format], **kwargs)
     return buffer.getvalue()
 

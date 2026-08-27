@@ -5,7 +5,7 @@ from typing import Annotated, Any
 
 from pydantic import Field
 
-from annotools import config
+from annotools.config import get_settings
 from annotools.image.grid import GridOptions
 from annotools.image.preview import encode, preview
 from annotools.io import write_bytes
@@ -30,6 +30,8 @@ from annotools.tools.common import (
 )
 from annotools.tools.image_tools import _with_grid
 from annotools.video import sample_frames
+
+settings = get_settings()
 
 FpsParam = Annotated[float, Field(gt=0, description="Target sampling rate in frames per second")]
 StartParam = Annotated[float | None, Field(ge=0, description="Start time in seconds")]
@@ -95,9 +97,9 @@ def preview_video(
     end: EndParam = None,
     max_frames: MaxFramesParam = 32,
     crop: CropParam = None,
-    target_pixels: TargetPixelsParam = None,
-    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
-    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    target_pixels: TargetPixelsParam = settings.target_pixels,
+    max_width: MaxWidthParam = settings.max_width,
+    max_height: MaxHeightParam = settings.max_height,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
     save_to: SaveDirParam = None,
@@ -127,18 +129,18 @@ def preview_video_grid(
     start: StartParam = None,
     end: EndParam = None,
     max_frames: MaxFramesParam = 32,
-    columns: GridCellsParam = config.GRID_COLUMNS,
-    rows: GridCellsParam = config.GRID_ROWS,
-    mode: GridMode = "ratio",
-    column_width: GridCellSizeParam = None,
-    row_width: GridCellSizeParam = None,
+    columns: GridCellsParam = settings.grid_columns,
+    rows: GridCellsParam = settings.grid_rows,
+    mode: GridMode = settings.grid_mode,
+    column_width: GridCellSizeParam = settings.grid_column_width,
+    row_width: GridCellSizeParam = settings.grid_row_width,
     color: GridColor = "white",
-    opacity: GridOpacityParam = config.GRID_OPACITY,
-    line_width: GridLineWidthParam = config.GRID_LINE_WIDTH,
+    opacity: GridOpacityParam = settings.grid_opacity,
+    line_width: GridLineWidthParam = settings.grid_line_width,
     crop: CropParam = None,
-    target_pixels: TargetPixelsParam = None,
-    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
-    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    target_pixels: TargetPixelsParam = settings.target_pixels,
+    max_width: MaxWidthParam = settings.max_width,
+    max_height: MaxHeightParam = settings.max_height,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
     save_to: SaveDirParam = None,

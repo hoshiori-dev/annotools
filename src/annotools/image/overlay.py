@@ -5,10 +5,12 @@ from collections.abc import Sequence
 from PIL import Image, ImageDraw, ImageFont
 from pydantic import BaseModel, Field
 
-from annotools import config
 from annotools.color import RGB, parse_color, text_color_for
+from annotools.config import get_settings
 from annotools.geometry import validate_normalized_box, validate_normalized_point
 from annotools.image.preview import PreviewResult
+
+settings = get_settings()
 
 
 class BBoxObject(BaseModel):
@@ -16,7 +18,7 @@ class BBoxObject(BaseModel):
 
     bbox: tuple[float, float, float, float] = Field(description="(x_min, y_min, x_max, y_max), normalized 0-1")
     label: str | None = Field(default=None, description="Optional text drawn above the box")
-    color: str = Field(default=config.DEFAULT_COLOR, description="Color name or #RRGGBB")
+    color: str = Field(default=settings.color, description="Color name or #RRGGBB")
 
 
 class KeypointObject(BaseModel):
@@ -24,7 +26,7 @@ class KeypointObject(BaseModel):
 
     point: tuple[float, float] = Field(description="(x, y), normalized 0-1")
     label: str | None = Field(default=None, description="Optional text drawn beside the point")
-    color: str = Field(default=config.DEFAULT_COLOR, description="Color name or #RRGGBB")
+    color: str = Field(default=settings.color, description="Color name or #RRGGBB")
 
 
 class PolygonObject(BaseModel):
@@ -32,7 +34,7 @@ class PolygonObject(BaseModel):
 
     points: list[float] = Field(description="[x1, y1, x2, y2, ...], even count, at least 3 points, normalized 0-1")
     label: str | None = Field(default=None, description="Optional text drawn at the first vertex")
-    color: str = Field(default=config.DEFAULT_COLOR, description="Color name or #RRGGBB")
+    color: str = Field(default=settings.color, description="Color name or #RRGGBB")
 
 
 class Mapper:
@@ -89,7 +91,7 @@ def _draw_label(
 
 
 def draw_bboxes(
-    result: PreviewResult, objects: Sequence[BBoxObject], line_width: int = config.DEFAULT_LINE_WIDTH
+    result: PreviewResult, objects: Sequence[BBoxObject], line_width: int = settings.line_width
 ) -> PreviewResult:
     """Draw ``objects`` on ``result.image`` (in place) and add ``objects`` count to the metadata.
 
@@ -117,7 +119,7 @@ def draw_bboxes(
 
 
 def draw_keypoints(
-    result: PreviewResult, objects: Sequence[KeypointObject], point_diameter: int = config.DEFAULT_POINT_DIAMETER
+    result: PreviewResult, objects: Sequence[KeypointObject], point_diameter: int = settings.point_diameter
 ) -> PreviewResult:
     """Draw ``objects`` as filled dots (optional labels) and add ``objects`` count to the metadata.
 
@@ -157,8 +159,8 @@ def validate_polygon(points: Sequence[float], name: str) -> list[tuple[float, fl
 def draw_polygons(
     result: PreviewResult,
     objects: Sequence[PolygonObject],
-    line_width: int = config.DEFAULT_LINE_WIDTH,
-    point_diameter: int = config.DEFAULT_POINT_DIAMETER,
+    line_width: int = settings.line_width,
+    point_diameter: int = settings.point_diameter,
     show_point_index: bool = True,
 ) -> PreviewResult:
     """Draw closed polygons with vertex dots and optional 1-based vertex indices; add ``objects`` to metadata.

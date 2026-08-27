@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from annotools import config
+from annotools.config import get_settings
 from annotools.image.grid import GridOptions, draw_grid
 from annotools.image.overlay import (
     BBoxObject,
@@ -40,6 +40,8 @@ from annotools.tools.common import (
     render_preview,
 )
 
+settings = get_settings()
+
 PREVIEW_PARAMS_DOC = "Coordinates are normalized 0-1 relative to the uncropped source."
 
 
@@ -58,9 +60,9 @@ def _with_grid(result, grid: GridOptions | None, extra: dict) -> None:
 def preview_image(
     source: SourceParam,
     crop: CropParam = None,
-    target_pixels: TargetPixelsParam = None,
-    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
-    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    target_pixels: TargetPixelsParam = settings.target_pixels,
+    max_width: MaxWidthParam = settings.max_width,
+    max_height: MaxHeightParam = settings.max_height,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
     save_to: SaveToParam = None,
@@ -86,18 +88,18 @@ def preview_image(
 @mcp.tool(output_schema=None)
 def preview_image_grid(
     source: SourceParam,
-    columns: GridCellsParam = config.GRID_COLUMNS,
-    rows: GridCellsParam = config.GRID_ROWS,
-    mode: GridMode = "ratio",
-    column_width: GridCellSizeParam = None,
-    row_width: GridCellSizeParam = None,
+    columns: GridCellsParam = settings.grid_columns,
+    rows: GridCellsParam = settings.grid_rows,
+    mode: GridMode = settings.grid_mode,
+    column_width: GridCellSizeParam = settings.grid_column_width,
+    row_width: GridCellSizeParam = settings.grid_row_width,
     color: GridColor = "white",
-    opacity: GridOpacityParam = config.GRID_OPACITY,
-    line_width: GridLineWidthParam = config.GRID_LINE_WIDTH,
+    opacity: GridOpacityParam = settings.grid_opacity,
+    line_width: GridLineWidthParam = settings.grid_line_width,
     crop: CropParam = None,
-    target_pixels: TargetPixelsParam = None,
-    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
-    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    target_pixels: TargetPixelsParam = settings.target_pixels,
+    max_width: MaxWidthParam = settings.max_width,
+    max_height: MaxHeightParam = settings.max_height,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
     save_to: SaveToParam = None,
@@ -141,11 +143,11 @@ def preview_image_bboxes(
     source: SourceParam,
     objects: list[BBoxObject],
     grid: GridOptions | None = None,
-    line_width: LineWidthParam = config.DEFAULT_LINE_WIDTH,
+    line_width: LineWidthParam = settings.line_width,
     crop: CropParam = None,
-    target_pixels: TargetPixelsParam = None,
-    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
-    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    target_pixels: TargetPixelsParam = settings.target_pixels,
+    max_width: MaxWidthParam = settings.max_width,
+    max_height: MaxHeightParam = settings.max_height,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
     save_to: SaveToParam = None,
@@ -178,11 +180,11 @@ def preview_image_keypoints(
     source: SourceParam,
     objects: list[KeypointObject],
     grid: GridOptions | None = None,
-    point_diameter: PointDiameterParam = config.DEFAULT_POINT_DIAMETER,
+    point_diameter: PointDiameterParam = settings.point_diameter,
     crop: CropParam = None,
-    target_pixels: TargetPixelsParam = None,
-    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
-    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    target_pixels: TargetPixelsParam = settings.target_pixels,
+    max_width: MaxWidthParam = settings.max_width,
+    max_height: MaxHeightParam = settings.max_height,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
     save_to: SaveToParam = None,
@@ -214,13 +216,13 @@ def preview_image_polygons(
     source: SourceParam,
     objects: list[PolygonObject],
     grid: GridOptions | None = None,
-    line_width: LineWidthParam = config.DEFAULT_LINE_WIDTH,
-    point_diameter: PointDiameterParam = config.DEFAULT_POINT_DIAMETER,
+    line_width: LineWidthParam = settings.line_width,
+    point_diameter: PointDiameterParam = settings.point_diameter,
     show_point_index: bool = True,
     crop: CropParam = None,
-    target_pixels: TargetPixelsParam = None,
-    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
-    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    target_pixels: TargetPixelsParam = settings.target_pixels,
+    max_width: MaxWidthParam = settings.max_width,
+    max_height: MaxHeightParam = settings.max_height,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
     save_to: SaveToParam = None,
@@ -261,12 +263,12 @@ def preview_image_segmentation(
     alpha: Annotated[float, Field(ge=0.0, le=1.0, description="Blend strength of region colours")] = 0.5,
     line_width: Annotated[
         int, Field(ge=0, description="Region outline width in output pixels; 0 disables")
-    ] = config.DEFAULT_LINE_WIDTH,
+    ] = settings.line_width,
     grid: GridOptions | None = None,
     crop: CropParam = None,
-    target_pixels: TargetPixelsParam = None,
-    max_width: MaxWidthParam = config.MAX_PREVIEW_WIDTH,
-    max_height: MaxHeightParam = config.MAX_PREVIEW_HEIGHT,
+    target_pixels: TargetPixelsParam = settings.target_pixels,
+    max_width: MaxWidthParam = settings.max_width,
+    max_height: MaxHeightParam = settings.max_height,
     allow_upscale: AllowUpscaleParam = False,
     output_format: OutputFormatParam = DEFAULT_OUTPUT_FORMAT,
     save_to: SaveToParam = None,
