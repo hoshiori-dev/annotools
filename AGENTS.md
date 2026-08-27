@@ -13,7 +13,7 @@ tests/                <- pytest; `container` marker needs docker
 docs/                 <- zensical site only (user-facing pages); specs are not here
 skills/               <- (planned, P4) publishable skills (npx skills add hoshiori-dev/annotools); English
 examples/             <- (planned, P5/P6) independent example projects; each has its own CONTEXT.md
-.agents/knowledge/    <- agent knowledge base (this file routes into it); spec/ holds one spec per MCP tool
+.agents/knowledge/    <- agent knowledge base (this file routes into it); spec/ one spec per MCP tool; references/ dated external facts
 .agents/skills/       <- development skills (Claude Code sees them via .claude/skills symlink)
 .github/              <- workflows, issue forms, labels.json, release.yml, CODEOWNERS
 scripts/              <- repo maintenance scripts (labels, taxonomy, release checks)
@@ -44,6 +44,9 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 | Writing or editing Python, tests, docstrings, lint config | `.agents/knowledge/conventions.md` |
 | Writing a spec for an MCP tool or library feature | `.agents/knowledge/spec-format.md` |
 | Choosing preview sizes, tiles, or token budgets for any model | `.agents/knowledge/mllm-token-budget.md` |
+| Any per-model fact: token cost, coordinate convention, cache minimum | `.agents/knowledge/references/mllm-models.md` |
+| Using or upgrading FastMCP, pydantic-settings, PyAV, fsspec, Pillow | `.agents/knowledge/references/dependencies.md` |
+| Writing Claude Agent SDK or Codex SDK pipeline code (examples, skills) | `.agents/knowledge/references/agent-sdks.md` |
 | Touching `examples/` | `.agents/knowledge/examples-context.md`, then the project's `CONTEXT.md` |
 | Creating or editing issues, labels, milestones, tracking issues | `.agents/knowledge/planning.md` |
 | Touching workflows, diagnosing a red check, remote settings | `.agents/knowledge/platform-settings.md` |
@@ -88,4 +91,5 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 | A label, issue form, `release.yml`, or dependabot label | `.github/labels.json` — `just check-taxonomy` fails otherwise |
 | An MCP tool's parameters or return | its `.agents/knowledge/spec/` file, tests, and README tool table (both languages) |
 | A new knowledge file or development skill | this file's When To Read What table |
+| A vendor fact or dependency version | `.agents/knowledge/references/*.md` (date it) and the skill copy derived from it |
 | Python tool versions in `pyproject.toml` dev group | matching `rev` in `.pre-commit-config.yaml` |
