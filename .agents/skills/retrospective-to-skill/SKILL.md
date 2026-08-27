@@ -21,6 +21,8 @@ description: >-
    - *Stable fact or gotcha* agents need when a condition fires → **knowledge file** entry
      (`.agents/knowledge/<topic>.md`), and a When-To-Read pointer in `AGENTS.md` if the file is new.
    - *Rule for every task* → one line in `AGENTS.md` Core Conventions.
+   - *External fact looked up* (vendor rule, dependency API, SDK signature) → dated entry in
+     `.agents/knowledge/references/`.
    - *Already recorded* or *one-off* → drop; say so.
 3. **Post** the list as a comment on the issue (through the publish gate), formatted as
    `<n>. **<lesson>** → <destination> (#<issue if follow-up>)`; open a follow-up issue for any skill that

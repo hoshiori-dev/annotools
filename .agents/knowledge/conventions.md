@@ -42,6 +42,11 @@ or CI job commands.
   (`gh api repos/<owner>/<repo>/git/ref/tags/<tag>`) — `astral-sh/setup-uv` and
   `pypa/gh-action-pypi-publish` publish no major-version tag.
 
+## APIs From Memory
+
+- Verify library and SDK calls against `references/dependencies.md` / `references/agent-sdks.md`
+  before writing them; add what you had to look up.
+
 ## Shell And Search Gotchas
 
 - `rg` skips hidden directories: pass `--hidden` (and `--glob '!.git'`) or searches miss `.agents/` and

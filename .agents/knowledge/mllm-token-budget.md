@@ -4,8 +4,8 @@ Load this when choosing preview sizes, grid density, frame rates, or explaining 
 
 ## Source Of Truth
 
-Vendor documentation for each model (verify at implementation time; figures drift). This file records
-the decisions and the facts that justified them, with the verification date.
+`references/mllm-models.md` holds the vendor facts (dated, with URLs); this file records only the
+project decisions built on them. Update the reference first when a figure drifts.
 
 ## Decisions
 
@@ -30,8 +30,7 @@ the decisions and the facts that justified them, with the verification date.
 
 ## Per-model facts
 
-Token formulas, resolution tiers, coordinate conventions, and cache minimums for Gemini, Claude, GPT,
-and Qwen live in `skills/mllm-multimodal-input/SKILL.md` (sources with dates in its
-`references/sources.md`). Two facts that shape this project: Claude counts 28×28 patches (768 px long
-side ≈ 450–800 tokens) and answers localization in **pixel** coordinates of the image it saw, so ask
-models in their native convention and normalize in code (`skills/localization-annotation-guide`).
+See `references/mllm-models.md`. Two facts shape this project: Claude answers localization in pixel
+coordinates of the image it saw, Gemini in `[ymin, xmin, ymax, xmax]` × 1000 — so ask each model in its
+native convention and normalize in code (`skills/localization-annotation-guide`); and Gemini bills any
+image ≤ 384 px on both sides as one 258-token unit.
