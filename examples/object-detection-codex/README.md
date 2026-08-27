@@ -42,10 +42,10 @@ preview metadata.
 | Model | _pending first full run_ |
 | Items | _pending_ |
 | Mean rounds per image | _pending_ |
-| Input / output tokens | _pending_ |
+| Input / cached / output / reasoning tokens | _pending_ |
 | Cost (USD, from the provider dashboard) | _pending_ |
 | Wall time | _pending_ |
 | Sanity: mean best IoU / recall@0.5 | _pending_ (`just sanity`) |
 
-Fill this table from the JSON summary `just run` prints (`cost_usd`, `seconds`, `items`, `mean_rounds`)
+Fill this table from the JSON summary `just run` prints (`seconds`, `items`, `mean_rounds`, token fields)
 and `just sanity`; the Codex SDK does not estimate cost, so take the amount from the provider dashboard.

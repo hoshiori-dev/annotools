@@ -35,8 +35,8 @@ replaces whatever the item had in this run.
   duplicates (IoU > 0.9 with an earlier kept box — the earlier one is kept, the later rejected by index),
   and boxes beyond `max_boxes` (20) are rejected and reported back to the model.
 - `final` only when the model declares the overlay correct (`done=true`) and every confidence ≥
-  `confidence_floor` (0.5); otherwise `needs_review` — including an empty commit with `done=false`. A
-  negative answer (`done=true`, no boxes) writes a `tag`/`no_object` row.
+  `confidence_floor` (0.5); otherwise `needs_review` — including an empty commit with `done=false`. An
+  empty commit writes a `tag`/`no_object` row with the same status rule (`final` only with `done=true`).
 - `just sanity` reports mean IoU against the COCO cat boxes (informational, not a gate).
 
 ## Output contract
