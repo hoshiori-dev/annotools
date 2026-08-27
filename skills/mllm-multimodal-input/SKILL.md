@@ -43,7 +43,7 @@ rely on for cost (vendors change tiers without notice) and record the date next 
 | GPT-5.1 (tile model) | Same procedure with 70 base + 140 per tile: 768×768 → 630; ≤ 512×512 → 210. | as above |
 | GPT-5.2 / 5.4 / 5.6 families, GPT-4.1-mini/nano, gpt-5-mini/nano, o4-mini (patch models) | 32-px patches: ceil(w/32) × ceil(h/32) × model multiplier (1.2 for 5.2/5.4/5.6 and gpt-5-mini; 1.62 for 4.1-mini; other multipliers per the source page). 768×768 → 576 patches × 1.2 ≈ 692. | Cost is linear in area: shrink to the smallest legible size; no tile boundary to exploit |
 | Qwen2.5-VL | 14-px patches merged 2×2 → one token per 28×28 px; `min_pixels`/`max_pixels` bound the area (typical 256·28² – 1280·28²), sizes rounded to multiples of 28. 768×768 → 784 tokens. | Set `max_pixels` to the budget; 768 long side ≈ 450–800 tokens |
-| Qwen3-VL | 16-px patches merged 2×2 → one token per **32×32** px; sizes rounded to multiples of 32; pixel budgets in units of 32² (video `total_pixels` default 20480·32², `fps` default 2). 768×768 → 576 tokens. | Same rule with 32-px units; 768 long side ≈ 350–600 tokens |
+| Qwen3-VL | 16-px patches merged 2×2 → one token per **32×32** px; sizes rounded to multiples of 32; pixel budgets in units of 32² (video `fps` default 2; the `total_pixels` default differs between the README and `vision_process.py` — set it explicitly). 768×768 → 576 tokens. | Same rule with 32-px units; 768 long side ≈ 330–600 tokens |
 
 Practical consequence: the annotools default of 768 px on the long side costs roughly 350–800 tokens
 on Claude, GPT, and Qwen and 4–6 × 258 tokens on Gemini. For Gemini, downsize to ≤ 384 px when
@@ -68,7 +68,7 @@ Rule: sample sparser (`fps`) before sampling smaller; 32 frames at 768 px is alr
 | Claude | Absolute pixel `[x1, y1, x2, y2]` of the image **as sent**; the docs state normalized 0–1000 requests work poorly. Keep the preview within the tier limits (the annotools default 768 px is; raising `max_width`/`max_height` past 1568/2576 px makes Claude resize and answer in the resized space). | divide by the preview `output_size`, then map through `crop` using the annotools metadata |
 | Gemini | `[ymin, xmin, ymax, xmax]` normalized to 0–1000 (note the y-first order); segmentation masks as `[x, y]` polygons 0–1000 | divide by 1000, swap to xyxy |
 | GPT | No documented convention; pixel coordinates of the sent image work in practice — state the image size in the prompt | divide by `output_size` |
-| Qwen2.5-VL | Absolute pixels of the resized image (the size after `min/max_pixels`) | divide by the resized size |
+| Qwen2.5-VL / Qwen3-VL | Absolute pixels of the resized image (the size after `min/max_pixels`, multiples of 28 or 32) | divide by the resized size |
 
 Store everything as normalized xyxy relative to the uncropped source (the annotools convention: x and
 y in 0–1, `[x_min, y_min, x_max, y_max]`, polygons as flat `[x1, y1, …]`); the grid overlay helps every
