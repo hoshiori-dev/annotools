@@ -21,8 +21,7 @@ coordinates, then render the boxes back so it can correct them before you store 
         preview,
     )
 
-    source = load_image("photo.jpg")
-    view = preview(source, max_width=768, max_height=768)
+    view = preview(load_image("photo.jpg"), max_width=768, max_height=768)
     view.image = draw_grid(view.image, GridOptions(columns=10, rows=10)).image
     gridded = encode(view.image, "jpeg")  # ask the model for boxes on this view
 
@@ -30,12 +29,13 @@ coordinates, then render the boxes back so it can correct them before you store 
     answer = [[144, 72, 432, 360]]  # the model's pixels of the view it saw
     boxes = normalize_coordinates(answer, width, height, crop=view.metadata["crop"])
 
-    check = draw_bboxes(preview(source, max_width=768, max_height=768), [BBoxObject(bbox=boxes[0], label="cat")])
+    check = draw_bboxes(view, [BBoxObject(bbox=boxes[0], label="cat")])
     ```
 
     `boxes` is `[[0.1875, 0.125, 0.5625, 0.625]]` — normalized to the uncropped source, which is
     what the store keeps. `draw_grid` returns a new result, but only its image is taken: `view` keeps
-    the `crop` and `scale` that `draw_bboxes` maps the boxes through.
+    the `crop` and `scale` that both `normalize_coordinates` and `draw_bboxes` map through, so the
+    boxes land on the same gridded view the model answered on.
 
 === "MCP"
 
@@ -47,7 +47,12 @@ coordinates, then render the boxes back so it can correct them before you store 
     ```
 
     ```json
-    { "coordinates": [[144, 72, 432, 360]], "base_width": 768, "base_height": 576 }
+    {
+      "coordinates": [[144, 72, 432, 360]],
+      "base_width": 768,
+      "base_height": 576,
+      "crop": [0, 0, 1, 1]
+    }
     ```
 
     ```json
@@ -60,10 +65,15 @@ coordinates, then render the boxes back so it can correct them before you store 
     }
     ```
 
+    `base_width` / `base_height` and `crop` are the grid call's own `output_width`, `output_height`
+    and applied `crop` — read them off its metadata rather than assuming, since the fit depends on
+    the source aspect ratio (768x576 for a 4:3 photo) and `crop` is only the full frame while the
+    model is looking at the whole image.
+
     The grid call adds `grid` (`columns`, `rows`, `step_x` / `step_y`, `cell_width` / `cell_height`)
     to the usual metadata; `normalize_coordinates` answers `{"coordinates": [[...]]}`; the box call
     adds `objects`, the number drawn. Repeat propose → verify → correct by index for a bounded number
-    of rounds, then commit.
+    of rounds, then commit each accepted box to the store.
 
 **Then**: [`preview_image_grid`](../mcp/tools.md#preview_image_grid),
 [`preview_image_bboxes`](../mcp/tools.md#preview_image_bboxes) and

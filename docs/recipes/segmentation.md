@@ -61,4 +61,5 @@ regions it can actually see instead of a wall of pixel values.
 [`color_from_text`](../api/color.md#annotools.color.color_from_text) for the library contract. Never
 store the mask itself in the annotation database — store the file pointer. The review loop and its
 quality controls are in
-[`skills/localization-annotation-guide`](https://github.com/hoshiori-dev/annotools/tree/main/skills/localization-annotation-guide).
+[`skills/localization-annotation-guide`](https://github.com/hoshiori-dev/annotools/tree/main/skills/localization-annotation-guide);
+committing the accepted regions is [`skills/sqlite-annotation-store`](https://github.com/hoshiori-dev/annotools/tree/main/skills/sqlite-annotation-store).

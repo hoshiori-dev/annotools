@@ -28,9 +28,11 @@ answer through
 the model used, plus the preview's applied `crop` when it looked at a zoom, before anything is drawn
 or stored.
 
-The library snippets import from `annotools` (`uv add "annotools @ git+https://github.com/hoshiori-dev/annotools"`);
-the video and audio recipes additionally need the `media` extra for PyAV. The MCP snippets are the
-arguments object for a registered `annotools` server — see [Get started](../index.md) for registering
-it and for choosing `max_width` / `max_height` for the model behind the agent.
+The library snippets import from `annotools` (see [Install](../getting-started/install.md)); the
+video and audio recipes additionally need the `media` extra for PyAV. The MCP snippets are the
+arguments object for a registered `annotools` server — see
+[Register the server](../getting-started/register.md), and
+[As an MCP server](../usage/mcp-server.md) for choosing `max_width` / `max_height` for the model
+behind the agent.
 
 The sample values below come from a 1600x1200 `photo.jpg` previewed at 768x576.

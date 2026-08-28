@@ -21,8 +21,10 @@ expects.
     This prints `6.0 16000 1`. The source can be a video file — `clip_audio` reads its first audio
     stream — and `end` is exclusive and clamped to the source duration, while a `start` beyond it is
     an error rather than an empty clip. `write_bytes` creates parent directories for local paths.
-    Resampling is optional but usually worth it in the same call: most speech models want 16 kHz, and
-    sending 44.1 kHz spends tokens on nothing. Needs PyAV: `uv add "annotools[media]"`.
+    Resampling is optional but usually worth it in the same call: most speech models expect 16 kHz,
+    and a 44.1 kHz clip is nearly three times the bytes to upload for the same audio. It does not
+    make the clip cheaper — audio is billed per second, not per sample — so the length of the window
+    is the lever. Needs PyAV: `uv add "annotools[media]"`.
 
 === "MCP"
 

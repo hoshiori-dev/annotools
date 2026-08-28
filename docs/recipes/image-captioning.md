@@ -34,14 +34,16 @@ file.
     }
     ```
 
-    Returns the JPEG followed by one metadata object: `original_size`, the applied `crop`
-    (`[0, 0, 1, 1]` here), `output_size`, `output_width` / `output_height`, `scale`, and `format`.
-    For small text or one detail, call it again with `crop` set to a normalized region such as
-    `[0.55, 0.1, 0.85, 0.4]`, which spends the same token budget on a quarter of the frame.
+    Returns the JPEG followed by one metadata object: `original_size` with its scalar
+    `original_width` / `original_height`, the applied `crop` (`[0, 0, 1, 1]` here), `output_size`
+    with `output_width` / `output_height`, `scale`, and `format`. For small text or one detail, call
+    it again with `crop` set to a normalized region such as `[0.55, 0.1, 0.85, 0.4]`, which spends
+    the same token budget on 9 % of the frame.
 
 Captioning is linear — one preview per image, one model call, one write — so the only real cost lever
 is the preview size. Pick it for the model behind the agent: 384 px keeps a Gemini image at one
-258-token unit, while Claude and GPT bill by area and read 768-1024 px comfortably.
+258-token unit, while Claude and GPT bill by area and read 768 px comfortably
+([As an MCP server](../usage/mcp-server.md) has the per-model table).
 
 **Then**: [`preview_image`](../mcp/tools.md#preview_image) for every parameter and the crop rules,
 [`preview`](../api/image.md#annotools.image.preview.preview) and

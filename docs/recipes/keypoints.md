@@ -65,4 +65,5 @@ Collect named points — joints, landmarks, part locations — from a model that
 [`KeypointObject`](../api/image.md#annotools.image.overlay.KeypointObject) for the library contract.
 Which points to ask for, how many correction rounds to allow, and how to catch a systematically
 shifted skeleton are in
-[`skills/localization-annotation-guide`](https://github.com/hoshiori-dev/annotools/tree/main/skills/localization-annotation-guide).
+[`skills/localization-annotation-guide`](https://github.com/hoshiori-dev/annotools/tree/main/skills/localization-annotation-guide);
+committing the accepted points is [`skills/sqlite-annotation-store`](https://github.com/hoshiori-dev/annotools/tree/main/skills/sqlite-annotation-store).

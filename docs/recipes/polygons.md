@@ -50,7 +50,17 @@ with numbered vertices so a model can correct one point instead of restating the
 
 === "MCP"
 
-    `rotated_bbox_to_polygon` converts oriented boxes; `preview_image_polygons` draws either kind:
+    `normalize_coordinates` on the model's outline, `rotated_bbox_to_polygon` for the oriented box,
+    then `preview_image_polygons` to draw both:
+
+    ```json
+    {
+      "coordinates": [[180, 113, 454, 171, 420, 327, 146, 269]],
+      "base_width": 768,
+      "base_height": 576,
+      "crop": [0, 0, 1, 1]
+    }
+    ```
 
     ```json
     {
@@ -64,18 +74,21 @@ with numbered vertices so a model can correct one point instead of restating the
     {
       "source": "photo.jpg",
       "objects": [
+        { "points": [0.2344, 0.1962, 0.5911, 0.2969, 0.5469, 0.5677, 0.1901, 0.467], "label": "roof" },
         { "points": [0.618, 0.519, 0.869, 0.609, 0.822, 0.841, 0.571, 0.751], "label": "sign" }
       ],
-      "show_point_index": true,
       "max_width": 768,
       "max_height": 768
     }
     ```
 
-    The conversion answers `{"polygons": [[...]]}` — eight full-precision numbers, rounded above for
-    readability — and the overlay returns the image plus metadata with `objects`. Vertex indices are
-    1-based and on by default, which is what lets a correction round say "move point 3 left" instead
-    of resending eight numbers.
+    `aspect_ratio` is the source's `original_width / original_height` from any preview's metadata —
+    1600/1200 here — and leaving it at the default 1.0 shears the box on a non-square image. Both
+    conversions answer with full-precision numbers, rounded above for readability. The overlay
+    returns the image plus metadata with `objects`; vertex indices are 1-based and drawn unless
+    `show_point_index` is turned off, which is what lets a correction round say "move point 3 left"
+    instead of resending eight numbers. There is no MCP tool for the rectangle test — deciding
+    whether a 4-point answer can collapse into a rotated box is a library-side call.
 
 **Then**: [`preview_image_polygons`](../mcp/tools.md#preview_image_polygons) and
 [`rotated_bbox_to_polygon`](../mcp/tools.md#rotated_bbox_to_polygon) for the parameters;
@@ -83,4 +96,5 @@ with numbered vertices so a model can correct one point instead of restating the
 [`rotated_box_to_corners`](../api/geometry.md#annotools.geometry.rotated_box_to_corners) and
 [`is_rectangle`](../api/geometry.md#annotools.geometry.is_rectangle) for the library contract.
 Choosing between a polygon and a rotated box, and the correction loop, are in
-[`skills/localization-annotation-guide`](https://github.com/hoshiori-dev/annotools/tree/main/skills/localization-annotation-guide).
+[`skills/localization-annotation-guide`](https://github.com/hoshiori-dev/annotools/tree/main/skills/localization-annotation-guide);
+committing the accepted shapes is [`skills/sqlite-annotation-store`](https://github.com/hoshiori-dev/annotools/tree/main/skills/sqlite-annotation-store).
