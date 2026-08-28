@@ -93,8 +93,9 @@ Read back `gh api repos/hoshiori-dev/annotools/rulesets` before promising a requ
   with `gh api repos/hoshiori-dev/annotools/milestones`.
 - A tag pushed, or a draft release published, with `GITHUB_TOKEN` raises no event — no workflow reacts.
   Anything that must trigger a workflow is done by a person or a user token.
-- gitleaks (pre-commit) flags `::error::` annotations as IPv6 and needs non-capturing groups in custom
-  rules; print `ERROR:` in scripts.
+- gitleaks (pre-commit) flags `::error::` annotations as IPv6 and a four-component version string as a
+  public IPv4, and needs non-capturing groups in custom rules; print `ERROR:` in scripts. An inline
+  `gitleaks:allow` must sit on the finding's own line — a comment on the preceding line does nothing.
 - A skipped job reports success; `ci-gate` checks test jobs actually ran on PR/main/release.
 - The default token cannot read org issue types or Actions policy, and cannot write rulesets, create
   environments, or dispatch a workflow (403 "Resource not accessible by integration"): report the manual
