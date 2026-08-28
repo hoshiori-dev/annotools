@@ -35,7 +35,8 @@ Two kinds of agents use the project:
 
 ## Layout
 
-Modules marked *(planned)* are tracked by issue #1 and its milestones; design drafts are not committed.
+Modules marked *(planned)* are tracked by the current cycle's tracking issue (see `AGENTS.md`, "Current
+cycle") and its milestones; design drafts are not committed.
 
 ```text
 src/annotools/
