@@ -26,8 +26,19 @@ runs:
         set -euo pipefail
         # TruffleHog reads a local image only through a tarball (file://), never the daemon.
         docker save "$IMAGE" -o "${RUNNER_TEMP}/scan-image.tar"
+        # Third-party packages are out of scope, for the same reason the PII step below is
+        # first-party only: a dependency's docstrings illustrate its own URL parsing with example
+        # credentials, the URI detector cannot reach those invented hosts from a runner to rule
+        # them out, and an unreachable host lands in `unknown` — so every release would fail on
+        # someone else's documentation. (pydantic/networks.py alone accounts for six findings.)
+        # Everything annotools puts in the image stays in scope: the code lives in /app/src
+        # (uv installs the project editable), and so do /usr, /etc and the layer configs.
+        # The patterns are globs compiled with no separator set, so a single `*` crosses `/`, and
+        # the path being matched carries a leading slash.
         docker run --rm -v "${RUNNER_TEMP}:/scan:ro" "$TRUFFLEHOG_IMAGE" \
-          docker --image "file:///scan/scan-image.tar" --results=verified,unknown --fail
+          docker --image "file:///scan/scan-image.tar" \
+          --exclude-paths='/app/.venv/lib/*/site-packages/*' \
+          --results=verified,unknown --fail
         rm -f "${RUNNER_TEMP}/scan-image.tar"
 
     - name: Extract the first-party files from the image
