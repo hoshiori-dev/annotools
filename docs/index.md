@@ -61,11 +61,11 @@ image_bytes = encode(overlay.image, "jpeg")
 ## More
 
 - [As an MCP server](usage/mcp-server.md) and [As a library](usage/library.md) — settings, coordinates, and the shape of a call.
-- [Recipes](recipes/index.md) — one page per task (captioning, detection, keypoints, polygons,
-  segmentation, video, audio), each as library code and as the MCP call.
 - [API reference](api/index.md) — every public function, generated from its docstring.
 - [MCP tool reference](mcp/tools.md) — parameters, return shape and specification of all 13 tools.
 - [Architecture](architecture.md) — layers and recorded decisions.
+- [Recipes](recipes/index.md) — one page per task (captioning, detection, keypoints, polygons,
+  segmentation, video, audio), each as library code and as the MCP call.
 - [Cookbook](cookbook/index.md) — how an agent-run annotation project gets from an interview to an
   exported dataset, one page per step.
 - Skills — the annotation methodology as installable agent skills: `npx skills add hoshiori-dev/annotools`.

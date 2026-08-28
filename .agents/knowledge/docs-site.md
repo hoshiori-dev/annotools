@@ -8,6 +8,8 @@ built by zensical (`just docs-check` = strict build, part of `just check`; `just
 | Page | Source of truth | How it gets there |
 |---|---|---|
 | `docs/index.md` | hand-written | edit directly |
+| `docs/getting-started/*.md` | hand-written | edit directly; nothing enforces it, so check the install commands (`install.md`) and the client configuration blocks (`register.md`) against both READMEs, `.mcp.json`, `.codex/config.toml`, and `opencode.json` when any of those change |
+| `docs/usage/*.md` | hand-written, except the settings table in `mcp-server.md` | edit directly; the settings table restates `annotools.config.Settings` and must move with it and with `.agents/knowledge/spec/mcp-overview.md` (see the AGENTS.md Keep In Sync row) |
 | `docs/recipes/*.md` | hand-written | edit directly; every Library snippet must be executed before it is committed, and every MCP arguments object must match the schema in `docs/mcp/tools.md` |
 | `docs/api/*.md` | the public docstrings (`annotools.__all__`) | 3-line stubs holding a `::: annotools.<module>` directive; mkdocstrings renders signatures and sections at build time |
 | `docs/architecture.md`, `docs/contributing.md` | `ARCHITECTURE.md`, `CONTRIBUTING.md` | snippet include of the whole file |
