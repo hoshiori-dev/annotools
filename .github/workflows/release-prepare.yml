@@ -1,5 +1,6 @@
 # Prepare a release: nothing is tagged until the full gate is green.
-# Normal path: `gh workflow run release-prepare.yml -f tag=v<version>` from the commit to release.
+# Normal path: `gh workflow run release-prepare.yml` from the commit to release — the tag is derived
+# from pyproject.toml. Pass `-f tag=v<version>` to assert what you believe you are releasing instead.
 # The tag is created only after tests and artifact scanning pass, then a draft release is opened for
 # review. A tag pushed by GITHUB_TOKEN raises no event, which is why one run does all three steps.
 # Publishing that draft (as a person, not GITHUB_TOKEN) is what triggers release.yml.
@@ -9,8 +10,8 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag to create, for example v0.1.0-rc1. Must match pyproject.toml.
-        required: true
+        description: Release tag to create, for example v0.1.0-rc1. Derived from pyproject.toml if left empty; must match it if given.
+        required: false
         type: string
   push:
     # Fallback for a tag pushed by hand: the gate still runs before the draft release appears.
@@ -20,6 +21,7 @@ permissions:
   contents: read
 
 concurrency:
+  # The tag may not be known yet when it is derived, so serialize per ref instead.
   group: release-prepare-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
@@ -30,24 +32,31 @@ jobs:
       tag: ${{ steps.resolve.outputs.tag }}
     steps:
       - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
       - id: resolve
         name: Resolve the tag
         env:
-          TAG: ${{ inputs.tag || github.ref_name }}
+          INPUT_TAG: ${{ inputs.tag }}
+          PUSHED_TAG: ${{ github.ref_name }}
           EVENT: ${{ github.event_name }}
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          # The push path arrives with its tag; a dispatch may name one or leave it to pyproject.toml.
+          args=()
+          if [ "$EVENT" = "push" ]; then
+            args+=(--tag "$PUSHED_TAG" --existing-tag-ok)
+          elif [ -n "$INPUT_TAG" ]; then
+            args+=(--tag "$INPUT_TAG")
+          fi
+          # Fails before the test budget is spent if the version is already tagged, in any spelling.
+          TAG=$(git ls-remote --tags origin \
+            | uv run --no-project --with packaging scripts/prepare_release_tag.py "${args[@]}")
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Resolved $TAG"
           # Whether this is a pre-release is decided once, by check_release_version.py inside the
           # gate below, and read back from the workflow output.
 
-          # Fail before spending the test budget, and keep a dispatch from clobbering an existing tag.
-          if [ "$EVENT" = "workflow_dispatch" ] && git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
-            echo "ERROR: tag $TAG already exists. Bump the version or delete the tag first."
-            exit 1
-          fi
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "ERROR: a release for $TAG already exists."
             exit 1

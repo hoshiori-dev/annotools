@@ -69,9 +69,12 @@ Tag `v<version>` must equal `pyproject.toml` (`scripts/check_release_version.py`
 PEP 440 `rcN`). Never create the tag or the release by hand — the pipeline does both, and only after the
 gate passes:
 
-1. `gh workflow run release-prepare.yml -f tag=v<version>` from the commit to release. It validates the
-   tag, runs `release-tests.yml` (CI → wheel and image build → smoke tests + credential/PII scan), then
-   creates the tag and a draft release. `--prerelease` is set automatically from the version (PEP 440).
+1. `gh workflow run release-prepare.yml` from the commit to release — the tag is derived from
+   `pyproject.toml` as `v<semver>[-rcN]`, so bump the version in a merged PR first. Add
+   `-f tag=v<version>` to assert what you believe you are releasing; it fails if main disagrees. The run
+   refuses a version already tagged in any spelling, runs `release-tests.yml` (CI → wheel and image
+   build → smoke tests + credential/PII scan), then creates the tag and a draft release. `--prerelease`
+   is set automatically from the version (PEP 440).
 2. Review the generated notes on the draft.
 3. Publish the draft **with user credentials** (`gh release edit v<version> --draft=false`, or the web
    UI). A draft published by `GITHUB_TOKEN` raises no event and nothing ships.

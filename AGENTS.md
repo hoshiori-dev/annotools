@@ -85,7 +85,8 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 - Before every PR: run the retrospective skill and list skill candidates in the issue thread.
 - Publishing (issues, PRs, comments, releases) needs a sensitivity self-check on the exact payload;
   remote settings changes need explicit user approval.
-- Releases are two staged pipelines. `release-prepare.yml` (dispatch with a `tag` input) runs the full
+- Releases are two staged pipelines. `release-prepare.yml` (dispatch; the tag comes from `pyproject.toml`
+  unless a `tag` input asserts it) runs the full
   gate — tests plus credential/PII scanning of the wheel, sdist and image — and only then creates the tag
   and a draft release; publishing that draft by hand runs the same gate again and then publishes. Every
   release uploads to TestPyPI (rehearsal and developer testing; the documented install stays git)
