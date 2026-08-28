@@ -10,10 +10,20 @@ or CI job commands.
 
 ## Code
 
-- Google-style docstrings for public modules, classes, and functions and for anything non-obvious;
-  comments explain why, not what. `tests/` and `scripts/` are exempt from docstring rules.
-- ruff `select = E, F, I, UP, B, SIM, N, D, RUF`, line length 120; ruff also formats Python code blocks
-  inside Markdown, so `docs/` examples must be formatted.
+- Docstrings are Google style. **Public API** (every name in `annotools.__all__`) is complete —
+  `scripts/check_public_docstrings.py` (`just check-docs`, CI `lint`) enforces it:
+  summary line; one paragraph on intent (why this shape, not what the code does); `Args` (unit, range,
+  "``None`` uses ``Settings.x``") whenever there are parameters; `Returns` (every metadata key a caller
+  may rely on) whenever the annotation is not `None`; `Raises` (condition phrased as the caller sees it)
+  whenever the body raises; `Example` always, as a doctest (`pytest --doctest-modules` runs them; PyAV or
+  file-backed examples carry `# doctest: +SKIP`); `References` for contracts that come from a spec or a
+  vendor document — cite the spec path under `.agents/knowledge/spec/` and copy vendor URLs with their
+  verification date from `.agents/knowledge/references/*.md`, never from memory. Classes need `Attributes`
+  or pydantic `Field(description=...)` on every field. **Internal** names get a one-line docstring (or a
+  `#` comment); underscore modules are exempt from `D1`. Comments explain why, not what. `tests/` and
+  `scripts/` are exempt from docstring rules.
+- ruff `select = E, F, I, UP, B, SIM, N, D, RUF`, line length 120; ruff formats code inside docstrings
+  (`docstring-code-format`) but not fenced blocks in Markdown, so `docs/` examples are formatted by hand.
 - ty is the type checker (`include = src, tests`); keep annotations complete on new code. No mypy.
 - Library functions accept/return PIL images or bytes and raise `ValueError` for contract violations
   (odd polygon coordinate count, non-single-channel mask, coordinates outside 0–1).
@@ -33,7 +43,8 @@ or CI job commands.
 - Coverage: `fail_under = 95` (line + branch) in `pyproject.toml` is the only threshold; `just test-cov` and
   CI enforce it per Python version. Close gaps with tests — never with `omit`. A test that needs the MCP
   server's import-time snapshot to reflect `configure()`d values must import `annotools.mcp.server` before
-  `reset_settings()` (see `tests/test_cli.py`); plain library tests just call `configure()`.
+  `reset_settings()` (see `tests/test_cli.py`); plain library tests just call `configure()`. Doctest
+  collection skips `src/annotools/mcp` so importing the server stays an explicit act of a test.
 
 ## Toolchain
 

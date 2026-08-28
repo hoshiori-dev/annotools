@@ -21,7 +21,13 @@ __all__ = [
 
 
 class BBoxObject(BaseModel):
-    """A bounding box in normalized coordinates of the uncropped source."""
+    """A bounding box in normalized coordinates of the uncropped source.
+
+    Example:
+        >>> from annotools import BBoxObject
+        >>> BBoxObject(bbox=(0.1, 0.1, 0.5, 0.5), label="cat").color is None
+        True
+    """
 
     bbox: tuple[float, float, float, float] = Field(description="(x_min, y_min, x_max, y_max), normalized 0-1")
     label: str | None = Field(default=None, description="Optional text drawn above the box")
@@ -29,7 +35,13 @@ class BBoxObject(BaseModel):
 
 
 class KeypointObject(BaseModel):
-    """A single point in normalized coordinates of the uncropped source."""
+    """A single point in normalized coordinates of the uncropped source.
+
+    Example:
+        >>> from annotools import KeypointObject
+        >>> KeypointObject(point=(0.5, 0.5), label="nose").label
+        'nose'
+    """
 
     point: tuple[float, float] = Field(description="(x, y), normalized 0-1")
     label: str | None = Field(default=None, description="Optional text drawn beside the point")
@@ -37,7 +49,13 @@ class KeypointObject(BaseModel):
 
 
 class PolygonObject(BaseModel):
-    """A closed polygon as a flat list of normalized coordinates of the uncropped source."""
+    """A closed polygon as a flat list of normalized coordinates of the uncropped source.
+
+    Example:
+        >>> from annotools import PolygonObject
+        >>> len(PolygonObject(points=[0.1, 0.1, 0.5, 0.1, 0.1, 0.5]).points)
+        6
+    """
 
     points: list[float] = Field(description="[x1, y1, x2, y2, ...], even count, at least 3 points, normalized 0-1")
     label: str | None = Field(default=None, description="Optional text drawn at the first vertex")
@@ -64,10 +82,39 @@ class Mapper:
 
 
 def draw_bboxes(result: PreviewResult, objects: Sequence[BBoxObject], line_width: int | None = None) -> PreviewResult:
-    """Draw ``objects`` on ``result.image`` (in place) and add ``objects`` count to the metadata.
+    """Draw ``objects`` on ``result.image`` (in place) and add the ``objects`` count to the metadata.
+
+    Boxes are given in source coordinates and mapped through the preview's ``crop`` and ``scale``, so
+    the same objects can be drawn on the full view and on a zoomed crop. Boxes entirely outside the
+    view are skipped but still counted; partially visible ones are clipped.
+
+    Args:
+        result: A preview from :func:`preview` (with or without a grid); RGB/RGBA images are drawn on in
+            place, other modes are converted to a new RGB image.
+        objects: At least one box; ``label`` is drawn as a tag above the box, ``color`` defaults to
+            ``Settings.color``.
+        line_width: Outline width in output pixels; ``None`` uses ``Settings.line_width`` (2).
+
+    Returns:
+        The same image wrapped with ``metadata["objects"]`` = number of boxes.
 
     Raises:
-        ValueError: for empty ``objects``, an invalid box or color (naming ``objects[i]``), or ``line_width < 1``.
+        ValueError: For empty ``objects``, an invalid box or color (naming ``objects[i]``), or
+            ``line_width < 1``.
+
+    Example:
+        >>> from PIL import Image
+        >>> from annotools import BBoxObject, draw_bboxes, preview
+        >>> result = preview(
+        ...     Image.new("RGB", (400, 300), "white"), max_width=400, max_height=400
+        ... )
+        >>> draw_bboxes(
+        ...     result, [BBoxObject(bbox=(0.1, 0.1, 0.5, 0.5), label="cat")]
+        ... ).metadata["objects"]
+        1
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-image-bboxes.md`` (annotools repository).
     """
     if not objects:
         raise ValueError("objects: at least one bounding box is required")
@@ -94,11 +141,32 @@ def draw_bboxes(result: PreviewResult, objects: Sequence[BBoxObject], line_width
 def draw_keypoints(
     result: PreviewResult, objects: Sequence[KeypointObject], point_diameter: int | None = None
 ) -> PreviewResult:
-    """Draw ``objects`` as filled dots (optional labels) and add ``objects`` count to the metadata.
+    """Draw ``objects`` as filled dots (optional labels) and add the ``objects`` count to the metadata.
+
+    Args:
+        result: A preview from :func:`preview`; its image is modified.
+        objects: At least one point; ``label`` is drawn beside the dot, ``color`` defaults to
+            ``Settings.color``.
+        point_diameter: Dot diameter in output pixels; ``None`` uses ``Settings.point_diameter`` (3).
+
+    Returns:
+        The same image wrapped with ``metadata["objects"]`` = number of points.
 
     Raises:
-        ValueError: for empty ``objects``, a point outside [0, 1] or an unknown color (naming ``objects[i]``),
-            or ``point_diameter < 1``.
+        ValueError: For empty ``objects``, a point outside [0, 1] or an unknown color (naming
+            ``objects[i]``), or ``point_diameter < 1``.
+
+    Example:
+        >>> from PIL import Image
+        >>> from annotools import KeypointObject, draw_keypoints, preview
+        >>> result = preview(
+        ...     Image.new("RGB", (400, 300), "white"), max_width=400, max_height=400
+        ... )
+        >>> draw_keypoints(result, [KeypointObject(point=(0.5, 0.5))]).metadata["objects"]
+        1
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-image-keypoints.md`` (annotools repository).
     """
     if not objects:
         raise ValueError("objects: at least one keypoint is required")
@@ -140,9 +208,37 @@ def draw_polygons(
 ) -> PreviewResult:
     """Draw closed polygons with vertex dots and optional 1-based vertex indices; add ``objects`` to metadata.
 
+    Vertex indices let a model refer to "point 3" when correcting a polygon, which is why they are on
+    by default. Polygons with no vertex inside the view are skipped but still counted.
+
+    Args:
+        result: A preview from :func:`preview`; its image is modified.
+        objects: At least one polygon (``points`` even-length, at least 3 vertices); ``color`` defaults
+            to ``Settings.color``.
+        line_width: Outline width in output pixels; ``None`` uses ``Settings.line_width`` (2).
+        point_diameter: Vertex dot diameter; ``None`` uses ``Settings.point_diameter`` (3).
+        show_point_index: Draw the 1-based vertex number next to each vertex.
+
+    Returns:
+        The same image wrapped with ``metadata["objects"]`` = number of polygons.
+
     Raises:
-        ValueError: for empty ``objects``, an invalid polygon or color (naming ``objects[i]``), or a width or
-            diameter smaller than 1.
+        ValueError: For empty ``objects``, an invalid polygon or color (naming ``objects[i]``), or a
+            width or diameter smaller than 1.
+
+    Example:
+        >>> from PIL import Image
+        >>> from annotools import PolygonObject, draw_polygons, preview
+        >>> result = preview(
+        ...     Image.new("RGB", (400, 300), "white"), max_width=400, max_height=400
+        ... )
+        >>> draw_polygons(
+        ...     result, [PolygonObject(points=[0.1, 0.1, 0.5, 0.1, 0.1, 0.5])]
+        ... ).metadata["objects"]
+        1
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-image-polygons.md`` (annotools repository).
     """
     if not objects:
         raise ValueError("objects: at least one polygon is required")
