@@ -10,6 +10,7 @@ built by zensical (`just docs-check` = strict build, part of `just check`; `just
 | `docs/index.md` | hand-written | edit directly |
 | `docs/api/*.md` | the public docstrings (`annotools.__all__`) | 3-line stubs holding a `::: annotools.<module>` directive; mkdocstrings renders signatures and sections at build time |
 | `docs/architecture.md`, `docs/contributing.md` | `ARCHITECTURE.md`, `CONTRIBUTING.md` | snippet include of the whole file |
+| `docs/cookbook/*.md` | the publishable skills under `skills/` | hand-written summaries that link the skill; anything quoted verbatim is snippet-included (`skills/sqlite-annotation-store/assets/schema.sql`, and `skills/mllm-multimodal-input/SKILL.md` sections `tokens`, `sizes`, `coordinates`) |
 | `docs/mcp/index.md` | `.agents/knowledge/spec/mcp-overview.md` (section `user`) | snippet include at build time |
 | `docs/mcp/tools.md` | the running MCP server (`annotools.mcp.server.mcp`) + `.agents/knowledge/spec/*.md` (sections `user`, `user2`) | **generated** by `scripts/gen_mcp_reference.py`; spec text is inlined by the generator |
 
@@ -63,6 +64,13 @@ without both sections aborts it). Markers are HTML comments on their own lines:
 
 Section names must match `[a-z][-_0-9a-z]*`; a repeated name does not concatenate (the first `end` wins),
 hence two sections per tool spec. Full rules: `.agents/knowledge/spec-format.md`.
+
+The same markers live in `skills/mllm-multimodal-input/SKILL.md` (`tokens`, `sizes`, `coordinates`) so the
+cookbook includes the dated vendor tables instead of retyping them. A skill is installed by users
+(`npx skills add hoshiori-dev/annotools`), so adding a marker there changes what they get: keep it to HTML
+comments on their own lines, never move the content, and say so in the PR. An indented `--8<--` inside an
+admonition or a fenced block keeps its indentation, which is how `docs/cookbook/store.md` puts
+`schema.sql` inside a collapsed `??? example`.
 
 ## Keep in sync
 
