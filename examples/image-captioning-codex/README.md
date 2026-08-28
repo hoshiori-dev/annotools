@@ -34,11 +34,11 @@ and the item stays pending for the next run) and stops the run after 10 failures
 
 | Field | Value |
 |---|---|
-| Model | _pending first full run_ |
-| Items | _pending_ |
-| Input / cached / output / reasoning tokens | _pending_ |
-| Cost (USD, from the provider dashboard) | _pending_ |
-| Wall time | _pending_ |
+| Model | `gpt-5.6-terra` (effort `low`, 768 px JPEG preview, budgets medium 25 / short 10 words, `max_seconds_per_item` 180, MCP tool calls pre-approved, read-only sandbox) |
+| Items | 3 (`just trial 3`, 2026-08-28, run 1; 1 `needs_review` — the model ended its turn without recording any caption or tag). One retry (`just run`, run 2, 1 item) recorded all four variants as `final`: 156,794 / 112,768 / 724 / 80 tokens, 37.7 s; `just export` then wrote 3 items. |
+| Input / cached / output / reasoning tokens | 560,638 / 490,880 / 2,635 / 943 (total 563,273) |
+| Cost (USD, from the provider dashboard) | not reported — subscription login, `cost_usd` is 0.0 in the summary; the Codex SDK does not estimate cost |
+| Wall time | 163.8 s summed over items (4 workers) |
 
 Fill this table from the JSON summary `just run` prints (`items`, `seconds`, `input_tokens`,
 `cached_input_tokens`, `output_tokens`, `reasoning_output_tokens` from `TurnResult.usage.total`); the Codex
