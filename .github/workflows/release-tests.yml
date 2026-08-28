@@ -111,6 +111,9 @@ jobs:
         run: |
           docker run --rm -v "${PWD}/unpacked:/scan:ro" "$TRUFFLEHOG_IMAGE" \
             filesystem /scan --results=verified,unknown --fail
+      # The `paths` exclusions in .gitleaks.toml are anchored at the scan root, so they do not reach
+      # the sdist's nested pyproject.toml. Harmless today; a dependency pinned to a four-component
+      # version would read as an IPv4 address and fail here.
       - name: Scan the distributions for PII
         env:
           GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.24.2

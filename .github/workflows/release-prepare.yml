@@ -85,6 +85,8 @@ jobs:
           set -euo pipefail
           git tag "$TAG" "$GITHUB_SHA"
           git push origin "refs/tags/$TAG"
+      # If this step fails after the tag was pushed, the guards in `resolve` will reject a re-run.
+      # Recover with `git push origin --delete <tag>`, then dispatch again.
       - name: Open the draft release
         env:
           TAG: ${{ needs.resolve.outputs.tag }}

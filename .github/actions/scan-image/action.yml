@@ -48,8 +48,9 @@ runs:
           # gitleaks config (semantic versions read as IPv4 addresses) still apply.
           cp /app/pyproject.toml /app/uv.lock /app/README.md /tmp/first-party/
           cp -r /app/src /tmp/first-party/src
-          cp -r "$site_packages"/annotools /tmp/first-party/site-packages-annotools
-          cp -r "$site_packages"/annotools-*.dist-info /tmp/first-party/
+          # uv installs the project editable, so site-packages holds annotools.pth and the dist-info
+          # while the code itself stays in /app/src, copied above. The glob covers both layouts.
+          cp -r "$site_packages"/annotools* /tmp/first-party/
           tar cf - -C /tmp/first-party .
         ' > "${RUNNER_TEMP}/first-party.tar"
         tar xf "${RUNNER_TEMP}/first-party.tar" -C "${RUNNER_TEMP}/first-party"

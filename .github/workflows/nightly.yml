@@ -21,6 +21,9 @@ env:
 jobs:
   changed:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read # reading this workflow's own run history
     outputs:
       skip: ${{ steps.check.outputs.skip }}
     steps:
