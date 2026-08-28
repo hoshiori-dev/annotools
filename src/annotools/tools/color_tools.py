@@ -4,9 +4,9 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 
+from annotools.app import mcp
 from annotools.color import color_from_text as _color_from_text
 from annotools.color import to_hex
-from annotools.server import mcp
 
 
 class ColorResult(BaseModel):

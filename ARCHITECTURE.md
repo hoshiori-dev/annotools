@@ -10,7 +10,7 @@ points here for structure; this file explains how the parts fit.
 ```text
  skills/ (methodology + scaffolding)      examples/ (Claude Agent SDK / Codex SDK pipelines)
  ────────────────────────────────────────────────────────────────────────────────────────────
- src/annotools/server.py + tools/         MCP layer: pydantic parameter models, @mcp.tool wrappers,
+ src/annotools/{app,server}.py + tools/   MCP layer: pydantic parameter models, @mcp.tool wrappers,
                                           Image/Audio content blocks + one-line JSON metadata
  ────────────────────────────────────────────────────────────────────────────────────────────
  src/annotools/{io,geometry,color,        library layer: pure functions, PIL/numpy in, PIL/bytes out,
@@ -40,7 +40,8 @@ Modules marked *(planned)* are tracked by issue #1 and its milestones; design dr
 ```text
 src/annotools/
   cli.py            argparse entrypoint: `annotools [--http] [--host] [--port] [--max-width …]` (settings flags)
-  server.py         FastMCP("annotools") instance; tool modules register onto it
+  app.py            FastMCP("annotools") instance; imports nothing from tools/ (no import cycle)
+  server.py         composition root: imports app.mcp and every tools/ module so their @mcp.tool decorators run
   config.py         `Settings` (pydantic-settings): 384×384 max preview, grid 10×10, line 2, point 3; flags > ANNOTOOLS_* env
   io.py             open_bytes(uri) via fsspec; decode to PIL
   geometry.py       normalized↔pixel coordinates, crop math, rotated box → 4 corners, is_rectangle

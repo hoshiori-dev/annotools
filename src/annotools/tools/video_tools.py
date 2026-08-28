@@ -5,11 +5,11 @@ from typing import Annotated, Any
 
 from pydantic import Field
 
+from annotools.app import mcp
 from annotools.config import get_settings
 from annotools.image.grid import GridOptions
 from annotools.image.preview import encode, preview
 from annotools.io import write_bytes
-from annotools.server import mcp
 from annotools.tools.common import (
     DEFAULT_OUTPUT_FORMAT,
     AllowUpscaleParam,
