@@ -13,6 +13,7 @@ __all__ = [
 ]
 
 RGB = tuple[int, int, int]
+"""An RGB color as ``(r, g, b)``, each channel 0-255."""
 
 
 def parse_color(value: str, name: str = "color") -> RGB:
@@ -28,7 +29,7 @@ def parse_color(value: str, name: str = "color") -> RGB:
     Raises:
         ValueError: Naming ``name`` when the value is not a recognised color.
 
-    Example:
+    Examples:
         >>> from annotools import parse_color
         >>> parse_color("red"), parse_color("#0000ff")
         ((255, 0, 0), (0, 0, 255))
@@ -61,7 +62,7 @@ def color_from_text(text: str) -> RGB:
     Returns:
         ``(r, g, b)`` with each channel in 0-255.
 
-    Example:
+    Examples:
         >>> from annotools import color_from_text, to_hex
         >>> color_from_text("cat") == color_from_text("cat")
         True
@@ -86,7 +87,7 @@ def to_hex(color: RGB) -> str:
     Returns:
         The seven-character hex string.
 
-    Example:
+    Examples:
         >>> from annotools import to_hex
         >>> to_hex((255, 0, 0))
         '#ff0000'

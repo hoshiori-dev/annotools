@@ -15,8 +15,9 @@ or CI job commands.
   summary line; one paragraph on intent (why this shape, not what the code does); `Args` (unit, range,
   "``None`` uses ``Settings.x``") whenever there are parameters; `Returns` (every metadata key a caller
   may rely on) whenever the annotation is not `None`; `Raises` (condition phrased as the caller sees it)
-  whenever the body raises; `Example` always, as a doctest (`pytest --doctest-modules` runs them; PyAV or
-  file-backed examples carry `# doctest: +SKIP`); `References` for contracts that come from a spec or a
+  whenever the body raises; `Examples` always, as a doctest — the section keyword is plural because that is what griffe
+  recognises and renders as a code block on the API reference pages (`pytest --doctest-modules` runs
+  them; PyAV or file-backed examples carry `# doctest: +SKIP`); `References` for contracts that come from a spec or a
   vendor document — cite the spec path under `.agents/knowledge/spec/` and copy vendor URLs with their
   verification date from `.agents/knowledge/references/*.md`, never from memory. Classes need `Attributes`
   or pydantic `Field(description=...)` on every field. **Internal** names get a one-line docstring (or a

@@ -21,6 +21,7 @@ __all__ = [
 
 # Keep in step with .agents/knowledge/spec/preview-image-segmentation.md.
 MASK_MODES = {"L", "P", "I", "I;16", "I;16B", "I;16L"}
+"""Pillow modes accepted for an ID mask: single-channel integer images only."""
 
 
 def load_mask(uri: str) -> np.ndarray:
@@ -37,11 +38,11 @@ def load_mask(uri: str) -> np.ndarray:
 
     Raises:
         ValueError: Naming ``mask_source`` when the image is not single-channel, or naming the URI when
-            the content is not a decodable image (from :func:`load_image`).
-        FileNotFoundError: When the URI does not exist (from :func:`open_bytes`).
-        OSError: For other read failures (from :func:`open_bytes`).
+            the content is not a decodable image (from [`load_image`][annotools.load_image]).
+        FileNotFoundError: When the URI does not exist (from [`open_bytes`][annotools.open_bytes]).
+        OSError: For other read failures (from [`open_bytes`][annotools.open_bytes]).
 
-    Example:
+    Examples:
         >>> from annotools import load_mask
         >>> int(load_mask("masks/000000001675.png").max())  # doctest: +SKIP
         3
@@ -117,13 +118,13 @@ def overlay_mask(
     """Blend the ID ``mask`` over ``result.image`` and annotate regions with labels or a legend.
 
     ``mask`` is in source pixel space (any size; resized to the source with nearest neighbour), then
-    follows the preview's crop and scale. Each ID gets a stable color from :func:`color_from_text`, so
-    the same instance keeps its color across previews. ``annotation="legend"`` appends a color strip
-    below the image and re-fits the composite to the size limits.
+    follows the preview's crop and scale. Each ID gets a stable color from
+    [`color_from_text`][annotools.color_from_text], so the same instance keeps its color across previews.
+    ``annotation="legend"`` appends a color strip below the image and re-fits the composite to the size limits.
 
     Args:
-        result: A preview from :func:`preview`; not modified (a new image is returned).
-        mask: 2-D integer array of IDs, 0 = background (from :func:`load_mask`).
+        result: A preview from [`preview`][annotools.preview]; not modified (a new image is returned).
+        mask: 2-D integer array of IDs, 0 = background (from [`load_mask`][annotools.load_mask]).
         annotation: ``"label"`` draws each ID's name at the region centre; ``"legend"`` lists IDs and
             colors in a strip and in ``metadata["legend"]``.
         id_names: Optional ``{id: name}`` for labels and legend entries; missing IDs use the number.
@@ -135,14 +136,14 @@ def overlay_mask(
         target_pixels: Optional area cap for the legend composite.
 
     Returns:
-        A new :class:`PreviewResult` with ``metadata["ids"]`` (count of visible IDs) and, for the
+        A new [`PreviewResult`][annotools.PreviewResult] with ``metadata["ids"]`` (count of visible IDs) and, for the
         legend, ``metadata["legend"]`` (entries ``{"id", "name", "color"}``), ``image_size`` (the area the
         inverse mapping applies to, above the strip) and refreshed size keys.
 
     Raises:
         ValueError: For ``alpha`` outside [0, 1], ``line_width < 0``, or an unknown ``annotation``.
 
-    Example:
+    Examples:
         >>> import numpy as np
         >>> from PIL import Image
         >>> from annotools import overlay_mask, preview

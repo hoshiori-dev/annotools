@@ -23,7 +23,7 @@ __all__ = [
 class BBoxObject(BaseModel):
     """A bounding box in normalized coordinates of the uncropped source.
 
-    Example:
+    Examples:
         >>> from annotools import BBoxObject
         >>> BBoxObject(bbox=(0.1, 0.1, 0.5, 0.5), label="cat").color is None
         True
@@ -37,7 +37,7 @@ class BBoxObject(BaseModel):
 class KeypointObject(BaseModel):
     """A single point in normalized coordinates of the uncropped source.
 
-    Example:
+    Examples:
         >>> from annotools import KeypointObject
         >>> KeypointObject(point=(0.5, 0.5), label="nose").label
         'nose'
@@ -51,7 +51,7 @@ class KeypointObject(BaseModel):
 class PolygonObject(BaseModel):
     """A closed polygon as a flat list of normalized coordinates of the uncropped source.
 
-    Example:
+    Examples:
         >>> from annotools import PolygonObject
         >>> len(PolygonObject(points=[0.1, 0.1, 0.5, 0.1, 0.1, 0.5]).points)
         6
@@ -89,7 +89,7 @@ def draw_bboxes(result: PreviewResult, objects: Sequence[BBoxObject], line_width
     view are skipped but still counted; partially visible ones are clipped.
 
     Args:
-        result: A preview from :func:`preview` (with or without a grid); RGB/RGBA images are drawn on in
+        result: A preview from [`preview`][annotools.preview] (with or without a grid); RGB/RGBA images are drawn on in
             place, other modes are converted to a new RGB image.
         objects: At least one box; ``label`` is drawn as a tag above the box, ``color`` defaults to
             ``Settings.color``.
@@ -102,7 +102,7 @@ def draw_bboxes(result: PreviewResult, objects: Sequence[BBoxObject], line_width
         ValueError: For empty ``objects``, an invalid box or color (naming ``objects[i]``), or
             ``line_width < 1``.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import BBoxObject, draw_bboxes, preview
         >>> result = preview(
@@ -144,7 +144,7 @@ def draw_keypoints(
     """Draw ``objects`` as filled dots (optional labels) and add the ``objects`` count to the metadata.
 
     Args:
-        result: A preview from :func:`preview`; its image is modified.
+        result: A preview from [`preview`][annotools.preview]; its image is modified.
         objects: At least one point; ``label`` is drawn beside the dot, ``color`` defaults to
             ``Settings.color``.
         point_diameter: Dot diameter in output pixels; ``None`` uses ``Settings.point_diameter`` (3).
@@ -156,7 +156,7 @@ def draw_keypoints(
         ValueError: For empty ``objects``, a point outside [0, 1] or an unknown color (naming
             ``objects[i]``), or ``point_diameter < 1``.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import KeypointObject, draw_keypoints, preview
         >>> result = preview(
@@ -208,7 +208,7 @@ def draw_polygons(
     by default. Polygons with no vertex inside the view are skipped but still counted.
 
     Args:
-        result: A preview from :func:`preview`; its image is modified.
+        result: A preview from [`preview`][annotools.preview]; its image is modified.
         objects: At least one polygon (``points`` even-length, at least 3 vertices); ``color`` defaults
             to ``Settings.color``.
         line_width: Outline width in output pixels; ``None`` uses ``Settings.line_width`` (2).
@@ -222,7 +222,7 @@ def draw_polygons(
         ValueError: For empty ``objects``, an invalid polygon or color (naming ``objects[i]``), or a
             width or diameter smaller than 1.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import PolygonObject, draw_polygons, preview
         >>> result = preview(

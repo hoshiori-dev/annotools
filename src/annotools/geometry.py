@@ -23,8 +23,11 @@ __all__ = [
 ]
 
 Box = tuple[float, float, float, float]
+"""A box as ``(x_min, y_min, x_max, y_max)``, normalized 0-1 relative to the uncropped source."""
 PixelBox = tuple[int, int, int, int]
+"""A box in whole source pixels, as Pillow's ``crop`` expects it."""
 FULL_FRAME: Box = (0.0, 0.0, 1.0, 1.0)
+"""The whole image: the crop applied when a caller passes none."""
 
 
 def validate_normalized_box(box: Sequence[float], name: str = "box") -> Box:
@@ -41,7 +44,7 @@ def validate_normalized_box(box: Sequence[float], name: str = "box") -> Box:
         ValueError: With ``name`` in the message when there are not exactly 4 values, a value is
             outside [0, 1], or ``min >= max`` on either axis.
 
-    Example:
+    Examples:
         >>> from annotools import validate_normalized_box
         >>> validate_normalized_box([0.1, 0.2, 0.5, 0.6])
         (0.1, 0.2, 0.5, 0.6)
@@ -70,7 +73,7 @@ def validate_normalized_point(point: Sequence[float], name: str = "point") -> tu
     Raises:
         ValueError: With ``name`` in the message when there are not exactly 2 values or one is outside [0, 1].
 
-    Example:
+    Examples:
         >>> from annotools import validate_normalized_point
         >>> validate_normalized_point([0.5, 0.25])
         (0.5, 0.25)
@@ -123,7 +126,7 @@ def fit_size(
     Raises:
         ValueError: When a limit or ``target_pixels`` is smaller than 1.
 
-    Example:
+    Examples:
         >>> from annotools import fit_size
         >>> fit_size(4000, 3000, max_width=384, max_height=384)
         (384, 288)
@@ -158,7 +161,7 @@ def fit_size(
 class RotatedBox(BaseModel):
     """A rotated box: normalized centre and size plus a clockwise rotation about the centre.
 
-    Example:
+    Examples:
         >>> from annotools import RotatedBox
         >>> RotatedBox(cx=0.5, cy=0.5, w=0.4, h=0.2, theta=30).theta
         30.0
@@ -200,7 +203,7 @@ def rotated_box_to_corners(
         ValueError: Naming ``name`` for a non-positive size or a centre outside [0, 1], or
             ``aspect_ratio`` when it is not positive.
 
-    Example:
+    Examples:
         >>> from annotools import RotatedBox, rotated_box_to_corners
         >>> corners = rotated_box_to_corners(
         ...     RotatedBox(cx=0.5, cy=0.5, w=0.4, h=0.2, theta=0)
@@ -248,7 +251,7 @@ def is_rectangle(points: Sequence[float], *, angle_tol_deg: float = 2.0, length_
     Returns:
         ``True`` for a rectangle (any rotation), ``False`` otherwise, including degenerate polygons.
 
-    Example:
+    Examples:
         >>> from annotools import is_rectangle
         >>> is_rectangle([0, 0, 1, 0, 1, 1, 0, 1]), is_rectangle([0, 0, 1, 0, 1, 1, 0, 0.5])
         (True, False)
@@ -272,7 +275,9 @@ def is_rectangle(points: Sequence[float], *, angle_tol_deg: float = 2.0, length_
 
 
 AxisOrder = Literal["xy", "yx"]
+"""Whether a model writes each pair ``x, y`` or ``y, x`` (Gemini uses ``yx``)."""
 Coordinates = Sequence[Sequence[float]]
+"""Entries of flat ``x, y, x, y, ...`` values: one point, box, or polygon per entry."""
 
 
 def _check_base(base_width: float, base_height: float, name: str) -> None:
@@ -325,7 +330,7 @@ def normalize_coordinates(
         ValueError: An entry has an odd number of values (``name[i]``), a base is not positive
             (``name``), or ``crop`` is invalid (``crop``).
 
-    Example:
+    Examples:
         >>> from annotools import normalize_coordinates
         >>> normalize_coordinates([[192, 144]], 384, 288)
         [[0.5, 0.5]]
@@ -367,7 +372,9 @@ def denormalize_coordinates(
     axis_order: AxisOrder = "xy",
     name: str = "coordinates",
 ) -> list[list[float]]:
-    """Inverse of :func:`normalize_coordinates`: source-normalized coordinates to the model's frame.
+    """Map source-normalized coordinates back into a model's own frame.
+
+    The inverse of [`normalize_coordinates`][annotools.normalize_coordinates].
 
     Use it to draw stored annotations in the frame a model reasons in (for example to ask "is this box
     right?" in pixels of the preview it saw) or to feed ground truth to a model in its native space.
@@ -388,7 +395,7 @@ def denormalize_coordinates(
         ValueError: Naming ``name[i]`` for an odd-length entry or a value outside [0, 1], ``name`` for
             a non-positive base, or ``crop`` for an invalid crop.
 
-    Example:
+    Examples:
         >>> from annotools import denormalize_coordinates
         >>> denormalize_coordinates([[0.625, 0.75]], 1000, 1000, crop=(0.5, 0.5, 1.0, 1.0))
         [[250.0, 500.0]]

@@ -29,7 +29,7 @@ def open_bytes(uri: str) -> bytes:
         OSError: For any other read failure (permissions, directory, unknown protocol, missing fsspec
             backend such as ``s3fs``, missing cloud credentials), with the URI and the reason in the message.
 
-    Example:
+    Examples:
         >>> from annotools import open_bytes
         >>> open_bytes("s3://bucket/photo.jpg")[:2]  # doctest: +SKIP
         b'\xff\xd8'
@@ -53,7 +53,7 @@ def write_bytes(uri: str, data: bytes) -> None:
     Raises:
         OSError: Naming the target URI when it cannot be written.
 
-    Example:
+    Examples:
         >>> from annotools import write_bytes
         >>> write_bytes("/tmp/previews/frame.jpg", b"...")  # doctest: +SKIP
     """
@@ -77,12 +77,12 @@ def load_image(uri: str) -> Image.Image:
         The decoded, orientation-corrected PIL image (mode as stored: RGB, RGBA, L, P, ...).
 
     Raises:
-        FileNotFoundError: When the URI does not exist (from :func:`open_bytes`).
-        OSError: For other read failures (from :func:`open_bytes`).
+        FileNotFoundError: When the URI does not exist (from [`open_bytes`][annotools.open_bytes]).
+        OSError: For other read failures (from [`open_bytes`][annotools.open_bytes]).
         ValueError: When the content is not a decodable image (unknown format, truncated or corrupt
             data); the message names the URI.
 
-    Example:
+    Examples:
         >>> from annotools import load_image
         >>> load_image("data/raw/000000001675.jpg").size  # doctest: +SKIP
         (640, 480)

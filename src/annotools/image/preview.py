@@ -31,7 +31,7 @@ class PreviewResult:
         crop_pixels: The applied crop in source pixels (``None`` = full frame); exact, unlike
             re-deriving it from ``crop``.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import preview
         >>> preview(Image.new("RGB", (1600, 1200)), max_width=384, max_height=384).metadata[
@@ -59,8 +59,9 @@ def preview(
 
     The result is what an MLLM will see: agents localize on this view, so the returned metadata carries
     everything needed to map their answers back to the uncropped source (see
-    :func:`annotools.normalize_coordinates`). Downscaling uses LANCZOS; upscaling (only with
-    ``allow_upscale``) uses BICUBIC. EXIF orientation must already be applied (:func:`load_image` does).
+    [`normalize_coordinates`][annotools.normalize_coordinates]). Downscaling uses LANCZOS; upscaling (only with
+    ``allow_upscale``) uses BICUBIC. EXIF orientation must already be applied ([`load_image`][annotools.load_image]
+    does).
 
     Args:
         image: Source image; not modified.
@@ -72,7 +73,7 @@ def preview(
         allow_upscale: Enlarge small images or crops up to the limits instead of returning them as is.
 
     Returns:
-        A :class:`PreviewResult` whose ``metadata`` has ``original_size`` / ``original_width`` /
+        A [`PreviewResult`][annotools.PreviewResult] whose ``metadata`` has ``original_size`` / ``original_width`` /
         ``original_height``, the applied ``crop``, ``output_size`` / ``output_width`` /
         ``output_height``, and ``scale``; ``crop_pixels`` holds the exact source-pixel crop or ``None``.
 
@@ -80,7 +81,7 @@ def preview(
         ValueError: ``crop`` has a value outside [0, 1] or ``min >= max`` (message starts with
             ``crop:``), or a limit is smaller than 1.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import preview
         >>> result = preview(
@@ -157,7 +158,7 @@ def encode(image: Image.Image, output_format: str | None = None) -> bytes:
     Raises:
         ValueError: For an unknown ``output_format``.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import encode
         >>> encode(Image.new("RGB", (10, 10)), "png")[:4]

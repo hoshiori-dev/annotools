@@ -19,11 +19,12 @@ __all__ = [
 class GridOptions(BaseModel):
     """Grid parameters shared by every tool that accepts ``grid``.
 
-    ``None`` fields take their value from :class:`~annotools.Settings` when the grid is drawn
-    (:meth:`resolved`). A 10x10 ``ratio`` grid is the default because MLLMs anchor positions far better
-    against visible cells than on a bare image, and 10 cells keep the labels legible at 384 px.
+    ``None`` fields take their value from [`Settings`][annotools.Settings] when the grid is drawn
+    ([`resolved`][annotools.image.grid.GridOptions.resolved]). A 10x10 ``ratio`` grid is the default because MLLMs
+    anchor positions far better against visible cells than on a bare image, and 10 cells keep the labels legible at 384
+    px.
 
-    Example:
+    Examples:
         >>> from annotools import GridOptions
         >>> GridOptions(columns=4).resolved().rows
         10
@@ -89,13 +90,14 @@ def draw_grid(image: Image.Image, options: GridOptions) -> PreviewResult:
         options: Grid layout; ``None`` fields resolve from ``Settings``.
 
     Returns:
-        A :class:`PreviewResult` whose ``metadata["grid"]`` holds ``columns``, ``rows``, ``step_x`` /
-        ``step_y`` (normalized cell step) and ``cell_width`` / ``cell_height`` (output pixels).
+        A [`PreviewResult`][annotools.PreviewResult] whose ``metadata["grid"]`` holds ``columns``, ``rows``, ``step_x``
+        / ``step_y`` (normalized cell step) and ``cell_width`` / ``cell_height`` (output pixels).
 
     Raises:
-        ValueError: Via :meth:`GridOptions.resolved` when ``mode="fixed"`` has no cell widths.
+        ValueError: Via [`GridOptions.resolved`][annotools.image.grid.GridOptions.resolved] when ``mode="fixed"`` has no
+        cell widths.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import GridOptions, draw_grid
         >>> draw_grid(
