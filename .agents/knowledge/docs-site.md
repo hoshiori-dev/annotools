@@ -72,6 +72,12 @@ comments on their own lines, never move the content, and say so in the PR. An in
 admonition or a fenced block keeps its indentation, which is how `docs/cookbook/store.md` puts
 `schema.sql` inside a collapsed `??? example`.
 
+Cookbook rules, so a page never drifts from what it summarises: every page ends with a `Source:` line
+naming its skill; the skills' Workflow steps are summarised, never pasted (users install the skill, and
+two copies of a procedure disagree within a release); every cost, token, or IoU figure comes from an
+`examples/*/README.md` usage record and names the project it came from, with anything derived from those
+numbers labelled as an estimate.
+
 ## Keep in sync
 
 | When this changes | Do |
