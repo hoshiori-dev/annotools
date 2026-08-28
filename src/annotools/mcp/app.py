@@ -1,7 +1,7 @@
 """The FastMCP application instance.
 
-This module imports nothing from ``annotools.tools`` so that tool modules can import ``mcp`` from here
-without creating an import cycle. ``annotools.server`` is the composition root that loads the tools.
+This module imports no tool module so that the tool modules can import ``mcp`` from here without
+creating an import cycle. ``annotools.mcp.server`` is the composition root that loads the tools.
 """
 
 from fastmcp import FastMCP

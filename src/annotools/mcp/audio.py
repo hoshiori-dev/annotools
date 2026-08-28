@@ -6,10 +6,10 @@ from typing import Annotated
 from fastmcp.utilities.types import Audio as McpAudio
 from pydantic import Field
 
-from annotools.app import mcp
 from annotools.audio import clip
 from annotools.io import write_bytes
-from annotools.tools.common import SourceParam
+from annotools.mcp.app import mcp
+from annotools.mcp.common import SourceParam
 
 SaveWavParam = Annotated[str | None, Field(description="Also write the WAV file to this path or fsspec URL")]
 

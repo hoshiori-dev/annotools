@@ -30,7 +30,7 @@ or CI job commands.
   `just test-container` after `just docker-build`. Every documented raise gets a test.
 - Coverage: `fail_under = 95` (line + branch) in `pyproject.toml` is the only threshold; `just test-cov` and
   CI enforce it per Python version. Close gaps with tests — never with `omit`. Tests that call
-  `config.configure()` must import `annotools.server` before `reset_settings()` (see `tests/test_cli.py`).
+  `config.configure()` must import `annotools.mcp.server` before `reset_settings()` (see `tests/test_cli.py`).
 
 ## Toolchain
 

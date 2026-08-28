@@ -8,7 +8,7 @@ methodology; `examples/` show Claude Agent SDK and Codex SDK pipelines. See `ARC
 ## Project Map
 
 ```text
-src/annotools/        <- library layer (image/video/audio/geometry/color/io) + MCP wrappers (tools/, server.py)
+src/annotools/        <- library layer (image/video/audio/geometry/color/io/config); mcp/ = FastMCP app, tool wrappers, CLI
 tests/                <- pytest; `container` marker needs docker
 docs/                 <- zensical site only (user-facing pages); specs are not here
 skills/               <- publishable skills (npx skills add hoshiori-dev/annotools); English

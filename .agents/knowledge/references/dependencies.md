@@ -7,9 +7,9 @@ and add it here.
 
 | Component | Version (uv.lock, 2026-08-27) | Docs | Used in |
 |---|---|---|---|
-| FastMCP | 3.4.7 | https://gofastmcp.com (servers/tools, media helpers; `fastmcp-docs` MCP) | `server.py`, `tools/*` |
+| FastMCP | 3.4.7 | https://gofastmcp.com (servers/tools, media helpers; `fastmcp-docs` MCP) | `mcp/server.py`, `mcp/*` |
 | MCP SDK (`mcp`) | 1.29.1 | https://github.com/modelcontextprotocol/python-sdk | content types in tests (`ImageContent`, `TextContent`) |
-| pydantic | 2.13.4 | https://docs.pydantic.dev | parameter models, `Annotated[..., Field]` aliases in `tools/common.py` |
+| pydantic | 2.13.4 | https://docs.pydantic.dev | parameter models, `Annotated[..., Field]` aliases in `mcp/common.py` |
 | pydantic-settings | 2.15.0 | https://docs.pydantic.dev/latest/concepts/pydantic_settings/ | `config.py` (`Settings`), `cli.py` (`CliSettingsSource`) |
 | Pillow | 12.3.0 | https://pillow.readthedocs.io | `io.py`, `image/*` |
 | numpy | 2.5.2 | https://numpy.org/doc | `image/grid.py`, `image/segmentation.py`, `audio.py` |
@@ -24,8 +24,8 @@ and add it here.
   of content blocks must be declared `@mcp.tool(output_schema=None)`, otherwise FastMCP raises
   "outputSchema defined but no structured output". Pydantic-model returns get structured output
   automatically (`rotated_bbox_to_polygon`).
-- `FastMCP(name, instructions=...)` lives in `annotools/app.py` (imports nothing from `tools/`); tool modules
-  register by importing them, which `server.py` does at module level (composition root).
+- `FastMCP(name, instructions=...)` lives in `annotools/mcp/app.py` (imports no tool module); tool modules
+  register by importing them, which `mcp/server.py` does at module level (composition root).
 - Enumerate registered tools with `await mcp.list_tools()` (2026-08-28, 3.4.7): there is no public
   `_tool_manager` attribute on the server object.
 - Tools returning a pydantic model give structured output; tests read it via
