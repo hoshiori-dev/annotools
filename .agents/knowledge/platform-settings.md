@@ -32,6 +32,30 @@ A commit on a PR branch produces two CI runs (push + pull_request); the push run
 Rules: never weaken or delete a check to make it pass; a renamed job must be renamed in the ruleset in
 the same change. Read failed logs with `gh run view <id> --log-failed`, not the full log.
 
+## Reusable workflows and composite actions
+
+- A called workflow (`workflow_call`) inherits the **caller's** event context. A call made from a
+  tag-triggered workflow arrives as `push` on `refs/tags/*`, so any `if:` written against
+  `github.event_name`/`github.ref` must account for the tag ref, or the job skips — and a skipped job
+  reports success. `ci-gate` exists to catch exactly that.
+- Artifacts uploaded inside a called workflow belong to the **caller's** run, so the caller's other jobs
+  can download them. This is what lets `release.yml` publish the same wheel `release-tests.yml` tested.
+- A composite action cannot hold a job graph — it is a step list inside one job, with no `uses:` of a
+  workflow, no matrix, no fan-out. Share a multi-job chain as a reusable workflow and steps inside one
+  job as a composite action. Nesting is limited to four levels
+  (`release-prepare` → `release-tests` → `ci` is three).
+- Caller side: a `uses:` job must grant every permission the called workflow's jobs declare
+  (`ci.yml`'s `pr-title` needs `pull-requests: read`); a called workflow may not exceed the caller's grant.
+
+## Verifying CI that needs docker
+
+The devcontainer has no docker unless it was rebuilt, so image steps cannot run locally. Substitutes
+that caught real problems: `actionlint` (install with the official download script) for workflow syntax;
+replaying a scanner's rule file in Python against a real `uv build` output to predict findings before
+CI runs it; checking a pinned scanner image tag exists with an anonymous GHCR token
+(`curl "https://ghcr.io/token?scope=repository:<o>/<n>:pull&service=ghcr.io"`, then a manifest HEAD)
+— note the tag conventions differ: `trufflesecurity/trufflehog:3.97.1` has no `v`, `gitleaks/gitleaks:v8.24.2` does.
+
 ## Remote settings
 
 | Concern | Intended state | Owner | Verify |

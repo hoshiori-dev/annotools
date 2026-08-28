@@ -83,7 +83,12 @@ Read back `gh api repos/hoshiori-dev/annotools/rulesets` before promising a requ
 ## Gotchas
 
 - Third-party action tags: verify `gh api repos/<o>/<r>/git/ref/tags/<tag>` first — `setup-uv` has no
-  `vN` tag; unresolved tags fail every job at "Set up job".
+  `vN` tag; unresolved tags fail every job at "Set up job". Pinned container images used by workflows
+  need the same check, and their conventions differ (`trufflehog:3.97.1` has no `v`, `gitleaks:v8.24.2` does).
+- `gh issue create --milestone` matches the milestone's full title, not its `P<n>` prefix; read it back
+  with `gh api repos/hoshiori-dev/annotools/milestones`.
+- A tag pushed, or a draft release published, with `GITHUB_TOKEN` raises no event — no workflow reacts.
+  Anything that must trigger a workflow is done by a person or a user token.
 - gitleaks (pre-commit) flags `::error::` annotations as IPv6 and needs non-capturing groups in custom
   rules; print `ERROR:` in scripts.
 - A skipped job reports success; `ci-gate` checks test jobs actually ran on PR/main/release.
