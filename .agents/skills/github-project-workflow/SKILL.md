@@ -92,7 +92,9 @@ Read back `gh api repos/hoshiori-dev/annotools/rulesets` before promising a requ
 - gitleaks (pre-commit) flags `::error::` annotations as IPv6 and needs non-capturing groups in custom
   rules; print `ERROR:` in scripts.
 - A skipped job reports success; `ci-gate` checks test jobs actually ran on PR/main/release.
-- The default token cannot read org issue types, Actions policy, or write rulesets (403): report the
-  manual step instead of retrying.
+- The default token cannot read org issue types or Actions policy, and cannot write rulesets, create
+  environments, or dispatch a workflow (403 "Resource not accessible by integration"): report the manual
+  step instead of retrying. Environments are the exception that needs no manual step — the first run
+  that references one creates it.
 - `gh issue develop --base <branch>` stacks a branch on an unmerged one; rebase onto `main` after the
   base merges before opening the PR against `main`.
