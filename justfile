@@ -55,16 +55,21 @@ readme-check:
 # Everything CI runs on a pull request (except container tests)
 check: lint format-check typecheck check-taxonomy readme-check check-docs docs-check test-cov
 
-# Build the documentation site
-docs:
+# Regenerate docs/mcp/tools.md from the running MCP server
+docs-gen:
+    uv run scripts/gen_mcp_reference.py
+
+# Build the documentation site (regenerates the tool reference first)
+docs: docs-gen
     uv run zensical build --clean
 
 # Every public name has a complete Google docstring
 check-docs:
     uv run scripts/check_public_docstrings.py
 
-# Build the documentation site strictly (warnings fail), as CI does
+# Check the generated tool reference is current, then build strictly (warnings fail), as CI does
 docs-check:
+    uv run scripts/gen_mcp_reference.py --check
     uv run zensical build --clean --strict
 
 # Serve the documentation locally
