@@ -1,6 +1,6 @@
 # CI: lint/format/typecheck on every push and PR; unit + container tests on main pushes and PRs
 # (latest PR commit only). `ci-gate` is the single job required by the main ruleset.
-# Also callable from release.yml (workflow_call) as the pre-release verification.
+# Also callable from release-tests.yml (workflow_call) as the pre-publish verification.
 name: CI
 
 on:
@@ -75,8 +75,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-unit:
-    # Runs for PRs, pushes to main, and when called from release.yml.
-    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+    # Runs for PRs, pushes to main and to v* tags, and when called from the release workflows.
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -98,7 +98,7 @@ jobs:
           retention-days: 7
 
   test-container:
-    if: github.event_name != 'push' || github.ref == 'refs/heads/main'
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -134,8 +134,10 @@ jobs:
           if echo "$RESULTS" | grep -Eq '"result": "(failure|cancelled)"'; then
             echo "ERROR: A required job failed or was cancelled."; exit 1
           fi
-          # Tests must actually have run wherever this gate protects a merge.
-          if [ "$EVENT" = "pull_request" ] || [ "$REF" = "refs/heads/main" ] || [ "$EVENT" = "release" ]; then
+          # Tests must actually have run wherever this gate protects a merge or a release.
+          case "$REF" in refs/tags/*) TAG_REF=yes ;; *) TAG_REF=no ;; esac
+          if [ "$EVENT" = "pull_request" ] || [ "$REF" = "refs/heads/main" ] || [ "$EVENT" = "release" ] \
+             || [ "$EVENT" = "workflow_dispatch" ] || [ "$TAG_REF" = "yes" ]; then
             for job in test-unit test-container; do
               if ! echo "$RESULTS" | grep -A1 "\"$job\"" | grep -q '"result": "success"'; then
                 echo "ERROR: $job did not succeed."; exit 1

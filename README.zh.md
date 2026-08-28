@@ -44,8 +44,8 @@
 uv add "annotools[media] @ git+https://github.com/hoshiori-dev/annotools"
 ```
 
-1.0 之前：PyPI 发布尚未启用，请从 git 安装。`media` 可选依赖引入 PyAV，视频与音频工具需要它；只处理
-图像时可以去掉。
+1.0 之前：请从 git 安装。首个正式版本会发布到 PyPI；预发布版本只在 TestPyPI 上演练管线，不作为安装
+渠道。`media` 可选依赖引入 PyAV，视频与音频工具需要它；只处理图像时可以去掉。
 
 ### 作为 MCP 服务器
 

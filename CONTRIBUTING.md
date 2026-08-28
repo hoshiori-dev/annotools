@@ -24,5 +24,8 @@ Bugs, features, and tasks → the issue forms. Vulnerabilities → private vulne
 
 ## Merging and releases
 
-Squash merge only. Releases are GitHub releases tagged `v<version>` matching `pyproject.toml`; the
-release workflow builds, smoke-tests, and publishes the container image to GHCR.
+Squash merge only. Releases are staged: the Release Prepare workflow takes a tag matching
+`pyproject.toml`, runs the tests and scans the artifacts, and only then creates the tag and a draft
+release. Publishing that draft repeats the gate and then publishes the container image to GHCR and the
+wheel to PyPI — or to TestPyPI for a pre-release, which is a rehearsal channel rather than an install
+path. A `nightly` image is built from main daily.
