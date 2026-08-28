@@ -39,34 +39,13 @@ It serves two audiences, both first-class:
 
 ```bash
 uv add "annotools @ git+https://github.com/hoshiori-dev/annotools"
-uv add "annotools[media] @ git+https://github.com/hoshiori-dev/annotools"  # + video and audio
 ```
 
-Or run the server from the published container:
-
-```bash
-docker run --rm -i -v "$PWD:/data" ghcr.io/hoshiori-dev/annotools
-```
-
-## Register the MCP server
-
-Point any MCP client at the `annotools` command over stdio. For Claude Code, `.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "annotools": {
-      "command": "uv",
-      "args": ["run", "annotools"],
-      "env": { "ANNOTOOLS_MAX_WIDTH": "768", "ANNOTOOLS_MAX_HEIGHT": "768" }
-    }
-  }
-}
-```
-
-Pick the preview size for the model behind the agent: 384 px keeps a Gemini image at one 258-token
-unit, while Claude and GPT bill by area and read 768–1024 px comfortably. Every setting is available
-as a flag (`annotools --max-width 768`) or an `ANNOTOOLS_*` variable.
+Add the `media` extra for video and audio, or run the container
+(`ghcr.io/hoshiori-dev/annotools`) — see [Install](getting-started/install.md). Then
+[register the server](getting-started/register.md) with Claude Code, Codex or OpenCode and set the
+preview size for the model behind the agent: 384 px keeps a Gemini image at one 258-token unit, while
+Claude and GPT bill by area and read 768 px comfortably.
 
 ## Use the library
 
@@ -81,6 +60,7 @@ image_bytes = encode(overlay.image, "jpeg")
 
 ## More
 
+- [As an MCP server](usage/mcp-server.md) and [As a library](usage/library.md) — settings, coordinates, and the shape of a call.
 - [API reference](api/index.md) — every public function, generated from its docstring.
 - [MCP tool reference](mcp/tools.md) — parameters, return shape and specification of all 13 tools.
 - [Architecture](architecture.md) — layers and recorded decisions.

@@ -11,7 +11,15 @@ repo_name = "hoshiori-dev/annotools"
 edit_uri = "edit/main/docs/"
 
 nav = [
-  { "Get started" = "index.md" },
+  { "Get started" = [
+    "index.md",
+    { "Install" = "getting-started/install.md" },
+    { "Register the server" = "getting-started/register.md" },
+  ] },
+  { "Usage" = [
+    { "As an MCP server" = "usage/mcp-server.md" },
+    { "As a library" = "usage/library.md" },
+  ] },
   { "API reference" = [
     "api/index.md",
     { "annotools.config" = "api/config.md" },
