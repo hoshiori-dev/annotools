@@ -10,7 +10,7 @@ import sys
 import time
 from pathlib import Path
 
-from claude_agent_sdk import ClaudeAgentOptions, ResultMessage, query
+from claude_agent_sdk import ClaudeAgentOptions, ClaudeSDKError, ResultMessage, query
 
 from detection import store
 from detection.tools import ToolContext, build_server
@@ -47,9 +47,12 @@ async def detect_item(ctx: ToolContext, uri: str, config: dict, system: str) -> 
     )
     started = time.time()
     usage: dict = {"cost_usd": 0.0}
-    async for message in query(prompt=f"Detect the cats in the item with uri {uri}.", options=options):
-        if isinstance(message, ResultMessage):
-            usage = {"cost_usd": message.total_cost_usd or 0.0, "subtype": message.subtype, **(message.usage or {})}
+    try:
+        async for message in query(prompt=f"Detect the cats in the item with uri {uri}.", options=options):
+            if isinstance(message, ResultMessage):
+                usage = {"cost_usd": message.total_cost_usd or 0.0, "subtype": message.subtype, **(message.usage or {})}
+    except ClaudeSDKError as exc:  # the SDK yields the error result (with its cost) before raising
+        usage["error"] = str(exc)
     usage["seconds"] = round(time.time() - started, 1)
     return usage
 

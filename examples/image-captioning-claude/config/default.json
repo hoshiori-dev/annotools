@@ -5,5 +5,5 @@
   "workers": 4,
   "budgets": {"medium_words": 25, "short_words": 10},
   "max_failures": 10,
-  "max_budget_usd_per_item": 0.05
+  "max_budget_usd_per_item": 0.25
 }

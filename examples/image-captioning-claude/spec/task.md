@@ -39,5 +39,7 @@ Linear, parallel (`workers` in config): preview → long → compress ×2 → ta
   `{"uri", "coco_id", "long", "medium", "short", "tags"}` (`scripts/export_captions.py`).
 
 ## Budget
-- `max_budget_usd_per_item` 0.05 (SDK estimate, enforced per query); ≤ 4 workers; stop the run after
+- `max_budget_usd_per_item` 0.25 (SDK client-side estimate, enforced per query): a successful item
+  usually totals about 0.10, but the estimate has been observed at 0.16 as early as the first tool result, so
+  the cap is a runaway guard well above the typical cost, not the expected cost; ≤ 4 workers; stop the run after
   10 failures in a row (`max_failures`); token totals are reported in the run summary.

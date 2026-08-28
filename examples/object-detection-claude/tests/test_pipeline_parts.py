@@ -179,3 +179,30 @@ def test_system_prompt_substitutions():
     prompt = system_prompt(CONFIG)
     assert "{max_rounds}" not in prompt and "{grid}" not in prompt and "{max_boxes}" not in prompt
     assert "10x10" in prompt and "at most 20 boxes" in prompt and "at most 3 times" in prompt
+
+
+async def test_detect_item_keeps_the_cost_of_a_budget_error(workspace, monkeypatch):
+    from claude_agent_sdk import ResultError, ResultMessage
+
+    from detection import pipeline
+
+    ws, db = workspace
+    ctx = ToolContext(ws, db, 1, CONFIG)
+
+    async def failing_query(prompt, options):
+        yield ResultMessage(
+            subtype="error_max_budget_usd",
+            duration_ms=1,
+            duration_api_ms=1,
+            is_error=True,
+            num_turns=1,
+            session_id="s",
+            total_cost_usd=0.16,
+            usage={"cache_read_input_tokens": 18000},
+        )
+        raise ResultError("Reached maximum budget", exit_code=1)
+
+    monkeypatch.setattr(pipeline, "query", failing_query)
+    usage = await pipeline.detect_item(ctx, "data/raw/coco-cats/a.jpg", CONFIG, "system")
+    assert usage["error"].startswith("Reached maximum budget") and usage["subtype"] == "error_max_budget_usd"
+    assert usage["cost_usd"] == 0.16 and usage["cache_read_input_tokens"] == 18000

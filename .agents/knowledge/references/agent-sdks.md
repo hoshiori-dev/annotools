@@ -15,6 +15,11 @@ examples' `uv.lock` (2026-08-27). The published skill copy is
   disallowed_tools, permission_mode="dontAsk", system_prompt, effort, max_turns, max_budget_usd)`;
   `tools=[]` removes every built-in; tool names are `mcp__<server>__<tool>`.
 - `query(prompt, options)` yields messages; `ResultMessage.usage` / `total_cost_usd` for the record.
+- `max_budget_usd` compares a client-side estimate; when it trips, `query()` yields an
+  `error_max_budget_usd` `ResultMessage` (its `total_cost_usd` includes the response that crossed the cap)
+  and then raises `ResultError`, so catch inside the per-item function to keep the cost. The estimate has
+  been observed at ~0.16 USD right after the first tool result of an item that finishes at 0.06–0.10 on
+  success, so caps below ~0.2 fail items before their first correction. Verified 2026-08-28, SDK 0.2.145.
 
 ## Codex SDK — `openai-codex` 0.147.0 (Python), `@openai/codex-sdk` (TS)
 
