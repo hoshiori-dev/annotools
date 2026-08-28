@@ -20,6 +20,16 @@ nav = [
     { "As an MCP server" = "usage/mcp-server.md" },
     { "As a library" = "usage/library.md" },
   ] },
+  { "Cookbook" = [
+    "cookbook/index.md",
+    { "1. Interview" = "cookbook/interview.md" },
+    { "2. Store" = "cookbook/store.md" },
+    { "3. Token budget" = "cookbook/token-budget.md" },
+    { "4. Localization loop" = "cookbook/localization-loop.md" },
+    { "5. SDK tools" = "cookbook/sdk-tools.md" },
+    { "6. Trial and confirm" = "cookbook/trial-and-confirm.md" },
+    { "7. Export" = "cookbook/export.md" },
+  ] },
   { "API reference" = [
     "api/index.md",
     { "annotools.config" = "api/config.md" },
