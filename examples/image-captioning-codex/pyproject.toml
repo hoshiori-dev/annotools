@@ -20,7 +20,7 @@ line-length = 120
 extend-exclude = ["skills"]  # pinned copies of the annotools skills
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+extend-select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
 
 [tool.ty.src]
 include = ["src", "tests", "scripts"]

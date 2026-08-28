@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Download the COCO 2017 val images that contain a cat and register them in the workspace store.
 
 Usage:

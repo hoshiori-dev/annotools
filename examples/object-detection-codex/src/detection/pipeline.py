@@ -129,7 +129,7 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
                 return
             try:
                 usage = await detect_item(ctx, uri, config, system)
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - one item may fail without stopping the run
                 usage = {"cost_usd": 0.0, "seconds": 0.0, "error": str(exc)}
             with store.connect(DB) as conn:
                 _boxes, status, rounds = committed(conn, item_id, run_id)

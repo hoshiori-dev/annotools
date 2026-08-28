@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Export final captions to output/captions.jsonl: {"uri", "coco_id", "long", "medium", "short", "tags"} per image.
 
 Usage:

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Informational sanity check: mean best-match IoU between final boxes and the COCO cat boxes kept in items.meta_json.
 
 Usage: python scripts/sanity_iou.py --db <dataset.db>
