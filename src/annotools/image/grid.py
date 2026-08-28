@@ -50,11 +50,7 @@ class GridOptions(BaseModel):
     line_width: int | None = Field(default=None, ge=1, description="Output pixels; null = setting (1)")
 
     def resolved(self) -> "GridOptions":
-        """Return a copy with every ``None`` filled from ``Settings``.
-
-        Raises:
-            ValueError: when ``mode`` is ``fixed`` and a cell width is still unknown.
-        """
+        """Return a copy with every ``None`` filled from ``Settings``."""
         s = get_settings()
         out = self.model_copy(
             update={
@@ -72,7 +68,7 @@ class GridOptions(BaseModel):
         return out
 
 
-def line_positions(size: int, cells: int, cell_size: int | None, mode: str) -> tuple[list[int], int]:
+def _line_positions(size: int, cells: int, cell_size: int | None, mode: str) -> tuple[list[int], int]:
     """Return the line coordinates (excluding borders) and the resulting cell count along one axis."""
     if mode == "fixed":
         assert cell_size is not None
@@ -114,8 +110,8 @@ def draw_grid(image: Image.Image, options: GridOptions) -> PreviewResult:
     assert options.columns is not None and options.rows is not None and options.mode is not None
     assert options.opacity is not None and options.line_width is not None
     width, height = image.size
-    xs, columns = line_positions(width, options.columns, options.column_width, options.mode)
-    ys, rows = line_positions(height, options.rows, options.row_width, options.mode)
+    xs, columns = _line_positions(width, options.columns, options.column_width, options.mode)
+    ys, rows = _line_positions(height, options.rows, options.row_width, options.mode)
     if options.mode == "fixed" and options.column_width is not None and options.row_width is not None:
         cell_w, cell_h = float(options.column_width), float(options.row_width)
         step_x, step_y = cell_w / width, cell_h / height

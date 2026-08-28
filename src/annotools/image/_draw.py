@@ -25,11 +25,7 @@ def draw_label(
     size: tuple[int, int],
     anchor: str = "above",
 ) -> None:
-    """Draw a filled tag with ``text`` near (x, y), kept fully inside ``size``.
-
-    ``anchor="above"`` puts the tag's bottom-left at (x, y) (falling back to below when there is no room);
-    ``anchor="middle"`` centres it vertically on y with its left edge at x.
-    """
+    """Draw a filled tag with ``text`` near (x, y), kept fully inside ``size``."""
     font = ImageFont.load_default()
     left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
     tw, th = right - left + 4, bottom - top + 4

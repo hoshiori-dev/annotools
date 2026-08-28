@@ -62,7 +62,7 @@ class PolygonObject(BaseModel):
     color: str | None = Field(default=None, description="Color name or #RRGGBB; None uses Settings.color")
 
 
-class Mapper:
+class _Mapper:
     """Maps normalized source coordinates to output pixels of a rendered preview."""
 
     def __init__(self, result: PreviewResult) -> None:
@@ -122,7 +122,7 @@ def draw_bboxes(result: PreviewResult, objects: Sequence[BBoxObject], line_width
     line_width = settings.line_width if line_width is None else line_width
     if line_width < 1:
         raise ValueError(f"line_width must be >= 1, got {line_width}")
-    mapper = Mapper(result)
+    mapper = _Mapper(result)
     image, draw = canvas(result)
     for index, obj in enumerate(objects):
         box = validate_normalized_box(obj.bbox, name=f"objects[{index}].bbox")
@@ -174,7 +174,7 @@ def draw_keypoints(
     point_diameter = settings.point_diameter if point_diameter is None else point_diameter
     if point_diameter < 1:
         raise ValueError(f"point_diameter must be >= 1, got {point_diameter}")
-    mapper = Mapper(result)
+    mapper = _Mapper(result)
     image, draw = canvas(result)
     for index, obj in enumerate(objects):
         x, y = validate_normalized_point(obj.point, name=f"objects[{index}].point")
@@ -188,12 +188,8 @@ def draw_keypoints(
     return PreviewResult(image=image, metadata={**result.metadata, "objects": len(objects)})
 
 
-def validate_polygon(points: Sequence[float], name: str) -> list[tuple[float, float]]:
-    """Return the vertex list after checking count parity, minimum size, and range.
-
-    Raises:
-        ValueError: naming ``name`` on any violation.
-    """
+def _validate_polygon(points: Sequence[float], name: str) -> list[tuple[float, float]]:
+    """Return the vertex list after checking count parity, minimum size, and range."""
     if len(points) % 2 or len(points) < 6:
         raise ValueError(f"{name}: expected an even number of values for at least 3 points, got {len(points)} values")
     return [validate_normalized_point(points[i : i + 2], name=f"{name}[{i // 2}]") for i in range(0, len(points), 2)]
@@ -247,10 +243,10 @@ def draw_polygons(
     point_diameter = settings.point_diameter if point_diameter is None else point_diameter
     if line_width < 1 or point_diameter < 1:
         raise ValueError(f"line_width and point_diameter must be >= 1, got {line_width} and {point_diameter}")
-    mapper = Mapper(result)
+    mapper = _Mapper(result)
     image, draw = canvas(result)
     for index, obj in enumerate(objects):
-        vertices = validate_polygon(obj.points, name=f"objects[{index}].points")
+        vertices = _validate_polygon(obj.points, name=f"objects[{index}].points")
         color = parse_color(settings.color if obj.color is None else obj.color, name=f"objects[{index}].color")
         pixels = [mapper.to_pixels(x, y) for x, y in vertices]
         if not any(mapper.inside(px, py) for px, py in pixels):

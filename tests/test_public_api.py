@@ -26,9 +26,9 @@ def test_every_facade_name_resolves():
 
 
 INTERNAL_NAMES = {
-    "annotools.image.preview": ("size_metadata", "FORMATS", "MIME_TYPES"),
-    "annotools.image.overlay": ("Mapper", "validate_polygon"),
-    "annotools.image.grid": ("line_positions",),
+    "annotools.image.preview": ("size_metadata", "FORMATS"),
+    "annotools.image.overlay": ("_Mapper", "_validate_polygon"),
+    "annotools.image.grid": ("_line_positions",),
     "annotools.color": ("text_color_for",),
     "annotools.geometry": ("normalized_box_to_pixels",),
 }

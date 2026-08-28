@@ -16,13 +16,7 @@ def require_av(feature: str) -> Any:
 
 
 def open_container(av: Any, uri: str, stack: ExitStack) -> Any:
-    """Open ``uri`` with PyAV through a streamed fsspec handle; every error names the URI.
-
-    Raises:
-        FileNotFoundError: when the source does not exist.
-        OSError: for any other backend failure while opening the source.
-        ValueError: when the content is not a decodable media file.
-    """
+    """Open ``uri`` with PyAV through a streamed fsspec handle; every error names the URI."""
     try:
         handle = stack.enter_context(fsspec.open(uri, "rb"))
     except FileNotFoundError as exc:

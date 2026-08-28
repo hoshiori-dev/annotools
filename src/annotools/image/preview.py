@@ -16,7 +16,6 @@ __all__ = [
 ]
 
 FORMATS = {"jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}
-MIME_TYPES = {"jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp"}
 
 
 @dataclass
@@ -129,11 +128,7 @@ def preview(
 def size_metadata(
     original_size: tuple[int, int], crop: Box, output_size: tuple[int, int], scale: float
 ) -> dict[str, Any]:
-    """Build the base metadata every preview carries: sizes as ``[w, h]`` pairs and as scalar keys.
-
-    The scalar keys (``original_width``, ``output_width``, …) repeat the pairs so a model can read them
-    without indexing; ``scale`` is output pixels per source pixel of the cropped view.
-    """
+    """Build the base metadata every preview carries: sizes as ``[w, h]`` pairs and as scalar keys."""
     return {
         "original_size": list(original_size),
         "original_width": original_size[0],
