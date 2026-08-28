@@ -104,6 +104,13 @@ uv run annotools --http --host 127.0.0.1 --port 8000
 
 The endpoint is `http://127.0.0.1:8000/mcp`; the bare root returns 404.
 
+From the container, bind to all interfaces inside it and publish the port:
+
+```bash
+docker run --rm -p 8000:8000 -v "$PWD:/data" ghcr.io/hoshiori-dev/annotools:0.1.0-rc1 \
+  --http --host 0.0.0.0 --port 8000
+```
+
 ## Check it works
 
 ```bash

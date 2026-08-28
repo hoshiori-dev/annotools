@@ -1,15 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="760" height="200" viewBox="0 0 760 200" role="img"
      aria-label="Source image, downscaled preview, grid overlay, box overlay, normalized coordinates">
   <style>
-    .lbl { font: 600 12px ui-sans-serif, system-ui, sans-serif; fill: #57606a; }
-    .sub { font: 400 11px ui-monospace, SFMono-Regular, monospace; fill: #8b949e; }
+    .lbl { font: 600 12px ui-sans-serif, system-ui, sans-serif; fill: #24292f; }
+    .sub { font: 400 11px ui-monospace, SFMono-Regular, monospace; fill: #57606a; }
     .frame { fill: #dbe3ec; stroke: #9aa7b5; stroke-width: 1.5; }
     .grid { stroke: #ffffff; stroke-width: 1; opacity: .85; }
     .arrow { stroke: #9aa7b5; stroke-width: 1.5; fill: none; marker-end: url(#a); }
     .box { fill: none; stroke: #1f6feb; stroke-width: 2.5; }
     .tag { fill: #1f6feb; }
     .tagtext { font: 600 9px ui-sans-serif, system-ui, sans-serif; fill: #ffffff; }
-    .code { font: 400 11px ui-monospace, SFMono-Regular, monospace; fill: #1f6feb; }
+    .code { font: 400 11px ui-monospace, SFMono-Regular, monospace; fill: #0a53be; }
   </style>
   <defs>
     <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -17,10 +17,12 @@
     </marker>
   </defs>
 
+  <rect width="760" height="200" rx="6" fill="#f6f8fa"/>
+
   <rect class="frame" x="14" y="34" width="128" height="96" rx="4"/>
   <text class="lbl" x="14" y="152">Source</text>
   <text class="sub" x="14" y="168">4000 × 3000</text>
-  <path class="arrow" d="M150 82h34"/>
+  <path class="arrow" d="M150 88h34"/>
 
   <rect class="frame" x="192" y="46" width="112" height="84" rx="4"/>
   <text class="lbl" x="192" y="152">preview</text>

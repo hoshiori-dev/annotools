@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/logo.svg" width="88" alt="annotools">
+  <img src="docs/assets/logo.svg" width="88" alt="">
 </p>
 
 <h1 align="center">annotools</h1>
@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/hoshiori-dev/annotools/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hoshiori-dev/annotools/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="覆盖率" src="https://img.shields.io/badge/coverage-99%25-brightgreen">
+  <img alt="覆盖率" src="https://img.shields.io/badge/coverage-%3E%3D95%25-brightgreen">
   <img alt="Python" src="https://img.shields.io/badge/python-3.12%2B-blue">
   <a href="LICENSE"><img alt="许可证" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
   <a href="https://hoshiori-dev.github.io/annotools/"><img alt="文档" src="https://img.shields.io/badge/docs-site-blue"></a>
@@ -27,22 +27,25 @@
 
 把全分辨率媒体直接喂给多模态模型既昂贵又不精确。annotools 改为给 agent 专门构造的视图——降采样预览、
 裁剪放大、网格参考线，以及检测框、关键点、多边形和分割掩码的叠加，让它在提交之前先检查自己的标注。
-所有坐标只有一种约定：相对于**未裁剪原图**归一化到 0.0–1.0。
+所有坐标只有一种约定：相对于未裁剪原图归一化到 0.0–1.0。
 
-## 两种一等用法
+## 两种用法
 
-| 🔌 面向 coding agent 的 MCP 服务器 | 📦 面向 agent 开发者的能力库 |
+| 🔌 面向 coding agent 的 MCP 服务器 | 📦 面向 agent 开发者的 Python 库 |
 |---|---|
 | 为 Claude Code、Codex、OpenCode 提供 13 个工具 | 同样的预览、叠加与坐标转换，以函数提供 |
-| agent 查看数据集时不会耗尽上下文 | 给你自己的执行 agent 装上眼睛，无需 MCP 客户端 |
+| agent 查看数据集只花很小一部分上下文 | 给你自己的执行 agent 装上眼睛，无需 MCP 客户端 |
 | 预览尺寸是配置项，按模型调节成本 | `import annotools` 不会加载 `fastmcp` |
 | [→ 工具参考](https://hoshiori-dev.github.io/annotools/mcp/tools/) | [→ API 参考](https://hoshiori-dev.github.io/annotools/api/) |
 
 ## 快速开始
 
 ```bash
-uv add "annotools @ git+https://github.com/hoshiori-dev/annotools"
+uv add "annotools[media] @ git+https://github.com/hoshiori-dev/annotools"
 ```
+
+1.0 之前：PyPI 发布尚未启用，请从 git 安装。`media` 可选依赖引入 PyAV，视频与音频工具需要它；只处理
+图像时可以去掉。
 
 ### 作为 MCP 服务器
 
@@ -65,7 +68,7 @@ uv add "annotools @ git+https://github.com/hoshiori-dev/annotools"
 而 Claude 与 GPT 按面积计费，768 px 读起来更从容。Codex 与 OpenCode 的写法、全部配置项以及 HTTP
 传输见[注册服务器](https://hoshiori-dev.github.io/annotools/getting-started/register/)。
 
-### 作为能力库
+### 作为 Python 库
 
 ```python
 from annotools import BBoxObject, draw_bboxes, encode, load_image, normalize_coordinates, preview
@@ -107,7 +110,7 @@ jpeg = encode(overlay.image, "jpeg")
 - [使用](https://hoshiori-dev.github.io/annotools/usage/mcp-server/) —— 配置项、坐标约定、库调用的基本形态。
 - [API 参考](https://hoshiori-dev.github.io/annotools/api/) —— 每个公开函数，由 docstring 生成。
 - [架构](https://hoshiori-dev.github.io/annotools/architecture/) —— 分层与已记录的决策。
-- Skills —— 可安装进你的 agent 的标注方法论：`npx skills add hoshiori-dev/annotools`。
+- [`skills/`](skills/) —— 可安装进你的 agent 的标注方法论：`npx skills add hoshiori-dev/annotools`。
 - [`examples/`](examples/) —— 四个完整流水线：图像描述与目标检测，各有 Claude Agent SDK 与 Codex SDK 版本。
 
 ## 开发
@@ -118,7 +121,7 @@ just check
 just docker-build && just test-container
 ```
 
-`just check` 会运行 lint、格式化、类型检查、标签体系、README 同步、公开 API docstring 检查、生成式参考
+`just check` 会运行 lint、格式化、类型检查、标签体系、README 同步、公开 API docstring 检查、自动生成的参考
 文档漂移检查、严格模式文档构建，以及带 95% 覆盖率门槛的测试。参见
 [`CONTRIBUTING.md`](CONTRIBUTING.md)；agent 从 [`AGENTS.md`](AGENTS.md) 开始。
 

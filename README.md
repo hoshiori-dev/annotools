@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/logo.svg" width="88" alt="annotools">
+  <img src="docs/assets/logo.svg" width="88" alt="">
 </p>
 
 <h1 align="center">annotools</h1>
@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/hoshiori-dev/annotools/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hoshiori-dev/annotools/actions/workflows/ci.yml/badge.svg"></a>
-  <img alt="Coverage" src="https://img.shields.io/badge/coverage-99%25-brightgreen">
+  <img alt="Coverage" src="https://img.shields.io/badge/coverage-%3E%3D95%25-brightgreen">
   <img alt="Python" src="https://img.shields.io/badge/python-3.12%2B-blue">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
   <a href="https://hoshiori-dev.github.io/annotools/"><img alt="Docs" src="https://img.shields.io/badge/docs-site-blue"></a>
@@ -36,15 +36,18 @@ uncropped source.
 | 🔌 An MCP server for coding agents | 📦 A library for agent developers |
 |---|---|
 | 13 tools for Claude Code, Codex and OpenCode | The same previews, overlays and conversions as functions |
-| The agent looks at a dataset without spending its context | Give your own execution agent eyes, no MCP client needed |
+| The agent looks at a dataset for a fraction of the context | Give your own execution agent eyes, no MCP client needed |
 | Preview size is a setting, so cost is tuned per model | `import annotools` never loads `fastmcp` |
 | [→ Tool reference](https://hoshiori-dev.github.io/annotools/mcp/tools/) | [→ API reference](https://hoshiori-dev.github.io/annotools/api/) |
 
 ## Quick start
 
 ```bash
-uv add "annotools @ git+https://github.com/hoshiori-dev/annotools"
+uv add "annotools[media] @ git+https://github.com/hoshiori-dev/annotools"
 ```
+
+Pre-1.0: install from git until PyPI publishing is enabled. The `media` extra adds PyAV, which the
+video and audio tools need; drop it for images only.
 
 ### As an MCP server
 
@@ -110,7 +113,7 @@ Parameters, return shapes and specifications:
 - [Usage](https://hoshiori-dev.github.io/annotools/usage/mcp-server/) — settings, coordinate conventions, the shape of a library call.
 - [API reference](https://hoshiori-dev.github.io/annotools/api/) — every public function, generated from its docstring.
 - [Architecture](https://hoshiori-dev.github.io/annotools/architecture/) — layers and recorded decisions.
-- Skills — the annotation methodology, installable into your agent: `npx skills add hoshiori-dev/annotools`.
+- [`skills/`](skills/) — the annotation methodology, installable into your agent: `npx skills add hoshiori-dev/annotools`.
 - [`examples/`](examples/) — four complete pipelines: captioning and detection, on the Claude Agent SDK and the Codex SDK.
 
 ## Development
@@ -122,7 +125,7 @@ just docker-build && just test-container
 ```
 
 `just check` runs lint, format, types, taxonomy, README sync, the public-API docstring check, the
-generated-reference drift check, a strict docs build, and the tests behind a 95 % coverage gate. See
+generated-reference drift check, a strict docs build, and the tests behind a 95% coverage gate. See
 [`CONTRIBUTING.md`](CONTRIBUTING.md); agents start from [`AGENTS.md`](AGENTS.md).
 
 ## License
