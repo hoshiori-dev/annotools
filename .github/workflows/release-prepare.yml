@@ -21,7 +21,11 @@ permissions:
   contents: read
 
 concurrency:
-  # The tag may not be known yet when it is derived, so serialize per ref instead.
+  # The tag may not be known yet when it is derived, so serialize per ref instead. A tagless dispatch
+  # and one naming the same version therefore land in different groups and both run; the loser fails
+  # loudly when it pushes the tag, which is noisy but never produces two releases. Grouping per
+  # workflow instead would serialize unrelated refs to prevent an operator mistake that announces
+  # itself anyway.
   group: release-prepare-${{ inputs.tag || github.ref_name }}
   cancel-in-progress: false
 

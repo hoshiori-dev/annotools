@@ -87,6 +87,7 @@ def test_duplicate_is_detected_across_spellings(project) -> None:
     assert proc.returncode == 1
     assert "ERROR:" in proc.stderr
     assert "v0.1.0rc1" in proc.stderr
+    assert not proc.stdout.strip(), "the caller captures stdout; a refusal must leave it empty"
 
 
 def test_unrelated_tags_do_not_block(project) -> None:
@@ -111,6 +112,19 @@ def test_existing_tag_ok_accepts_the_tag_itself(project) -> None:
     assert proc.stdout.strip() == "v0.1.0-rc1"
 
 
+def test_existing_tag_ok_accepts_its_own_annotated_tag(project) -> None:
+    """The shape the tag-push path actually produces: an annotated tag, listed twice, plus the flag.
+
+    Covered separately because `conflicts()` compares `keep` against names that `tag_names()` has
+    already stripped of `^{}`. Filtering in the other order would reject the push path's own tag while
+    every other test still passed.
+    """
+    refs = ls_remote("v0.1.0-rc1") + "1111111111111111111111111111111111111111\trefs/tags/v0.1.0-rc1^{}\n"
+    proc = run(project("0.1.0rc1"), refs, "--tag", "v0.1.0-rc1", "--existing-tag-ok")
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stdout.strip() == "v0.1.0-rc1"
+
+
 def test_existing_tag_ok_still_rejects_a_differently_spelled_twin(project) -> None:
     refs = ls_remote("v0.1.0-rc1", "v0.1.0rc1")
     proc = run(project("0.1.0rc1"), refs, "--tag", "v0.1.0-rc1", "--existing-tag-ok")
@@ -118,7 +132,17 @@ def test_existing_tag_ok_still_rejects_a_differently_spelled_twin(project) -> No
     assert "v0.1.0rc1" in proc.stderr
 
 
-@pytest.mark.parametrize("version", ["0.1.0.dev1", "0.1.0.post1", "1!2.0.0", "1.0.0+local"])
+@pytest.mark.parametrize(
+    "version",
+    [
+        "0.1.0.dev1",
+        "0.1.0.post1",
+        "1!2.0.0",
+        "1.0.0+local",
+        "1.0",
+        "1.0.0.0",  # shaped like an IPv4 address, which is why it is refused here — gitleaks:allow
+    ],
+)
 def test_refuses_to_derive_a_form_the_convention_has_no_spelling_for(project, version: str) -> None:
     """These have no v<semver>[-rcN] spelling and no valid semver image either.
 

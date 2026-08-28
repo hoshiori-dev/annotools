@@ -37,6 +37,11 @@ def canonical_tag(version: Version) -> str:
             f"cannot derive a canonical tag for {version}: the v<semver>[-rcN] convention has no "
             "spelling for epoch, post, dev or local versions. Pass --tag explicitly if that is intended."
         )
+    if len(version.release) != 3:
+        raise ValueError(
+            f"cannot derive a canonical tag for {version}: semver has exactly three release components, "
+            f"and this has {len(version.release)}. Pass --tag explicitly if that is intended."
+        )
     if version.pre is None:
         return f"v{version.base_version}"
     phase, number = version.pre
