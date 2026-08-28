@@ -26,14 +26,16 @@ def canonical_tag(version: Version) -> str:
     """Spell ``version`` the way this project tags releases: ``v<semver>[-rcN]``.
 
     Raises:
-        ValueError: If the version is a post, dev or epoch release. Those have no spelling in this
-            convention and are not valid semver either, so `docker/metadata-action` could not tag an
-            image for them. The caller is told to pass `--tag` rather than being given an invented form.
+        ValueError: If the version is an epoch, post, dev or local version. Those have no spelling in
+            this convention and are not valid semver either, so `docker/metadata-action` could not tag
+            an image for them. The caller is told to pass `--tag` rather than being given an invented
+            form — and a local version would otherwise be dropped silently, since the parts this
+            function keeps do not include it.
     """
-    if version.epoch or version.is_postrelease or version.is_devrelease:
+    if version.epoch or version.is_postrelease or version.is_devrelease or version.local:
         raise ValueError(
             f"cannot derive a canonical tag for {version}: the v<semver>[-rcN] convention has no "
-            "spelling for epoch, post or dev releases. Pass --tag explicitly if that is intended."
+            "spelling for epoch, post, dev or local versions. Pass --tag explicitly if that is intended."
         )
     if version.pre is None:
         return f"v{version.base_version}"

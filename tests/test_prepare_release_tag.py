@@ -118,12 +118,18 @@ def test_existing_tag_ok_still_rejects_a_differently_spelled_twin(project) -> No
     assert "v0.1.0rc1" in proc.stderr
 
 
-def test_refuses_to_derive_a_form_the_convention_has_no_spelling_for(project) -> None:
-    """post/dev/epoch versions have no v<semver>[-rcN] spelling and no valid semver image either."""
-    proc = run(project("0.1.0.dev1"))
+@pytest.mark.parametrize("version", ["0.1.0.dev1", "0.1.0.post1", "1!2.0.0", "1.0.0+local"])
+def test_refuses_to_derive_a_form_the_convention_has_no_spelling_for(project, version: str) -> None:
+    """These have no v<semver>[-rcN] spelling and no valid semver image either.
+
+    A local version matters most: the parts derivation keeps do not include it, so deriving would
+    silently drop `+local` and produce a tag for a different version than the project declares.
+    """
+    proc = run(project(version))
     assert proc.returncode == 1
     assert "ERROR:" in proc.stderr
     assert "--tag" in proc.stderr, "the error must say how to proceed"
+    assert not proc.stdout.strip()
 
 
 def test_explicit_tag_is_allowed_for_such_a_version(project) -> None:
