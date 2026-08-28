@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import sys
 import wave
 
 import numpy as np
@@ -101,3 +102,40 @@ async def test_ac4_and_ac5_tool(mcp_server, audio_file, tmp_path):
     assert out.read_bytes() == base64.b64decode(audio.data)
     meta = json.loads(text.text)
     assert meta["duration"] == pytest.approx(3.0, abs=0.05) and meta["saved_to"] == str(out)
+
+
+def test_missing_media_extra_names_it(monkeypatch, audio_file):
+    monkeypatch.setitem(sys.modules, "av", None)
+    with pytest.raises(ImportError, match=r"annotools\[media\]"):
+        clip(str(audio_file))
+
+
+def test_unknown_protocol_raises_oserror_naming_the_uri():
+    with pytest.raises(OSError, match=r"nope://clip\.wav"):
+        clip("nope://clip.wav")
+
+
+def test_video_without_audio_stream_is_rejected(tmp_path):
+    import av
+
+    path = tmp_path / "silent.mp4"
+    with av.open(str(path), "w") as container:
+        stream = container.add_stream("mpeg4", rate=10)
+        stream.width, stream.height = 64, 48
+        stream.pix_fmt = "yuv420p"
+        for _ in range(5):
+            frame = np.zeros((48, 64, 3), dtype=np.uint8)
+            for packet in stream.encode(av.VideoFrame.from_ndarray(frame, format="rgb24")):
+                container.mux(packet)
+        for packet in stream.encode():
+            container.mux(packet)
+    with pytest.raises(ValueError, match="no audio stream"):
+        clip(str(path))
+
+
+def test_start_beyond_duration_and_late_window(audio_file):
+    with pytest.raises(ValueError, match="beyond the source duration"):
+        clip(str(audio_file), start=20)
+    data, meta = clip(str(audio_file), start=5.0, end=5.5)
+    duration, _rate, _channels = wav_info(data)
+    assert abs(duration - 0.5) < 0.01 and meta["start"] == 5.0

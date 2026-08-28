@@ -15,7 +15,7 @@ the default token.
 | `format` (CI) | `uv run ruff format --check .` | every push, PR |
 | `typecheck` (CI) | `uv run ty check` | every push, PR |
 | `pr-title` (CI) | Conventional Commits title check | PR |
-| `test-unit` (CI) | `uv run pytest -m "not container" --cov` (3.12, 3.13) | main push, PR, release |
+| `test-unit` (CI) | `uv run pytest -m "not container" --cov --cov-report=term --cov-report=xml` (3.12, 3.13); fails below `fail_under = 95` from `pyproject.toml`, enforced per leg; `coverage.xml` uploaded as `coverage-<py>` | main push, PR, release |
 | `test-container` (CI) | docker build + `uv run pytest -m container` | main push, PR, release |
 | `ci-gate` (CI) | aggregates all of the above; required check | same |
 | `secret-scan` (Secret Scanning) | TruffleHog `--results=verified,unknown` | main push, PR |

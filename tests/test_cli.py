@@ -60,3 +60,55 @@ def test_flag_name_in_error_uses_kebab_case(capsys):
     with pytest.raises(SystemExit):
         parse(["--grid-column-width", "0"])
     assert "--grid-column-width:" in capsys.readouterr().err
+
+
+@pytest.fixture
+def fresh_settings():
+    """``main()`` installs settings, which ``configure()`` only allows on an unresolved process."""
+    from annotools import config
+
+    config.reset_settings()
+    yield
+    config.reset_settings()
+
+
+def _capture_run(monkeypatch):
+    import annotools.server as server
+
+    calls: list[dict] = []
+    monkeypatch.setattr(server.mcp, "run", lambda **kwargs: calls.append(kwargs))
+    return calls
+
+
+def test_main_runs_stdio_by_default(monkeypatch, fresh_settings):
+    from annotools.cli import main
+
+    calls = _capture_run(monkeypatch)
+    main([])
+    assert calls == [{}]
+
+
+def test_main_runs_http_with_host_and_port(monkeypatch, fresh_settings):
+    from annotools.cli import main
+
+    calls = _capture_run(monkeypatch)
+    main(["--http", "--host", "0.0.0.0", "--port", "9000"])
+    assert calls == [{"transport": "http", "host": "0.0.0.0", "port": 9000}]
+
+
+def test_main_installs_the_parsed_settings(monkeypatch, fresh_settings):
+    from annotools import config
+    from annotools.cli import main
+
+    _capture_run(monkeypatch)
+    main(["--max-width", "500"])
+    assert config.get_settings().max_width == 500
+
+
+def test_python_m_annotools_calls_main(monkeypatch):
+    import runpy
+
+    seen: list[str] = []
+    monkeypatch.setattr("annotools.cli.main", lambda: seen.append("main"))
+    runpy.run_module("annotools", run_name="__main__")
+    assert seen == ["main"]

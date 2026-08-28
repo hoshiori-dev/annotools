@@ -73,3 +73,19 @@ def test_label_at_top_edge_stays_inside():
     plain = np.asarray(render([PolygonObject(points=pts)], show_point_index=False).convert("RGB"))
     labeled = np.asarray(render([PolygonObject(points=pts, label="roof")], show_point_index=False).convert("RGB"))
     assert (plain != labeled).any()
+
+
+def test_empty_objects_and_small_width_raise():
+    result = preview(make_image(200, 200), max_width=200, max_height=200)
+    with pytest.raises(ValueError, match="at least one polygon"):
+        draw_polygons(result, [])
+    with pytest.raises(ValueError, match="line_width and point_diameter"):
+        draw_polygons(result, [PolygonObject(points=TRIANGLE)], line_width=0)
+
+
+def test_polygon_entirely_outside_the_crop_is_skipped_but_counted():
+    result = preview(make_image(400, 400), crop=(0.5, 0.5, 1.0, 1.0), max_width=200, max_height=200)
+    before = np.asarray(result.image.convert("RGB")).copy()
+    out = draw_polygons(result, [PolygonObject(points=TRIANGLE, color="blue")])
+    assert out.metadata["objects"] == 1
+    assert (np.asarray(out.image.convert("RGB")) == before).all()

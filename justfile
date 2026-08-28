@@ -34,7 +34,7 @@ test *args:
 
 # Unit tests with coverage report
 test-cov:
-    uv run pytest -m "not container" --cov --cov-report=term
+    uv run pytest -m "not container" --cov --cov-report=term --cov-report=xml
 
 # Container smoke tests; needs a docker daemon and `just docker-build`
 test-container:
@@ -53,7 +53,7 @@ readme-check:
     uv run scripts/check_readme_sync.py
 
 # Everything CI runs on a pull request (except container tests)
-check: lint format-check typecheck check-taxonomy readme-check test
+check: lint format-check typecheck check-taxonomy readme-check test-cov
 
 # Build the documentation site
 docs:

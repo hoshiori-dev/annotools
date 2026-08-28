@@ -49,3 +49,28 @@ def test_fit_size_never_exceeds_target_pixels():
     for width, height in ((1023, 767), (999, 1001), (4000, 3000)):
         w, h = fit_size(width, height, max_width=10_000, max_height=10_000, target_pixels=250_000)
         assert w * h <= 250_000
+
+
+def test_wrong_length_box_and_point_name_the_field():
+    from annotools.geometry import validate_normalized_point
+
+    with pytest.raises(ValueError, match=r"bbox: expected 4 values"):
+        validate_normalized_box((0.0, 0.0, 1.0), name="bbox")
+    with pytest.raises(ValueError, match=r"pt: expected 2 values"):
+        validate_normalized_point((0.5,), name="pt")
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [{"max_width": 0, "max_height": 10}, {"max_width": 10, "max_height": 10, "target_pixels": 0}],
+    ids=["max-size", "target-pixels"],
+)
+def test_fit_size_rejects_limits_below_one(kwargs):
+    with pytest.raises(ValueError, match=">= 1"):
+        fit_size(100, 100, **kwargs)
+
+
+def test_is_rectangle_rejects_zero_length_edge():
+    from annotools.geometry import is_rectangle
+
+    assert is_rectangle([0, 0, 0, 0, 1, 1, 1, 0]) is False
