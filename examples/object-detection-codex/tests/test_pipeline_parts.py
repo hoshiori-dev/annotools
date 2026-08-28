@@ -90,7 +90,7 @@ def test_tools_loop_and_export(workspace, tmp_path):
         [sys.executable, str(ROOT / "scripts" / "sanity_iou.py"), "--db", str(db)],
         capture_output=True,
         text=True,
-        check=False,
+        check=True,
     )
     assert json.loads(sanity.stdout)["mean_best_iou"] == pytest.approx(1.0, abs=0.01)
 
