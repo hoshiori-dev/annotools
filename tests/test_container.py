@@ -41,4 +41,6 @@ async def test_http_server_answers_ping():
                 await asyncio.sleep(1)
         raise AssertionError(f"server never became ready: {last_error}")
     finally:
-        subprocess.run(["docker", "rm", "-f", name], check=False, capture_output=True)  # noqa: ASYNC221
+        subprocess.run(  # noqa: ASYNC221 - teardown, after the async client has already been closed
+            ["docker", "rm", "-f", name], check=False, capture_output=True
+        )

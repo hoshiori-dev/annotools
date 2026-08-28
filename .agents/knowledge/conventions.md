@@ -28,7 +28,7 @@ or CI job commands.
   `docs/` examples are formatted by hand.
 - `select` would replace those defaults instead of extending them; `ruff check --show-settings <file>`
   prints the rules a config actually enables. Silence a deliberate violation with an inline
-  `# noqa: <code> - <reason>`, not a `per-file-ignores` entry; `scripts/*.py` run as
+  `# noqa: <code> - <reason>`, not a `per-file-ignores` entry; the repository's `scripts/` run as
   `uv run scripts/<name>.py` and carry no shebang.
 - ty is the type checker (`include = src, tests`); keep annotations complete on new code. No mypy.
 - Library functions accept/return PIL images or bytes and raise `ValueError` for contract violations
