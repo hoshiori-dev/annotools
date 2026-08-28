@@ -13,7 +13,7 @@ python scripts/export.py --db workspaces/<task>/data/dataset.db --format jsonl -
 | `jsonl` | one line per item, annotations nested | the default; anything downstream reads it |
 | `csv` | one row per annotation, item columns repeated | spreadsheets, quick counts |
 | `parquet` | one row per item (needs `pyarrow`) | large datasets, columnar reads |
-| `webdataset` | tar of `<sha1(uri)>.json` records | training loaders; media stays where `uri` points |
+| `webdataset` | tar of one `<key>.json` per item, `<key>` the first 16 hex characters of sha1(`uri`) | training loaders; media stays where `uri` points |
 
 The record is the same in every format — this is one line of real `jsonl` output, from a store with
 two committed boxes on one image:

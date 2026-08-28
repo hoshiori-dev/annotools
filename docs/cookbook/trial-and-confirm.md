@@ -26,6 +26,9 @@ the label being wrong:
 | Cost (USD) | 0.234 (0.078 per image) | not reported | 0.220 (0.073 per image) | not reported |
 | Wall time, sequential | 69.0 s | 163.8 s | 67.1 s | 125.6 s |
 
+The Claude columns' token fields come from each item's final result message while `cost_usd` covers
+every turn of the item, so the two do not divide into each other.
+
 The failures:
 
 - **captioning-claude** produced an 11-word short caption against a 10-word budget, so the item
@@ -44,9 +47,10 @@ The failures:
 
 Two things come out of the trial that no estimate provides.
 
-**Cost per item, measured.** 0.073–0.078 USD per image on the Claude SDK examples puts the full
-≈ 184-image dataset near 14 USD — decide it there, not after. Both figures are the SDK's client-side
-estimate, not a bill. The Codex SDK reports no cost at all under a subscription login (`cost_usd` is
+**Cost per item, measured.** 0.073–0.078 USD per image on the Claude SDK examples. Multiplied out
+over the ≈ 184-image dataset that is roughly 14 USD — a derived figure, 184 × a per-image number that
+is itself the SDK's client-side estimate rather than a bill, and the point at which to decide
+whether to run it. The Codex SDK reports no cost at all under a subscription login (`cost_usd` is
 0.0 in the summary), so that number has to come from the provider dashboard; what it does report is
 token usage, and the cached share — 490,880 of 560,638 input tokens in one run, 331,648 of 405,846
 in the other — is what a correct [cache layout](token-budget.md) looks like from the other side.

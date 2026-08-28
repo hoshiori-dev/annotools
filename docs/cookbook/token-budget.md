@@ -17,8 +17,10 @@ Re-check anything you are about to base a budget on — vendors move tiers witho
 
 --8<-- "skills/mllm-multimodal-input/SKILL.md:tokens"
 
-The families split into two billing shapes. Gemini has a cliff, and the table above says where it
-is; the other families bill by area, with no tile boundary to exploit, so a smaller image saves a
+The families split into three billing shapes, and the table above says where each boundary sits.
+Gemini has a cliff at a small size: below it an image is one unit, above it several. The GPT-4o /
+4.1 / 5.1 tile models have a coarser one at 512 px, where an image is a single tile. Claude, the GPT
+patch models, and Qwen bill by area with no boundary at all, so for them a smaller image saves a
 little and loses detail. This is why the annotools default of 384×384 — chosen for Gemini's cliff —
 is the wrong default for most projects, and why the size belongs in `config/` rather than in code.
 
@@ -38,7 +40,7 @@ the breakpoint sets cache reads to zero for the entire run — the prefix has to
 
 Each provider also has a minimum cacheable prefix — a few hundred to a few thousand tokens,
 depending on the model — and below it nothing caches at all. The skill's
-["Prompt caching minimums" table](https://github.com/hoshiori-dev/annotools/blob/main/skills/mllm-multimodal-input/SKILL.md)
+["Prompt caching minimums" table](https://github.com/hoshiori-dev/annotools/blob/main/skills/mllm-multimodal-input/SKILL.md#prompt-caching-minimums-prefix-must-be-byte-identical)
 lists the current figure per model, dated.
 
 What this looks like when it works: the three-image trial of
@@ -46,6 +48,8 @@ What this looks like when it works: the three-image trial of
 billed 24 uncached input tokens against 60,379 cache reads and 15,616 cache-creation tokens, with
 1,222 output tokens, for 0.220 USD — 0.073 per image at a 768 px preview. Almost everything the run
 reads is the static prefix, re-read on every turn at the cache rate; the per-item text is the 24.
+Do not divide one by the other: the Claude SDK's token fields come from each item's final result
+message, while `cost_usd` covers every turn of the item.
 
 ## Measure before the full run
 
@@ -54,9 +58,8 @@ token counts, compare with the estimate, and only then submit the rest. The targ
 tokens per item within 20 % of the estimate and non-zero cache reads from the second request on.
 That is the same three items as the [trial](trial-and-confirm.md), so it costs nothing extra.
 
-For video, sparser beats smaller: a few dozen frames at a usable size already run into tens of
-thousands of tokens, so lower the frame rate before lowering the resolution. The skill's video and
-audio table has the per-provider rates.
+For video, sparser beats smaller: 32 frames at 768 px is already 15–25 k tokens, so lower the frame
+rate before lowering the resolution. The skill's video and audio table has the per-provider rates.
 
 Next: [the localization loop](localization-loop.md), where the preview size meets coordinates.
 

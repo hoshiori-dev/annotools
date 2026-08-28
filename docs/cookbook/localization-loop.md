@@ -14,7 +14,8 @@ seen rendered.
 3. **Verify** — `preview_image_bboxes(source, objects=[...], grid={})` with the same grid, each box
    carrying an index label.
 4. **Correct** — ask for adjustments by index ("move box 2's right edge to the ear"), re-render,
-   repeat. A round that changes nothing ends the loop, and still counts.
+   repeat until the model calls the overlay acceptable or the round limit is reached. Every round
+   counts, including one that changes nothing.
 5. **Commit** — one write with the final list, the round count, and the model's self-assessment.
    Intermediate rounds are never written as final; an item that exhausts its rounds is committed as
    `needs_review` with the last overlay saved.

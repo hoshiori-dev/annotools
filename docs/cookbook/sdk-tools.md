@@ -44,9 +44,11 @@ yours.
 The Codex SDK has no in-process decorator: the same functions become a FastMCP stdio server declared
 in the thread config, and threads start with `cwd` set to the workspace and a sandbox mode. Two
 things reliably cost an afternoon. Codex threads check for a git repository, so a workspace outside
-one needs `skipGitRepoCheck`. And `ApprovalMode.deny_all`, the natural choice for an unattended run,
-rejects MCP tool calls too — every call fails with `user rejected MCP tool call` — so the server
-entry needs `"default_tools_approval_mode": "approve"`.
+one needs `skipGitRepoCheck` in TypeScript, or a `cwd` inside the project repository — the Python
+`thread_start()` has no such parameter, which is why both Codex examples run from inside the repo.
+And `ApprovalMode.deny_all`, the natural choice for an unattended run, rejects MCP tool calls too —
+every call fails with `user rejected MCP tool call` — so the server entry needs
+`"default_tools_approval_mode": "approve"`.
 
 [`assets/claude_tools.py`](https://github.com/hoshiori-dev/annotools/blob/main/skills/agent-vision-tools/assets/claude_tools.py)
 and [`assets/codex_tools.py`](https://github.com/hoshiori-dev/annotools/blob/main/skills/agent-vision-tools/assets/codex_tools.py)
