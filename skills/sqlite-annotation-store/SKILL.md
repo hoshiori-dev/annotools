@@ -32,7 +32,7 @@ coordinates relative to the uncropped source; boxes `[x_min, y_min, x_max, y_max
 5. **Export**: `python scripts/export.py --db … --format jsonl --out output/` writes one line per item
    with its final annotations, each as `{kind, key, label, confidence, rounds, payload}`
    ([scripts/export.py](scripts/export.py)); `csv` flattens to one row per annotation, `parquet`
-   keeps one row per item, `webdataset` writes a tar of `<sha1(uri)>.json` records (media stays where
+   keeps one row per item, `webdataset` writes a tar of `<sha1(uri)[:16]>.json` records (media stays where
    `uri` points; copy it in your own step if the consumer needs it inside the tar).
    Done when: every item is either exported or listed in the export's `skipped` summary with a reason.
 

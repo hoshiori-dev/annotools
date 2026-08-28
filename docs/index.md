@@ -64,6 +64,8 @@ image_bytes = encode(overlay.image, "jpeg")
 - [API reference](api/index.md) — every public function, generated from its docstring.
 - [MCP tool reference](mcp/tools.md) — parameters, return shape and specification of all 13 tools.
 - [Architecture](architecture.md) — layers and recorded decisions.
+- [Cookbook](cookbook/index.md) — how an agent-run annotation project gets from an interview to an
+  exported dataset, one page per step.
 - Skills — the annotation methodology as installable agent skills: `npx skills add hoshiori-dev/annotools`.
 - [Examples](https://github.com/hoshiori-dev/annotools/tree/main/examples) — four complete pipelines
   (image captioning and object detection, on the Claude Agent SDK and the Codex SDK).

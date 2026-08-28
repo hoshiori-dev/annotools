@@ -36,6 +36,7 @@ rely on for cost (vendors change tiers without notice) and record the date next 
 
 ## Image token cost per model (2026-08-27)
 
+<!-- --8<-- [start:tokens] -->
 | Model family | Rule | Cheapest useful size |
 |---|---|---|
 | Gemini 2.5 / 3.x | ≤ 384×384 → 258 tokens; larger images are tiled: crop unit ≈ floor(min(w, h)/1.5), tiles = ceil(w/unit) × ceil(h/unit), 258 tokens per tile (768×768 → 4 tiles, 768×432 → 6). `media_resolution` low/default caps tokens per image/frame. | ≤ 384 px both sides (258 tokens); otherwise accept 4–6 tiles at 768 |
@@ -45,6 +46,7 @@ rely on for cost (vendors change tiers without notice) and record the date next 
 | GPT-5.2 / 5.4 / 5.6 families, GPT-4.1-mini/nano, gpt-5-mini/nano, o4-mini (patch models) | 32-px patches: ceil(w/32) × ceil(h/32) × model multiplier (1.2 for 5.2/5.4/5.6 and gpt-5-mini; 1.62 for 4.1-mini; other multipliers per the source page). 768×768 → 576 patches × 1.2 ≈ 692. | Cost is linear in area: shrink to the smallest legible size; no tile boundary to exploit |
 | Qwen2.5-VL | 14-px patches merged 2×2 → one token per 28×28 px; `min_pixels`/`max_pixels` bound the area (typical 256·28² – 1280·28²), sizes rounded to multiples of 28. 768×768 → 784 tokens. | Set `max_pixels` to the budget; 768 long side ≈ 450–800 tokens |
 | Qwen3-VL | 16-px patches merged 2×2 → one token per **32×32** px; sizes rounded to multiples of 32; pixel budgets in units of 32² (video `fps` default 2; the `total_pixels` default differs between the README and `vision_process.py` — set it explicitly). 768×768 → 576 tokens. | Same rule with 32-px units; 768 long side ≈ 330–600 tokens |
+<!-- --8<-- [end:tokens] -->
 
 Practical consequence: the annotools server default is **384×384** — the largest size Gemini bills as
 one 258-token unit. That is often too small for the other families: they bill by area with no tile
@@ -55,6 +57,7 @@ rather than sending a larger image.
 
 ## Recommended startup size per model
 
+<!-- --8<-- [start:sizes] -->
 | Model family | `max_width` × `max_height` | Why |
 |---|---|---|
 | Gemini 2.5 / 3.x | 384 × 384 (the default) | one 258-token unit; 768 costs 4–6 units |
@@ -62,6 +65,7 @@ rather than sending a larger image.
 | GPT-5.2 / 5.4 / 5.6 (patch models) | 768 × 768 (up to 1024 × 1024 ≈ 1229 tokens) | 32-px patches × 1.2, area billing |
 | GPT-4o / 4.1 / 5.1 (tile models) | 512 × 512 for one tile, else 768 × 768 (4 tiles) | 512-px tiles; `detail=high` |
 | Qwen2.5-VL / Qwen3-VL | 768 × 768 | 28- or 32-px units, area billing; set `max_pixels`/`total_pixels` to match |
+<!-- --8<-- [end:sizes] -->
 
 Registration examples — Claude Code `.mcp.json`:
 `"annotools": {"type": "stdio", "command": "uv", "args": ["run", "annotools"], "env": {"ANNOTOOLS_MAX_WIDTH": "768", "ANNOTOOLS_MAX_HEIGHT": "768"}}`;
@@ -87,6 +91,7 @@ on; asking for anything else degrades localization (Claude documents this explic
 native convention, then convert with `normalize_coordinates(coordinates, base_width, base_height,
 crop=…, axis_order=…)` — `base` is the frame the model used, `crop` the applied crop from the preview metadata.
 
+<!-- --8<-- [start:coordinates] -->
 | Model | Native convention (vendor statement, verified 2026-08-27) | Prompt wording | Convert with |
 |---|---|---|---|
 | Claude | Absolute pixels of the image **as sent**: "Claude works best with absolute pixel coordinates … does not work well when you ask for normalized coordinates, for example: 'Return bounding box coordinates between 0 and 1000'". Coordinates refer to the resized image if Claude had to resize; normalize by the resized, never the padded, size. | "Return `[x1, y1, x2, y2]` in pixel coordinates of the image as shown (width W, height H)" with W/H from `output_width`/`output_height` | `base = output_width, output_height`, `axis_order="xy"` |
@@ -95,6 +100,7 @@ crop=…, axis_order=…)` — `base` is the frame the model used, `crop` the ap
 | Qwen2.5-VL | Absolute coordinates "using the actual size scale of the image, without performing traditional coordinate normalization" — pixels of the smart-resized input (multiples of 28) | pixel `[x1, y1, x2, y2]` of the image as shown; state W×H | `base = output_width, output_height` (send a preview already sized to multiples of 28 so no resize happens) |
 | Qwen3-VL | Relative 0–1000 `[x1, y1, x2, y2]` (top-left, bottom-right); some cookbook utilities divide by 999 | "`bbox_2d` `[x1, y1, x2, y2]` in a 0-1000 space" | `base = 1000, 1000`, `axis_order="xy"` |
 | Unknown / other | Undocumented | Trial-label 3 images with the grid preview, asking for pixels of the shown image; assert the value range of the answer (≤ `output_width` → pixels; ≤ 1000 with values near 1000 on a small image → fixed space) before choosing | per the observed range |
+<!-- --8<-- [end:coordinates] -->
 
 Rules that hold for every model: the grid overlay is drawn on the image the model sees, so it anchors
 any convention equally; state the shown size in the prompt for pixel conventions; convert in code
