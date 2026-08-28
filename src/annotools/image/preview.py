@@ -9,6 +9,12 @@ from PIL import Image
 from annotools.config import get_settings
 from annotools.geometry import FULL_FRAME, Box, fit_size, normalized_box_to_pixels, validate_normalized_box
 
+__all__ = [
+    "PreviewResult",
+    "encode",
+    "preview",
+]
+
 FORMATS = {"jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}
 MIME_TYPES = {"jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp"}
 
