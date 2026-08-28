@@ -131,7 +131,7 @@ JSON metadata object (base keys, `grid` when used, `objects` count).
 |---|---|---|---|---|
 | `source` | `str` | — | yes | Local path or fsspec URL (file://, s3://, gs://, http(s)://, memory://) |
 | `objects` | `array[object{bbox, label, color}]` | — | yes | A bounding box in normalized coordinates of the uncropped source. |
-| `grid` | `object{columns, rows, mode, column_width, row_width, color, opacity, line_width}` \| `null` | `null` | no | Grid parameters shared by every tool that accepts `grid` (see .agents/knowledge/spec/mcp-overview.md). |
+| `grid` | `object{columns, rows, mode, column_width, row_width, color, opacity, line_width}` \| `null` | `null` | no | Grid parameters shared by every tool that accepts `grid`. |
 | `line_width` | `int` | `2` | no | Outline width in output pixels |
 | `crop` | `[float, float, float, float]` \| `null` | `null` | no | Normalized [x_min, y_min, x_max, y_max] of the source to zoom into (0-1, min < max) |
 | `target_pixels` | `int` \| `null` | `null` | no | Cap on output area in pixels |
@@ -184,7 +184,7 @@ Returns the image and one JSON metadata object (base keys, `grid` when used, `ob
 |---|---|---|---|---|
 | `source` | `str` | — | yes | Local path or fsspec URL (file://, s3://, gs://, http(s)://, memory://) |
 | `objects` | `array[object{point, label, color}]` | — | yes | A single point in normalized coordinates of the uncropped source. |
-| `grid` | `object{columns, rows, mode, column_width, row_width, color, opacity, line_width}` \| `null` | `null` | no | Grid parameters shared by every tool that accepts `grid` (see .agents/knowledge/spec/mcp-overview.md). |
+| `grid` | `object{columns, rows, mode, column_width, row_width, color, opacity, line_width}` \| `null` | `null` | no | Grid parameters shared by every tool that accepts `grid`. |
 | `point_diameter` | `int` | `3` | no | Vertex/point dot diameter in output pixels |
 | `crop` | `[float, float, float, float]` \| `null` | `null` | no | Normalized [x_min, y_min, x_max, y_max] of the source to zoom into (0-1, min < max) |
 | `target_pixels` | `int` \| `null` | `null` | no | Cap on output area in pixels |
@@ -236,7 +236,7 @@ metadata object (base keys, `grid` when used, `objects` count).
 |---|---|---|---|---|
 | `source` | `str` | — | yes | Local path or fsspec URL (file://, s3://, gs://, http(s)://, memory://) |
 | `objects` | `array[object{points, label, color}]` | — | yes | A closed polygon as a flat list of normalized coordinates of the uncropped source. |
-| `grid` | `object{columns, rows, mode, column_width, row_width, color, opacity, line_width}` \| `null` | `null` | no | Grid parameters shared by every tool that accepts `grid` (see .agents/knowledge/spec/mcp-overview.md). |
+| `grid` | `object{columns, rows, mode, column_width, row_width, color, opacity, line_width}` \| `null` | `null` | no | Grid parameters shared by every tool that accepts `grid`. |
 | `line_width` | `int` | `2` | no | Outline width in output pixels |
 | `point_diameter` | `int` | `3` | no | Vertex/point dot diameter in output pixels |
 | `show_point_index` | `bool` | `true` | no |  |
@@ -295,7 +295,7 @@ Regions are coloured with color_from_text(str(id)). Returns the image and one JS
 | `id_names` | `object{string: str}` \| `null` | `null` | no | Optional display names per ID |
 | `alpha` | `float` | `0.5` | no | Blend strength of region colours |
 | `line_width` | `int` | `2` | no | Region outline width in output pixels; 0 disables |
-| `grid` | `object{columns, rows, mode, column_width, row_width, color, opacity, line_width}` \| `null` | `null` | no | Grid parameters shared by every tool that accepts `grid` (see .agents/knowledge/spec/mcp-overview.md). |
+| `grid` | `object{columns, rows, mode, column_width, row_width, color, opacity, line_width}` \| `null` | `null` | no | Grid parameters shared by every tool that accepts `grid`. |
 | `crop` | `[float, float, float, float]` \| `null` | `null` | no | Normalized [x_min, y_min, x_max, y_max] of the source to zoom into (0-1, min < max) |
 | `target_pixels` | `int` \| `null` | `null` | no | Cap on output area in pixels |
 | `max_width` | `int` | `384` | no | Maximum output width in pixels |
