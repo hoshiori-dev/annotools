@@ -1,1 +1,1 @@
-"""MCP tool wrappers. Importing a module here registers its tools on ``annotools.server.mcp``."""
+"""MCP tool wrappers. Importing a module here registers its tools on ``annotools.app.mcp``."""

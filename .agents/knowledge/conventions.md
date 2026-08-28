@@ -24,6 +24,7 @@ or CI job commands.
 - pytest, classical style: real objects, generated fixtures (small synthetic images, no committed
   binaries), one behavior per test, parametrize families of cases with readable ids.
 - FastMCP server tests use the in-memory transport: `async with Client(mcp) as client` — no subprocess.
+  The one exception is `tests/test_server.py`'s import-order test, which needs a fresh interpreter.
   `pytest-asyncio` runs with `asyncio_mode = "auto"`.
 - Tests that need docker carry `@pytest.mark.container` and are deselected by `just test`; run them with
   `just test-container` after `just docker-build`. Every documented raise gets a test.
