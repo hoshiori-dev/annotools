@@ -85,3 +85,9 @@ async def test_ac6_tool_metadata(mcp_server, image_file):
     assert meta["grid"]["step_x"] == 0.1 and meta["grid"]["columns"] == 10
     assert meta["grid"]["cell_width"] == 30 and meta["grid"]["cell_height"] == 15
     assert meta["output_size"] == [300, 150] and meta["output_width"] == 300
+
+
+def test_rgba_input_keeps_its_alpha_channel():
+    image = make_image(100, 100, color=(255, 255, 255, 128), mode="RGBA")
+    result = draw_grid(preview(image, max_width=100, max_height=100).image, GridOptions(columns=2, rows=2))
+    assert result.image.mode == "RGBA" and result.image.getchannel("A").getpixel((50, 50)) == 128

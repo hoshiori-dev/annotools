@@ -77,7 +77,13 @@ jobs:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
       - run: uv sync --group dev --all-extras
-      - run: uv run pytest -m "not container" --cov --cov-report=term
+      - run: uv run pytest -m "not container" --cov --cov-report=term --cov-report=xml
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: coverage.xml
+          retention-days: 7
 
   test-container:
     if: github.event_name != 'push' || github.ref == 'refs/heads/main'

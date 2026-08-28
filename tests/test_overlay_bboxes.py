@@ -99,3 +99,8 @@ async def test_ac7_tool(mcp_server, image_file):
         )
     meta = json.loads(result.content[1].text)
     assert meta["objects"] == 2 and meta["grid"]["columns"] == 4
+
+
+def test_line_width_below_one_raises():
+    with pytest.raises(ValueError, match="line_width"):
+        render(objects=[BBoxObject(bbox=[0.1, 0.1, 0.5, 0.5])], line_width=0)
