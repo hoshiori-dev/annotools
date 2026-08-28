@@ -7,6 +7,7 @@ from fastmcp.utilities.types import Image as McpImage
 from pydantic import BaseModel, Field
 
 from annotools.config import get_settings
+from annotools.image.grid import GridOptions, draw_grid
 from annotools.image.preview import PreviewResult, encode, preview
 from annotools.io import load_image, write_bytes
 
@@ -68,9 +69,12 @@ def render_preview(options: PreviewOptions) -> PreviewResult:
     )
 
 
-def preview_options(**kwargs: Any) -> PreviewOptions:
-    """Build ``PreviewOptions`` from a tool's flat keyword arguments."""
-    return PreviewOptions(**kwargs)
+def apply_grid(result: PreviewResult, grid: GridOptions | None, extra: dict[str, Any]) -> None:
+    """Draw ``grid`` on ``result`` in place (when given) and merge its metadata into ``extra``."""
+    if grid is not None:
+        gridded = draw_grid(result.image, grid)
+        result.image = gridded.image
+        extra.update(gridded.metadata)
 
 
 def finish(result: PreviewResult, options: PreviewOptions, extra: dict[str, Any] | None = None) -> list[McpImage | str]:

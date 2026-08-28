@@ -4,9 +4,8 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from annotools.app import mcp
 from annotools.config import get_settings
-from annotools.image.grid import GridOptions, draw_grid
+from annotools.image.grid import GridOptions
 from annotools.image.overlay import (
     BBoxObject,
     KeypointObject,
@@ -16,7 +15,8 @@ from annotools.image.overlay import (
     draw_polygons,
 )
 from annotools.image.segmentation import load_mask, overlay_mask
-from annotools.tools.common import (
+from annotools.mcp.app import mcp
+from annotools.mcp.common import (
     DEFAULT_OUTPUT_FORMAT,
     AllowUpscaleParam,
     CropParam,
@@ -36,24 +36,12 @@ from annotools.tools.common import (
     SaveToParam,
     SourceParam,
     TargetPixelsParam,
+    apply_grid,
     finish,
     render_preview,
 )
 
 settings = get_settings()
-
-PREVIEW_PARAMS_DOC = "Coordinates are normalized 0-1 relative to the uncropped source."
-
-
-def _options(**kwargs) -> PreviewOptions:
-    return PreviewOptions(**kwargs)
-
-
-def _with_grid(result, grid: GridOptions | None, extra: dict) -> None:
-    if grid is not None:
-        gridded = draw_grid(result.image, grid)
-        result.image = gridded.image
-        extra.update(gridded.metadata)
 
 
 @mcp.tool(output_schema=None)
@@ -72,7 +60,7 @@ def preview_image(
     Returns the image followed by one JSON metadata object (original_size, crop, output_size, scale,
     format). Coordinates are normalized 0-1 relative to the uncropped source.
     """
-    options = _options(
+    options = PreviewOptions(
         source=source,
         crop=crop,
         target_pixels=target_pixels,
@@ -109,7 +97,7 @@ def preview_image_grid(
     Returns the image and one JSON metadata object including `grid` step sizes in normalized coordinates
     of the cropped view. Coordinates are normalized 0-1 relative to the uncropped source.
     """
-    options = _options(
+    options = PreviewOptions(
         source=source,
         crop=crop,
         target_pixels=target_pixels,
@@ -121,7 +109,7 @@ def preview_image_grid(
     )
     result = render_preview(options)
     extra: dict = {}
-    _with_grid(
+    apply_grid(
         result,
         GridOptions(
             columns=columns,
@@ -157,7 +145,7 @@ def preview_image_bboxes(
     Use it to check candidate detections before writing them to the database. Returns the image and one
     JSON metadata object (base keys, `grid` when used, `objects` count).
     """
-    options = _options(
+    options = PreviewOptions(
         source=source,
         crop=crop,
         target_pixels=target_pixels,
@@ -169,7 +157,7 @@ def preview_image_bboxes(
     )
     result = render_preview(options)
     extra: dict = {}
-    _with_grid(result, grid, extra)
+    apply_grid(result, grid, extra)
     drawn = draw_bboxes(result, objects, line_width=line_width)
     extra["objects"] = drawn.metadata["objects"]
     return finish(drawn, options, extra=extra)
@@ -193,7 +181,7 @@ def preview_image_keypoints(
 
     Returns the image and one JSON metadata object (base keys, `grid` when used, `objects` count).
     """
-    options = _options(
+    options = PreviewOptions(
         source=source,
         crop=crop,
         target_pixels=target_pixels,
@@ -205,7 +193,7 @@ def preview_image_keypoints(
     )
     result = render_preview(options)
     extra: dict = {}
-    _with_grid(result, grid, extra)
+    apply_grid(result, grid, extra)
     drawn = draw_keypoints(result, objects, point_diameter=point_diameter)
     extra["objects"] = drawn.metadata["objects"]
     return finish(drawn, options, extra=extra)
@@ -232,7 +220,7 @@ def preview_image_polygons(
     Works for COCO-style outlines and DOTA-style rotated boxes (4 corners). Returns the image and one JSON
     metadata object (base keys, `grid` when used, `objects` count).
     """
-    options = _options(
+    options = PreviewOptions(
         source=source,
         crop=crop,
         target_pixels=target_pixels,
@@ -244,7 +232,7 @@ def preview_image_polygons(
     )
     result = render_preview(options)
     extra: dict = {}
-    _with_grid(result, grid, extra)
+    apply_grid(result, grid, extra)
     drawn = draw_polygons(
         result, objects, line_width=line_width, point_diameter=point_diameter, show_point_index=show_point_index
     )
@@ -278,7 +266,7 @@ def preview_image_segmentation(
     Regions are coloured with color_from_text(str(id)). Returns the image and one JSON metadata object
     (base keys, `grid` when used, `ids`, and `legend` in legend mode).
     """
-    options = _options(
+    options = PreviewOptions(
         source=source,
         crop=crop,
         target_pixels=target_pixels,
@@ -290,7 +278,7 @@ def preview_image_segmentation(
     )
     result = render_preview(options)
     extra: dict = {}
-    _with_grid(result, grid, extra)
+    apply_grid(result, grid, extra)
     result.metadata.update(extra)  # so a legend re-fit can rescale the grid's pixel cell sizes
     drawn = overlay_mask(
         result,

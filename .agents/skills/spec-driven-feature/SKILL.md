@@ -27,9 +27,10 @@ description: >-
    tests fail for the expected reason.
 4. **Implement.** Library function in `src/annotools/<area>/` (PIL/numpy in, PIL/bytes out, no
    `fastmcp` import, `ValueError` with a specific message on contract violations), then the MCP wrapper
-   in `src/annotools/tools/` (pydantic model, `@mcp.tool`, returns `[Image(data=..., format=...), json
-   metadata string]`). The module imports `mcp` from `annotools.app` (never from
-   `annotools.server`); register it by adding it to the import line in `annotools.server`.
+   in `src/annotools/mcp/<area>.py` (pydantic model, `@mcp.tool`, returns `[Image(data=..., format=...), json
+   metadata string]`). The module imports `mcp` from `annotools.mcp.app` (never from
+   `annotools.mcp.server`); register a new module by adding it to the import line in `annotools.mcp.server`
+   and to `TOOL_MODULES` in `tests/test_server.py`; any new tool bumps the tool count asserted there.
 5. **Docs.** Update the tool table in `README.md` and `README.zh.md` together (`just readme-check`) and
    any affected knowledge file.
 6. **Verify.** `just check` green; call the tool once through the real server

@@ -1,6 +1,6 @@
 import pytest
 
-from annotools.cli import build_parser, parse
+from annotools.mcp.cli import build_parser, parse
 
 
 def test_defaults_to_stdio():
@@ -66,10 +66,10 @@ def test_flag_name_in_error_uses_kebab_case(capsys):
 def fresh_settings():
     """Leave the process unresolved so ``main()`` can ``configure()`` it.
 
-    ``annotools.server`` is imported first: the tool modules snapshot ``get_settings()`` at import, so
+    ``annotools.mcp.server`` is imported first: the tool modules snapshot ``get_settings()`` at import, so
     importing them after the reset would resolve the settings again and make ``configure()`` raise.
     """
-    import annotools.server  # noqa: F401
+    import annotools.mcp.server  # noqa: F401
     from annotools import config
 
     config.reset_settings()
@@ -78,7 +78,7 @@ def fresh_settings():
 
 
 def _capture_run(monkeypatch):
-    import annotools.server as server
+    import annotools.mcp.server as server
 
     calls: list[dict] = []
     monkeypatch.setattr(server.mcp, "run", lambda **kwargs: calls.append(kwargs))
@@ -86,7 +86,7 @@ def _capture_run(monkeypatch):
 
 
 def test_main_runs_stdio_by_default(monkeypatch, fresh_settings):
-    from annotools.cli import main
+    from annotools.mcp.cli import main
 
     calls = _capture_run(monkeypatch)
     main([])
@@ -94,7 +94,7 @@ def test_main_runs_stdio_by_default(monkeypatch, fresh_settings):
 
 
 def test_main_runs_http_with_host_and_port(monkeypatch, fresh_settings):
-    from annotools.cli import main
+    from annotools.mcp.cli import main
 
     calls = _capture_run(monkeypatch)
     main(["--http", "--host", "0.0.0.0", "--port", "9000"])
@@ -103,7 +103,7 @@ def test_main_runs_http_with_host_and_port(monkeypatch, fresh_settings):
 
 def test_main_installs_the_parsed_settings(monkeypatch, fresh_settings):
     from annotools import config
-    from annotools.cli import main
+    from annotools.mcp.cli import main
 
     _capture_run(monkeypatch)
     main(["--max-width", "500"])
@@ -114,6 +114,6 @@ def test_python_m_annotools_calls_main(monkeypatch):
     import runpy
 
     seen: list[str] = []
-    monkeypatch.setattr("annotools.cli.main", lambda: seen.append("main"))
+    monkeypatch.setattr("annotools.mcp.cli.main", lambda: seen.append("main"))
     runpy.run_module("annotools", run_name="__main__")
     assert seen == ["main"]

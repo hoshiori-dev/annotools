@@ -53,7 +53,7 @@ async def test_invalid_crop_is_tool_error(mcp_server, image_file):
 
 
 async def test_preview_options_schema_matches_tool_aliases(mcp_server):
-    from annotools.tools.common import PreviewOptions
+    from annotools.mcp.common import PreviewOptions
 
     model_props = PreviewOptions.model_json_schema()["properties"]
     async with Client(mcp_server) as client:
