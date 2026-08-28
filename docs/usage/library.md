@@ -18,7 +18,8 @@ Preview first, overlay second, encode last. The preview carries the metadata eve
 ```python
 from annotools import BBoxObject, draw_bboxes, encode, load_image, preview
 
-result = preview(load_image("photo.jpg"), max_width=768, max_height=768)
+image = load_image("photo.jpg")
+result = preview(image, max_width=768, max_height=768)
 overlay = draw_bboxes(result, [BBoxObject(bbox=(0.31, 0.44, 0.62, 0.78), label="cat")])
 jpeg = encode(overlay.image, "jpeg")
 ```
@@ -30,8 +31,6 @@ and on a zoomed crop.
 ## Zooming without losing the frame
 
 ```python
-from annotools import preview
-
 zoom = preview(image, crop=(0.5, 0.5, 1.0, 1.0), max_width=768, max_height=768)
 zoom.metadata["crop"]  # the crop actually applied, rounded outward to whole source pixels
 ```
@@ -65,7 +64,7 @@ Every size, width and color parameter falls back to [`annotools.Settings`](../ap
 pass `None`, resolved at call time:
 
 ```python
-from annotools import Settings, configure, preview
+from annotools import Settings, configure
 
 configure(Settings(max_width=1024, max_height=1024, color="red"))
 preview(image)  # now 1024 px, overlays default to red
@@ -92,7 +91,8 @@ wav, audio_meta = clip_audio("talk.wav", start=30, end=45, sample_rate=16000)
 ## Building agent tools on top
 
 The [`agent-vision-tools`](https://github.com/hoshiori-dev/annotools/tree/main/skills/agent-vision-tools)
-skill packages this into the tools an execution agent actually needs — look, propose, commit — with
-the workspace confinement and self-correction loop that make an annotation run reliable. The four
+skill packages this into the tools an execution agent actually needs: `look_at_item` and
+`look_at_annotations` to see, writer tools to record, and the workspace confinement that keeps the
+agent inside its dataset. The four
 [example projects](https://github.com/hoshiori-dev/annotools/tree/main/examples) are complete working
 versions of it.

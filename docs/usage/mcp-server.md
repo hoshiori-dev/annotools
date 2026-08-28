@@ -8,9 +8,10 @@ The `annotools` command is an MCP server with 13 tools. An agent that has it can
 way a person would — a downscaled preview, a zoom into one region, a grid to anchor positions, an
 overlay of the boxes it just proposed — without spending its context on full-resolution images.
 
-Everything a tool returns is an image plus one line of JSON metadata. The metadata is what makes the
-view reversible: `original_size`, the applied `crop`, `output_size` and `scale` together map any
-coordinate the model produces back to the uncropped source.
+Every `preview_*` tool returns an image plus one line of JSON metadata; `clip_audio` returns audio and
+metadata; the colour and coordinate tools return structured values only. The preview metadata is what
+makes the view reversible: `original_size`, the applied `crop`, `output_size` and `scale` together map
+any coordinate the model produces back to the uncropped source.
 
 For the parameters of each tool, see the [tool reference](../mcp/tools.md).
 
@@ -18,8 +19,9 @@ For the parameters of each tool, see the [tool reference](../mcp/tools.md).
 
 Defaults are resolved once at start-up, in this order: command-line flag, then `ANNOTOOLS_<FIELD>`
 environment variable, then the built-in value. Empty environment values are ignored; an invalid value
-fails at start-up naming the field. The resolved values are the defaults an agent sees in every tool
-schema, so setting them well is how you tune cost without touching prompts.
+fails at start-up naming the field. Sizes, grid and encoding settings become the defaults an agent sees
+in the tool schemas, so setting them well is how you tune cost without touching prompts. `color` is the
+exception: it is resolved per call, so the schema shows `null` rather than the configured value.
 
 | Setting | Flag / variable | Default | Meaning |
 |---|---|---|---|
@@ -43,7 +45,7 @@ The preview limit is a token budget in disguise. Set it for the model behind the
 |---|---|---|
 | Gemini | 384 | an image with both sides ≤ 384 px costs one 258-token unit; above that it is tiled |
 | Claude | 768–1024 | one token per 28×28 px patch, so cost grows with area; 1024 px stays inside the standard tier |
-| GPT / Codex | 768–1024 | 32×32 px patches times a per-model factor, likewise area-proportional |
+| GPT / Codex | 768–1024 | the 5.x patch models count 32×32 px patches times a per-model factor, likewise area-proportional; the older tile models scale the shortest side to 768 anyway |
 
 The per-model numbers, with sources and verification dates, live in
 [`.agents/knowledge/references/mllm-models.md`](https://github.com/hoshiori-dev/annotools/blob/main/.agents/knowledge/references/mllm-models.md)
@@ -51,9 +53,10 @@ and in the `mllm-multimodal-input` skill.
 
 ## Coordinates
 
-Every coordinate crossing the tool boundary — in parameters and in metadata — is normalized to
-0.0–1.0 relative to the **uncropped** source, x against width and y against height. Pixels never cross
-that boundary.
+Every coordinate a preview or overlay tool takes or reports is normalized to 0.0–1.0 relative to the
+**uncropped** source, x against width and y against height. `normalize_coordinates` and
+`denormalize_coordinates` are the one crossing point: converting a model's pixel or 0–1000 answer is
+exactly what they are for.
 
 Models are worst at answering in that convention, so ask each model in its own: Claude and Qwen2.5-VL
 in pixels of the image they saw, Gemini and Qwen3-VL in a 0–1000 space (Gemini writes `y, x`), GPT in
@@ -68,7 +71,12 @@ Stdio is the default and is what MCP clients expect. HTTP is available for debug
 uv run annotools --http --port 8000
 ```
 
-## Confining what the server can read
+## Confining what the server can reach
 
-The server reads any path or URL it is given, through fsspec. It is a file-read primitive: run it with
-the working directory (or the container mount) scoped to the dataset you want the agent to see.
+The server reads any path or fsspec URL it is given, and every `preview_*` tool and `clip_audio` can
+also **write** one through their `save_to` parameter. Treat it as a file read/write primitive with the
+reach of the process it runs in.
+
+The working directory is not a boundary — an absolute path or an `s3://` URL is reached regardless.
+The container is: run the image with only the dataset directory mounted at `/data`, and the agent
+cannot name anything outside it.

@@ -38,13 +38,18 @@ The same package ships the `annotools` command, which is the MCP server:
 uv run annotools --help
 ```
 
-Or run the published container, which already has the `media` extra:
+Or run the published container, which carries the `media` extra (but not `remote`, so `s3://` and
+`gs://` sources are not available inside it):
 
 ```bash
-docker run --rm -i -v "$PWD:/data" ghcr.io/hoshiori-dev/annotools
+docker run --rm -i -v "$PWD:/data" ghcr.io/hoshiori-dev/annotools:0.1.0-rc1
 ```
 
+Only the `0.1.0-rc1` pre-release image exists so far; `latest` and the `<major>.<minor>` tags are
+published by the first full release. The image is not yet anonymously pullable — see
+[#93](https://github.com/hoshiori-dev/annotools/issues/93).
+
 The container's working directory is `/data`, so a source path an agent passes is resolved relative to
-the directory you mounted there.
+the directory you mounted there — an absolute host path will not resolve inside the container.
 
 Next: [register the server](register.md) with your coding agent.
