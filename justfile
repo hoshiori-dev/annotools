@@ -53,11 +53,15 @@ readme-check:
     uv run scripts/check_readme_sync.py
 
 # Everything CI runs on a pull request (except container tests)
-check: lint format-check typecheck check-taxonomy readme-check docs-check test-cov
+check: lint format-check typecheck check-taxonomy readme-check check-docs docs-check test-cov
 
 # Build the documentation site
 docs:
     uv run zensical build --clean
+
+# Every public name has a complete Google docstring
+check-docs:
+    uv run scripts/check_public_docstrings.py
 
 # Build the documentation site strictly (warnings fail), as CI does
 docs-check:

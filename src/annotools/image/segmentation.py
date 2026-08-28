@@ -26,8 +26,26 @@ MASK_MODES = {"L", "P", "I", "I;16", "I;16B", "I;16L"}
 def load_mask(uri: str) -> np.ndarray:
     """Load a single-channel ID mask (0 = background) as an integer array.
 
+    Masks are exchanged as ID images rather than color images so instance, panoptic, and semantic
+    outputs share one contract (``ARCHITECTURE.md``, Decisions); the accepted modes are ``MASK_MODES``.
+
+    Args:
+        uri: Local path or fsspec URL of an ``L``, ``P``, ``I``, or ``I;16`` image.
+
+    Returns:
+        A 2-D ``int64`` array of IDs, the size of the mask image.
+
     Raises:
-        ValueError: naming ``mask_source`` when the image is not single-channel.
+        ValueError: Naming ``mask_source`` when the image is not single-channel.
+        FileNotFoundError: When the URI does not exist (from :func:`load_image`).
+
+    Example:
+        >>> from annotools import load_mask
+        >>> load_mask("masks/000000001675.png").max()  # doctest: +SKIP
+        3
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-image-segmentation.md`` (annotools repository).
     """
     image = load_image(uri)
     if image.mode not in MASK_MODES:
@@ -97,10 +115,45 @@ def overlay_mask(
     """Blend the ID ``mask`` over ``result.image`` and annotate regions with labels or a legend.
 
     ``mask`` is in source pixel space (any size; resized to the source with nearest neighbour), then
-    follows the preview's crop and scale.
+    follows the preview's crop and scale. Each ID gets a stable color from :func:`color_from_text`, so
+    the same instance keeps its color across previews. ``annotation="legend"`` appends a color strip
+    below the image and re-fits the composite to the size limits.
+
+    Args:
+        result: A preview from :func:`preview`; not modified (a new image is returned).
+        mask: 2-D integer array of IDs, 0 = background (from :func:`load_mask`).
+        annotation: ``"label"`` draws each ID's name at the region centre; ``"legend"`` lists IDs and
+            colors in a strip and in ``metadata["legend"]``.
+        id_names: Optional ``{id: name}`` for labels and legend entries; missing IDs use the number.
+        alpha: Blend strength of the region color in [0, 1].
+        line_width: Boundary width in output pixels (0 = no boundary); ``None`` uses
+            ``Settings.line_width``.
+        max_width: Size limit for the legend composite; ``None`` uses ``Settings.max_width``.
+        max_height: Likewise; ``None`` uses ``Settings.max_height``.
+        target_pixels: Optional area cap for the legend composite.
+
+    Returns:
+        A new :class:`PreviewResult` with ``metadata["ids"]`` (count of visible IDs) and, for the
+        legend, ``metadata["legend"]``, ``image_size`` (the area the inverse mapping applies to) and
+        refreshed size keys.
 
     Raises:
-        ValueError: for ``alpha`` outside [0, 1], ``line_width < 0``, or an unknown ``annotation``.
+        ValueError: For ``alpha`` outside [0, 1], ``line_width < 0``, or an unknown ``annotation``.
+
+    Example:
+        >>> import numpy as np
+        >>> from PIL import Image
+        >>> from annotools import overlay_mask, preview
+        >>> result = preview(
+        ...     Image.new("RGB", (100, 100), "white"), max_width=100, max_height=100
+        ... )
+        >>> mask = np.zeros((100, 100), dtype=np.uint8)
+        >>> mask[20:60, 20:60] = 1
+        >>> overlay_mask(result, mask).metadata["ids"]
+        1
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-image-segmentation.md`` (annotools repository).
     """
     settings = get_settings()
     line_width = settings.line_width if line_width is None else line_width

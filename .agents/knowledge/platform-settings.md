@@ -11,7 +11,7 @@ the default token.
 
 | Job (workflow) | Command | Runs on |
 |---|---|---|
-| `lint` (CI) | `uv run ruff check .` + `scripts/check_taxonomy.py` + `scripts/check_readme_sync.py` | every push, PR |
+| `lint` (CI) | `uv run ruff check .` + `scripts/check_taxonomy.py` + `scripts/check_readme_sync.py` + `scripts/check_public_docstrings.py` | every push, PR |
 | `format` (CI) | `uv run ruff format --check .` | every push, PR |
 | `typecheck` (CI) | `uv run ty check` | every push, PR |
 | `docs` (CI) | `uv run zensical build --clean --strict` (warnings fail the build) | every push, PR |

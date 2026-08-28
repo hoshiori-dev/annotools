@@ -20,14 +20,41 @@ def sample_frames(
     end: float | None = None,
     max_frames: int = 32,
 ) -> tuple[list[tuple[float, Image.Image]], dict[str, Any]]:
-    """Sample frames at ``fps`` between ``start`` and ``end`` seconds, capped at ``max_frames``.
+    """Decode ``uri`` and return frames sampled at ``fps`` between ``start`` and ``end``.
 
-    Returns ``(frames, info)`` where ``frames`` is a list of ``(timestamp_seconds, PIL image)`` in time
-    order and ``info`` has ``duration``, ``requested_fps``, and ``thinned``.
+    Frames are picked at the first decoded timestamp at or after each target time, then thinned
+    evenly to ``max_frames`` so a long clip cannot blow the token budget; feed the result through
+    :func:`preview` (and a grid) before sending it to a model that has no native video input.
+
+    Args:
+        uri: Local path or fsspec URL of a video PyAV can decode.
+        fps: Target sampling rate in frames per second (> 0).
+        start: Start time in seconds (>= 0); ``None`` = 0.
+        end: End time in seconds (> ``start``); ``None`` = until the end.
+        max_frames: Upper bound on returned frames (>= 1); thinning keeps the first and last.
+
+    Returns:
+        ``(frames, metadata)`` where ``frames`` is a list of ``(timestamp_seconds, PIL image)`` and
+        ``metadata`` has ``duration``, ``requested_fps``, and ``thinned``.
 
     Raises:
-        ValueError: for invalid parameters or a source without a video stream.
-        ImportError: when PyAV is not installed.
+        ValueError: For an invalid range or rate, a source without a video stream, or a window with
+            no frames; the message names the URI.
+        FileNotFoundError: When the URI does not exist.
+        OSError: For other read failures.
+        ImportError: When PyAV is not installed (``annotools[media]``).
+
+    Example:
+        >>> from annotools import sample_frames
+        >>> frames, meta = sample_frames("clip.mp4", fps=1, end=5)  # doctest: +SKIP
+        >>> [round(t) for t, _ in frames]  # doctest: +SKIP
+        [0, 1, 2, 3, 4]
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-video.md`` (annotools repository).
+        - Claude and GPT accept no native video in the vision path (send frames); Gemini samples video
+          at 1 fps, 258 tokens per frame: ``.agents/knowledge/references/mllm-models.md`` (verified
+          2026-08-27).
     """
     if fps <= 0:
         raise ValueError(f"fps must be > 0, got {fps}")

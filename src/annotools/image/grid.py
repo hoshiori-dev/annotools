@@ -17,9 +17,19 @@ __all__ = [
 
 
 class GridOptions(BaseModel):
-    """Grid parameters shared by every tool that accepts ``grid`` (see .agents/knowledge/spec/mcp-overview.md).
+    """Grid parameters shared by every tool that accepts ``grid``.
 
-    ``None`` fields take their value from ``Settings`` when the grid is drawn (``resolved()``).
+    ``None`` fields take their value from :class:`~annotools.Settings` when the grid is drawn
+    (:meth:`resolved`). A 10x10 ``ratio`` grid is the default because MLLMs anchor positions far better
+    against visible cells than on a bare image, and 10 cells keep the labels legible at 384 px.
+
+    Example:
+        >>> from annotools import GridOptions
+        >>> GridOptions(columns=4).resolved().rows
+        10
+
+    References:
+        - Spec: ``.agents/knowledge/spec/mcp-overview.md`` (annotools repository), ``GridOptions`` table.
     """
 
     columns: int | None = Field(
@@ -33,7 +43,9 @@ class GridOptions(BaseModel):
     )
     column_width: int | None = Field(default=None, ge=1, description="Cell width in output px (fixed mode)")
     row_width: int | None = Field(default=None, ge=1, description="Cell height in output px (fixed mode)")
-    color: Literal["white", "black", "invert"] = Field(default="white")
+    color: Literal["white", "black", "invert"] = Field(
+        default="white", description="Line color; invert flips the underlying pixels"
+    )
     opacity: float | None = Field(default=None, ge=0.0, le=1.0, description="null = setting (0.5)")
     line_width: int | None = Field(default=None, ge=1, description="Output pixels; null = setting (1)")
 
@@ -72,8 +84,32 @@ def line_positions(size: int, cells: int, cell_size: int | None, mode: str) -> t
 def draw_grid(image: Image.Image, options: GridOptions) -> PreviewResult:
     """Blend grid lines onto ``image`` and return it with ``grid`` metadata.
 
+    Lines are blended at ``options.opacity`` in white, black, or the inverted underlying pixels so the
+    grid stays visible on any background without hiding it. Metadata reports the cell layout so
+    coordinates can be reasoned about in cells and converted back.
+
+    Args:
+        image: The (already previewed) PIL image; RGBA input keeps its alpha channel.
+        options: Grid layout; ``None`` fields resolve from ``Settings``.
+
+    Returns:
+        A :class:`PreviewResult` whose ``metadata["grid"]`` holds ``columns``, ``rows``, ``mode``, and
+        the cell pixel sizes.
+
     Raises:
-        ValueError: via ``GridOptions`` validation for invalid parameters.
+        ValueError: Via :meth:`GridOptions.resolved` when ``mode="fixed"`` has no cell widths, or from
+            pydantic for out-of-range fields.
+
+    Example:
+        >>> from PIL import Image
+        >>> from annotools import GridOptions, draw_grid
+        >>> draw_grid(
+        ...     Image.new("RGB", (200, 100)), GridOptions(columns=4, rows=2)
+        ... ).metadata["grid"]["columns"]
+        4
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-image-grid.md`` (annotools repository).
     """
     options = options.resolved()
     assert options.columns is not None and options.rows is not None and options.mode is not None

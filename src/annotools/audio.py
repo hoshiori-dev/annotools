@@ -23,12 +23,38 @@ def clip_audio(
 ) -> tuple[bytes, dict[str, Any]]:
     """Cut ``[start, end)`` seconds from the first audio stream of ``uri`` and return 16-bit PCM WAV bytes.
 
-    Returns ``(wav_bytes, metadata)`` with ``source_duration``, ``start``, ``end``, ``duration``,
-    ``sample_rate``, ``channels``.
+    WAV keeps the clip self-describing and losslessly decodable by every audio model; resampling is
+    optional so a caller can hit a model's expected rate (16 kHz for most speech models) in one step.
+
+    Args:
+        uri: Local path or fsspec URL of an audio or video file with an audio stream.
+        start: Start time in seconds (>= 0); ``None`` = 0.
+        end: End time in seconds (> ``start``); ``None`` = until the end.
+        sample_rate: Output sample rate in Hz (>= 1); ``None`` keeps the source rate.
+
+    Returns:
+        ``(wav_bytes, metadata)`` with ``source_duration``, ``start``, ``end``, ``duration``,
+        ``sample_rate``, and ``channels``.
 
     Raises:
-        ValueError: for an invalid range, a start beyond the source, or a source without audio.
-        ImportError: when PyAV is not installed.
+        ValueError: For an invalid range or rate, a start beyond the source, a source without audio,
+            or content that is not decodable; the message names the URI.
+        FileNotFoundError: When the URI does not exist.
+        OSError: For other read failures.
+        ImportError: When PyAV is not installed (``annotools[media]``).
+
+    Example:
+        >>> from annotools import clip_audio
+        >>> wav, meta = clip_audio(
+        ...     "talk.wav", start=2, end=5, sample_rate=16000
+        ... )  # doctest: +SKIP
+        >>> meta["duration"], meta["sample_rate"]  # doctest: +SKIP
+        (3.0, 16000)
+
+    References:
+        - Spec: ``.agents/knowledge/spec/clip-audio.md`` (annotools repository).
+        - Gemini bills audio at 32 tokens per second: ``.agents/knowledge/references/mllm-models.md``
+          (verified 2026-08-27).
     """
     if start is not None and start < 0:
         raise ValueError(f"start must be >= 0, got {start}")
