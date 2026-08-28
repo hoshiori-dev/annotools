@@ -96,6 +96,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 | A CI job is renamed or added | `.agents/knowledge/platform-settings.md` job map and the `main` ruleset required checks |
 | A label, issue form, `release.yml`, or dependabot label | `.github/labels.json` — `just check-taxonomy` fails otherwise |
 | An MCP tool's parameters or return | its `.agents/knowledge/spec/` file, tests, README tool table (both languages), and `just docs-gen` (commit `docs/mcp/tools.md`) |
+| A new public module or a docstring section keyword | `docs/api/` stub page + nav entry in `zensical.toml` (see `.agents/knowledge/docs-site.md`) |
 | A new knowledge file or development skill | this file's When To Read What table |
 | A vendor fact or dependency version | `.agents/knowledge/references/*.md` (date it) and the skill copy derived from it |
 | Python tool versions in `pyproject.toml` dev group | matching `rev` in `.pre-commit-config.yaml` |

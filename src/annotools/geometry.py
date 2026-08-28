@@ -41,7 +41,7 @@ def validate_normalized_box(box: Sequence[float], name: str = "box") -> Box:
         ValueError: With ``name`` in the message when there are not exactly 4 values, a value is
             outside [0, 1], or ``min >= max`` on either axis.
 
-    Example:
+    Examples:
         >>> from annotools import validate_normalized_box
         >>> validate_normalized_box([0.1, 0.2, 0.5, 0.6])
         (0.1, 0.2, 0.5, 0.6)
@@ -70,7 +70,7 @@ def validate_normalized_point(point: Sequence[float], name: str = "point") -> tu
     Raises:
         ValueError: With ``name`` in the message when there are not exactly 2 values or one is outside [0, 1].
 
-    Example:
+    Examples:
         >>> from annotools import validate_normalized_point
         >>> validate_normalized_point([0.5, 0.25])
         (0.5, 0.25)
@@ -123,7 +123,7 @@ def fit_size(
     Raises:
         ValueError: When a limit or ``target_pixels`` is smaller than 1.
 
-    Example:
+    Examples:
         >>> from annotools import fit_size
         >>> fit_size(4000, 3000, max_width=384, max_height=384)
         (384, 288)
@@ -158,7 +158,7 @@ def fit_size(
 class RotatedBox(BaseModel):
     """A rotated box: normalized centre and size plus a clockwise rotation about the centre.
 
-    Example:
+    Examples:
         >>> from annotools import RotatedBox
         >>> RotatedBox(cx=0.5, cy=0.5, w=0.4, h=0.2, theta=30).theta
         30.0
@@ -200,7 +200,7 @@ def rotated_box_to_corners(
         ValueError: Naming ``name`` for a non-positive size or a centre outside [0, 1], or
             ``aspect_ratio`` when it is not positive.
 
-    Example:
+    Examples:
         >>> from annotools import RotatedBox, rotated_box_to_corners
         >>> corners = rotated_box_to_corners(
         ...     RotatedBox(cx=0.5, cy=0.5, w=0.4, h=0.2, theta=0)
@@ -248,7 +248,7 @@ def is_rectangle(points: Sequence[float], *, angle_tol_deg: float = 2.0, length_
     Returns:
         ``True`` for a rectangle (any rotation), ``False`` otherwise, including degenerate polygons.
 
-    Example:
+    Examples:
         >>> from annotools import is_rectangle
         >>> is_rectangle([0, 0, 1, 0, 1, 1, 0, 1]), is_rectangle([0, 0, 1, 0, 1, 1, 0, 0.5])
         (True, False)
@@ -325,7 +325,7 @@ def normalize_coordinates(
         ValueError: An entry has an odd number of values (``name[i]``), a base is not positive
             (``name``), or ``crop`` is invalid (``crop``).
 
-    Example:
+    Examples:
         >>> from annotools import normalize_coordinates
         >>> normalize_coordinates([[192, 144]], 384, 288)
         [[0.5, 0.5]]
@@ -388,7 +388,7 @@ def denormalize_coordinates(
         ValueError: Naming ``name[i]`` for an odd-length entry or a value outside [0, 1], ``name`` for
             a non-positive base, or ``crop`` for an invalid crop.
 
-    Example:
+    Examples:
         >>> from annotools import denormalize_coordinates
         >>> denormalize_coordinates([[0.625, 0.75]], 1000, 1000, crop=(0.5, 0.5, 1.0, 1.0))
         [[250.0, 500.0]]

@@ -31,7 +31,7 @@ class PreviewResult:
         crop_pixels: The applied crop in source pixels (``None`` = full frame); exact, unlike
             re-deriving it from ``crop``.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import preview
         >>> preview(Image.new("RGB", (1600, 1200)), max_width=384, max_height=384).metadata[
@@ -80,7 +80,7 @@ def preview(
         ValueError: ``crop`` has a value outside [0, 1] or ``min >= max`` (message starts with
             ``crop:``), or a limit is smaller than 1.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import preview
         >>> result = preview(
@@ -157,7 +157,7 @@ def encode(image: Image.Image, output_format: str | None = None) -> bytes:
     Raises:
         ValueError: For an unknown ``output_format``.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import encode
         >>> encode(Image.new("RGB", (10, 10)), "png")[:4]

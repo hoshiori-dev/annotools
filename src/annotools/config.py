@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     environment variables (``ANNOTOOLS_MAX_WIDTH``), then the field defaults. Empty environment values
     are ignored; invalid values raise a ``pydantic.ValidationError`` naming the field.
 
-    Example:
+    Examples:
         >>> from annotools import Settings
         >>> Settings(max_width=768, grid_columns=8).grid_columns
         8
@@ -88,7 +88,7 @@ def get_settings() -> Settings:
     Returns:
         The active settings object (shared, not a copy).
 
-    Example:
+    Examples:
         >>> from annotools import get_settings
         >>> get_settings().max_width
         384
@@ -110,7 +110,7 @@ def configure(settings: Settings) -> None:
     Args:
         settings: The settings to install, typically built from flags or code.
 
-    Example:
+    Examples:
         >>> from annotools import Settings, configure, get_settings, reset_settings
         >>> configure(Settings(max_width=200))
         >>> get_settings().max_width
@@ -126,7 +126,7 @@ def reset_settings() -> None:
 
     Meant for tests and interactive sessions; production code calls :func:`configure` instead.
 
-    Example:
+    Examples:
         >>> from annotools import Settings, configure, get_settings, reset_settings
         >>> configure(Settings(max_width=200))
         >>> reset_settings()

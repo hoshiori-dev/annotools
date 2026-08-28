@@ -41,7 +41,7 @@ def load_mask(uri: str) -> np.ndarray:
         FileNotFoundError: When the URI does not exist (from :func:`open_bytes`).
         OSError: For other read failures (from :func:`open_bytes`).
 
-    Example:
+    Examples:
         >>> from annotools import load_mask
         >>> int(load_mask("masks/000000001675.png").max())  # doctest: +SKIP
         3
@@ -142,7 +142,7 @@ def overlay_mask(
     Raises:
         ValueError: For ``alpha`` outside [0, 1], ``line_width < 0``, or an unknown ``annotation``.
 
-    Example:
+    Examples:
         >>> import numpy as np
         >>> from PIL import Image
         >>> from annotools import overlay_mask, preview

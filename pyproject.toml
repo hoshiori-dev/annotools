@@ -43,6 +43,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "mkdocstrings[python]>=0.30",
     "pre-commit>=4.6.2",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.0",

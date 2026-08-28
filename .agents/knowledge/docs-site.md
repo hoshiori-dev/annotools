@@ -8,6 +8,8 @@ built by zensical (`just docs-check` = strict build, part of `just check`; `just
 | Page | Source of truth | How it gets there |
 |---|---|---|
 | `docs/index.md` | hand-written | edit directly |
+| `docs/api/*.md` | the public docstrings (`annotools.__all__`) | 3-line stubs holding a `::: annotools.<module>` directive; mkdocstrings renders signatures and sections at build time |
+| `docs/architecture.md`, `docs/contributing.md` | `ARCHITECTURE.md`, `CONTRIBUTING.md` | snippet include of the whole file |
 | `docs/mcp/index.md` | `.agents/knowledge/spec/mcp-overview.md` (section `user`) | snippet include at build time |
 | `docs/mcp/tools.md` | the running MCP server (`annotools.mcp.server.mcp`) + `.agents/knowledge/spec/*.md` (sections `user`, `user2`) | **generated** by `scripts/gen_mcp_reference.py`; spec text is inlined by the generator |
 
@@ -70,3 +72,16 @@ hence two sections per tool spec. Full rules: `.agents/knowledge/spec-format.md`
 | A tool is added or renamed | `TOOLS` in the generator, its spec with both sections, README rows (both languages), `just docs-gen` |
 | A page is added | `nav` in `zensical.toml`; the table above |
 | The marker convention | `spec-format.md`, this file, every spec |
+
+## API reference (mkdocstrings)
+
+- `mkdocstrings[python]` is a dev dependency; zensical shims the mkdocs plugin, so the configuration lives
+  under `[project.plugins.mkdocstrings.config]` in `zensical.toml` (`handlers.python.paths = ["src"]`,
+  google docstring style, `filters = ["!^_"]` so internals never appear).
+- A page is a heading, a sentence of context, and `::: annotools.<module>`. Adding a public module means
+  adding a stub page and a nav entry; nothing else is hand-maintained.
+- The docstring section keyword must be **`Examples:`** (plural). griffe only recognises the plural form;
+  with `Example:` the doctest is rendered as nested blockquotes instead of a highlighted code block.
+  `References:` is not a griffe section and renders as a collapsible details block, which is what we want.
+- Zensical does not fail on a nav entry pointing at a missing file, even with `--strict`. Add the page in
+  the same change as its nav entry.

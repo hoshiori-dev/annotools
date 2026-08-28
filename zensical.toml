@@ -1,19 +1,44 @@
 [project]
 site_url = "https://hoshiori-dev.github.io/annotools/"
 site_name = "annotools"
-# site_description = "Your project description"
-# site_author = "Your name"
+site_description = "MCP server and Python library that let agents view and annotate images, video, and audio within an MLLM token budget."
+site_author = "hoshiori-dev"
 
-# copyright = "Copyright &copy; 2026 Your name"
+copyright = "Copyright &copy; 2026 hoshiori-dev"
 
 repo_url = "https://github.com/hoshiori-dev/annotools"
 repo_name = "hoshiori-dev/annotools"
-# edit_uri = "edit/main/docs/"
+edit_uri = "edit/main/docs/"
 
 nav = [
   { "Get started" = "index.md" },
+  { "API reference" = [
+    "api/index.md",
+    { "annotools.config" = "api/config.md" },
+    { "annotools.io" = "api/io.md" },
+    { "annotools.color" = "api/color.md" },
+    { "annotools.geometry" = "api/geometry.md" },
+    { "annotools.image" = "api/image.md" },
+    { "annotools.video" = "api/video.md" },
+    { "annotools.audio" = "api/audio.md" },
+  ] },
   { "MCP tools" = ["mcp/index.md", { "Tool reference" = "mcp/tools.md" }] },
+  { "Architecture" = "architecture.md" },
+  { "Contributing" = "contributing.md" },
 ]
+
+[project.plugins.mkdocstrings.config]
+handlers.python.paths = ["src"]
+handlers.python.options.docstring_style = "google"
+handlers.python.options.docstring_section_style = "table"
+handlers.python.options.show_root_heading = true
+handlers.python.options.show_root_full_path = false
+handlers.python.options.show_source = true
+handlers.python.options.show_signature_annotations = true
+handlers.python.options.separate_signature = true
+handlers.python.options.merge_init_into_class = true
+handlers.python.options.members_order = "source"
+handlers.python.options.filters = ["!^_"]
 
 # extra_css = ["stylesheets/extra.css"]
 # extra_javascript = ["javascripts/extra.js"]
@@ -25,7 +50,7 @@ nav = [
 language = "en"
 features = [
   "announce.dismiss",
-  # "content.action.edit",
+  "content.action.edit",
   # "content.action.view",
   "content.code.annotate",
   "content.code.copy",
@@ -43,12 +68,12 @@ features = [
   "navigation.path",
   # "navigation.prune",
   "navigation.sections",
-  # "navigation.tabs",
-  # "navigation.tabs.sticky",
+  "navigation.tabs",
+  "navigation.tabs.sticky",
   "navigation.top",
   "navigation.tracking",
   "search.highlight",
-  # "toc.follow",
+  "toc.follow",
   # "toc.integrate",
 ]
 

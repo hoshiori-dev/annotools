@@ -45,7 +45,7 @@ def sample_frames(
         OSError: For other read failures.
         ImportError: When PyAV is not installed (``annotools[media]``).
 
-    Example:
+    Examples:
         >>> from annotools import sample_frames
         >>> frames, meta = sample_frames("clip.mp4", fps=1, end=5)  # doctest: +SKIP
         >>> [round(t) for t, _ in frames]  # doctest: +SKIP

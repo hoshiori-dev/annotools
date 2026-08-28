@@ -23,7 +23,7 @@ class GridOptions(BaseModel):
     (:meth:`resolved`). A 10x10 ``ratio`` grid is the default because MLLMs anchor positions far better
     against visible cells than on a bare image, and 10 cells keep the labels legible at 384 px.
 
-    Example:
+    Examples:
         >>> from annotools import GridOptions
         >>> GridOptions(columns=4).resolved().rows
         10
@@ -95,7 +95,7 @@ def draw_grid(image: Image.Image, options: GridOptions) -> PreviewResult:
     Raises:
         ValueError: Via :meth:`GridOptions.resolved` when ``mode="fixed"`` has no cell widths.
 
-    Example:
+    Examples:
         >>> from PIL import Image
         >>> from annotools import GridOptions, draw_grid
         >>> draw_grid(

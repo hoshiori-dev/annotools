@@ -43,7 +43,7 @@ def clip_audio(
         OSError: For other read failures.
         ImportError: When PyAV is not installed (``annotools[media]``).
 
-    Example:
+    Examples:
         >>> from annotools import clip_audio
         >>> wav, meta = clip_audio(
         ...     "talk.wav", start=2, end=5, sample_rate=16000
