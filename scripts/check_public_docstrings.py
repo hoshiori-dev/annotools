@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Check that every public annotools name (``annotools.__all__``) carries a complete Google docstring.
 
 Rules (see .agents/knowledge/conventions.md, "Docstrings"):

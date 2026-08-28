@@ -78,7 +78,7 @@ def fresh_settings():
 
 
 def _capture_run(monkeypatch):
-    import annotools.mcp.server as server
+    from annotools.mcp import server
 
     calls: list[dict] = []
     monkeypatch.setattr(server.mcp, "run", lambda **kwargs: calls.append(kwargs))

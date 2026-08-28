@@ -100,7 +100,7 @@ async def test_ac6_plain_tool_and_ac7_save_to_directory(mcp_server, video_file, 
     meta = json.loads(text.text)
     assert meta["frames"] == len(images) == 5 and "grid" not in meta
     assert meta["saved_to"] == str(out)
-    assert sorted(p.name for p in out.iterdir())[0] == "frame_0000_0.000.jpeg"
+    assert min(p.name for p in out.iterdir()) == "frame_0000_0.000.jpeg"
     assert meta["output_size"] == [320, 240]
 
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Check that every label referenced anywhere in the repository's harness
 exists in the committed taxonomy.
 

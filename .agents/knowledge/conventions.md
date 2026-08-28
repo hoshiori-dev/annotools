@@ -23,8 +23,9 @@ or CI job commands.
   or pydantic `Field(description=...)` on every field. **Internal** names get a one-line docstring (or a
   `#` comment); underscore modules are exempt from `D1`. Comments explain why, not what. `tests/` and
   `scripts/` are exempt from docstring rules.
-- ruff `select = E, F, I, UP, B, SIM, N, D, RUF`, line length 120; ruff formats code inside docstrings
-  (`docstring-code-format`) but not fenced blocks in Markdown, so `docs/` examples are formatted by hand.
+- ruff runs its default rule set plus `extend-select = E, F, I, UP, B, SIM, N, D, RUF`, line length 120;
+  ruff formats code inside docstrings (`docstring-code-format`) but not fenced blocks in Markdown, so
+  `docs/` examples are formatted by hand.
 - ty is the type checker (`include = src, tests`); keep annotations complete on new code. No mypy.
 - Library functions accept/return PIL images or bytes and raise `ValueError` for contract violations
   (odd polygon coordinate count, non-single-channel mask, coordinates outside 0–1).
