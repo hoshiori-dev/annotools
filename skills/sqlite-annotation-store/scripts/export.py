@@ -6,9 +6,9 @@ Usage:
 
 One record per item: {"uri", "media_type", "width", "height", "duration", "split", "meta", "annotations":
 [{"kind", "key", "label", "confidence", "rounds", "payload": {...}}]}. csv flattens annotations to one row
-per annotation; webdataset writes a tar with <key>.json per item where <key> is the sha1 of the uri (the
-media file is referenced by uri, not copied). Items without final
-annotations are listed under "skipped" in the JSON summary on stdout. Exit codes: 0 ok, 1 error, 2 bad
+per annotation; webdataset writes a tar with <key>.json per item where <key> is the first 16 hex
+characters of the sha1 of the uri (the media file is referenced by uri, not copied). Items without
+final annotations are listed under "skipped" in the JSON summary on stdout. Exit codes: 0 ok, 1 error, 2 bad
 arguments (including an unsupported schema version).
 """
 
