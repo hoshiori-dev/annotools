@@ -1,6 +1,12 @@
 import pytest
 
-from annotools.geometry import fit_size, normalized_box_to_pixels, validate_normalized_box
+from annotools.geometry import (
+    fit_size,
+    is_rectangle,
+    normalized_box_to_pixels,
+    validate_normalized_box,
+    validate_normalized_point,
+)
 
 
 @pytest.mark.parametrize(
@@ -51,13 +57,17 @@ def test_fit_size_never_exceeds_target_pixels():
         assert w * h <= 250_000
 
 
-def test_wrong_length_box_and_point_name_the_field():
-    from annotools.geometry import validate_normalized_point
-
-    with pytest.raises(ValueError, match=r"bbox: expected 4 values"):
-        validate_normalized_box((0.0, 0.0, 1.0), name="bbox")
-    with pytest.raises(ValueError, match=r"pt: expected 2 values"):
-        validate_normalized_point((0.5,), name="pt")
+@pytest.mark.parametrize(
+    ("validator", "value", "match"),
+    [
+        (validate_normalized_box, (0.0, 0.0, 1.0), r"field: expected 4 values"),
+        (validate_normalized_point, (0.5,), r"field: expected 2 values"),
+    ],
+    ids=["box", "point"],
+)
+def test_wrong_length_names_the_field(validator, value, match):
+    with pytest.raises(ValueError, match=match):
+        validator(value, name="field")
 
 
 @pytest.mark.parametrize(
@@ -71,6 +81,4 @@ def test_fit_size_rejects_limits_below_one(kwargs):
 
 
 def test_is_rectangle_rejects_zero_length_edge():
-    from annotools.geometry import is_rectangle
-
     assert is_rectangle([0, 0, 0, 0, 1, 1, 1, 0]) is False
