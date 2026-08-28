@@ -64,14 +64,13 @@ def get_settings() -> Settings:
 
 
 def configure(settings: Settings) -> None:
-    """Install settings resolved elsewhere (the CLI) before any tool module reads them.
+    """Replace the process-wide settings.
 
-    Raises:
-        RuntimeError: when ``get_settings()`` already ran, because module defaults were baked from it.
+    Library functions read ``get_settings()`` at call time, so the new values apply to every later call.
+    The MCP tool schemas snapshot the settings when ``annotools.mcp.server`` is first imported; call
+    this before that import (as ``annotools.mcp.cli`` does) to change the defaults the server advertises.
     """
     global _settings
-    if _settings is not None:
-        raise RuntimeError("annotools settings were already resolved; configure() must run before importing tools")
     _settings = settings
 
 

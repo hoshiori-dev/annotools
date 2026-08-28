@@ -9,8 +9,6 @@ from PIL import Image
 from annotools.config import get_settings
 from annotools.geometry import FULL_FRAME, Box, fit_size, normalized_box_to_pixels, validate_normalized_box
 
-settings = get_settings()
-
 FORMATS = {"jpeg": "JPEG", "png": "PNG", "webp": "WEBP"}
 MIME_TYPES = {"jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp"}
 
@@ -30,8 +28,8 @@ def preview(
     *,
     crop: Box | None = None,
     target_pixels: int | None = None,
-    max_width: int = settings.max_width,
-    max_height: int = settings.max_height,
+    max_width: int | None = None,
+    max_height: int | None = None,
     allow_upscale: bool = False,
 ) -> PreviewResult:
     """Crop ``image`` to the normalized ``crop`` box and fit it inside the size limits.
@@ -39,6 +37,9 @@ def preview(
     Raises:
         ValueError: for an invalid ``crop`` or a limit smaller than 1.
     """
+    settings = get_settings()
+    max_width = settings.max_width if max_width is None else max_width
+    max_height = settings.max_height if max_height is None else max_height
     original_size = image.size
     box = validate_normalized_box(crop, name="crop") if crop is not None else FULL_FRAME
     px_box: tuple[int, int, int, int] | None = None
@@ -83,12 +84,14 @@ def size_metadata(
     }
 
 
-def encode(image: Image.Image, output_format: str = settings.output_format) -> bytes:
+def encode(image: Image.Image, output_format: str | None = None) -> bytes:
     """Encode ``image`` as ``jpeg`` (quality from config, alpha flattened on white), ``png``, or ``webp``.
 
     Raises:
         ValueError: for an unknown ``output_format``.
     """
+    settings = get_settings()
+    output_format = settings.output_format if output_format is None else output_format
     if output_format not in FORMATS:
         raise ValueError(f"output_format must be one of {sorted(FORMATS)}, got {output_format!r}")
     if output_format == "jpeg" and image.mode not in ("RGB", "L"):

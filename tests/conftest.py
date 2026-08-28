@@ -2,6 +2,15 @@ import pytest
 from PIL import Image
 
 
+@pytest.fixture(autouse=True)
+def _fresh_settings():
+    """Library functions resolve settings at call time; never let one test's configure() leak."""
+    from annotools.config import reset_settings
+
+    yield
+    reset_settings()
+
+
 @pytest.fixture
 def mcp_server():
     from annotools.mcp.server import mcp

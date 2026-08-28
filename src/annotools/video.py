@@ -3,35 +3,9 @@
 from contextlib import ExitStack
 from typing import Any
 
-import fsspec
 from PIL import Image
 
-
-def _av():
-    try:
-        import av
-    except ImportError as exc:
-        raise ImportError("video support requires PyAV: install annotools[media]") from exc
-    return av
-
-
-def _open_container(av, uri: str, stack: ExitStack):
-    """Open ``uri`` with PyAV through an fsspec file handle (streamed, not buffered in memory).
-
-    Raises:
-        FileNotFoundError / OSError: as ``annotools.io.open_bytes`` for unreadable sources.
-        ValueError: naming the URI when the content is not a decodable media file.
-    """
-    try:
-        handle = stack.enter_context(fsspec.open(uri, "rb"))
-    except FileNotFoundError as exc:
-        raise FileNotFoundError(f"cannot read {uri}: not found") from exc
-    except Exception as exc:  # backend-specific errors share no base class
-        raise OSError(f"cannot read {uri}: {exc}") from exc
-    try:
-        return stack.enter_context(av.open(handle))
-    except Exception as exc:
-        raise ValueError(f"{uri}: not a decodable media file ({exc})") from exc
+from annotools._media import open_container, require_av
 
 
 def sample_frames(
@@ -59,10 +33,10 @@ def sample_frames(
         raise ValueError(f"end ({end}) must be greater than start ({start or 0.0})")
     if max_frames < 1:
         raise ValueError(f"max_frames must be >= 1, got {max_frames}")
-    av = _av()
+    av = require_av("video")
     begin = start or 0.0
     with ExitStack() as stack:
-        container = _open_container(av, uri, stack)
+        container = open_container(av, uri, stack)
         if not container.streams.video:
             raise ValueError(f"{uri}: no video stream")
         stream = container.streams.video[0]

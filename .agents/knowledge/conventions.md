@@ -17,7 +17,9 @@ or CI job commands.
 - ty is the type checker (`include = src, tests`); keep annotations complete on new code. No mypy.
 - Library functions accept/return PIL images or bytes and raise `ValueError` for contract violations
   (odd polygon coordinate count, non-single-channel mask, coordinates outside 0–1).
-- Defaults live in `annotools.config`; tools reference them instead of repeating literals.
+- Defaults live in `annotools.config`. Library functions take `None` and resolve it through `get_settings()`
+  at call time (no module-level snapshots); the MCP layer snapshots settings at import so tool schemas show
+  concrete defaults, which is why `mcp/cli.py` calls `configure()` before importing the server.
 
 ## Tests
 
