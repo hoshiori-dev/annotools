@@ -79,6 +79,8 @@ skills/ examples/   (planned) publishable skills; independent example projects (
 
 ## Decisions
 
+- The FastMCP instance lives in `app.py`, which imports nothing from `tools/`; `server.py` is the composition
+  root. `tools/` modules never import `server`, so there is no import cycle (#69).
 - Normalized coordinates everywhere (frontier MLLMs localize better with size-independent coordinates);
   revisit only if a target training format demands absolute pixels at the tool boundary.
 - 384 px preview limit by default (owner decision, 2026-08-27): the largest size Gemini bills as a

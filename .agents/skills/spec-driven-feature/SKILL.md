@@ -28,7 +28,8 @@ description: >-
 4. **Implement.** Library function in `src/annotools/<area>/` (PIL/numpy in, PIL/bytes out, no
    `fastmcp` import, `ValueError` with a specific message on contract violations), then the MCP wrapper
    in `src/annotools/tools/` (pydantic model, `@mcp.tool`, returns `[Image(data=..., format=...), json
-   metadata string]`). Register the tool module in `annotools.server`.
+   metadata string]`). The module imports `mcp` from `annotools.app` (never from
+   `annotools.server`); register it by adding it to the import line in `annotools.server`.
 5. **Docs.** Update the tool table in `README.md` and `README.zh.md` together (`just readme-check`) and
    any affected knowledge file.
 6. **Verify.** `just check` green; call the tool once through the real server
