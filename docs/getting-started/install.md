@@ -5,9 +5,9 @@ icon: lucide/download
 # Install
 
 annotools needs Python 3.12 or newer. Install from git: the first full release publishes to PyPI, and
-until then only pre-releases exist. Pre-releases are uploaded to TestPyPI to rehearse the publishing
-pipeline and to let developers grab a build quickly — install those from git too, not from TestPyPI,
-whose dependency resolution is incomplete.
+until then only pre-releases exist. Every release is also uploaded to TestPyPI, which rehearses the
+publishing path rather than serving installs — its dependency resolution is incomplete, so install from
+git instead, including pre-releases.
 
 ## As a library
 

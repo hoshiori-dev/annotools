@@ -61,7 +61,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   # Every release goes to TestPyPI first, so the path that matters is never exercised for the first
-  # time on PyPI. Only a full release continues, and only the artifact TestPyPI already accepted.
+  # time on PyPI. Only a full release continues, with the artifact this run just built and scanned.
   publish-testpypi:
     needs: tests
     runs-on: ubuntu-latest

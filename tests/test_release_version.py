@@ -49,8 +49,12 @@ def test_emits_prerelease_flag_for_the_project_version(tmp_path: Path) -> None:
     ("tag", "expected"),
     [("v1.2.3", "false"), ("v1.2.3-rc1", "true"), ("v1.2.3a1", "true"), ("v1.2.3.dev1", "true")],
 )
-def test_prerelease_flag_follows_pep440(tmp_path: Path, tag: str, expected: str, monkeypatch) -> None:
-    """rc/alpha/beta/dev are pre-releases; a final version is not. Punctuation does not decide."""
+def test_prerelease_flag_follows_pep440(tmp_path: Path, tag: str, expected: str) -> None:
+    """rc/alpha/beta/dev are pre-releases; a final version is not. Punctuation does not decide.
+
+    The repository tags releases `v<semver>[-rcN]`; the other forms are covered because PEP 440 accepts
+    them, not as a recommendation — `docker/metadata-action` cannot parse `a1` or `.dev1`.
+    """
     project = tmp_path / "project"
     (project / "scripts").mkdir(parents=True)
     (project / "pyproject.toml").write_text(f'[project]\nname = "x"\nversion = "{tag[1:]}"\n')

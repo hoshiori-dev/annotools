@@ -67,7 +67,7 @@ CI runs it; checking a pinned scanner image tag exists with an anonymous GHCR to
 | Security | CodeQL default setup (org), Dependabot version updates via `.github/dependabot.yml`, private vulnerability reporting | repo admin | repository security settings |
 | Secrets / variables | none required; publishing uses OIDC, never a token | repo admin | `gh variable list` |
 | Environments | `pypi` and `testpypi`, created by the first run that references them, with no protection rules — which is the intent; the name is half the OIDC claim, so it selects the index. Configuring one by hand needs org-repo admin, which the working token does not have | created by the workflow | `gh api repos/hoshiori-dev/annotools/environments` |
-| Trusted publishers | pypi.org and test.pypi.org both: owner `hoshiori-dev`, repository `annotools`, workflow `release.yml`, environment `pypi` / `testpypi` | PyPI account owner | the project's Publishing settings on each index |
+| Trusted publishers | pypi.org and test.pypi.org both: owner `hoshiori-dev`, repository `annotools`, workflow `release.yml`, environment `pypi` / `testpypi`. **Both are required for a full release** — `publish-pypi` needs `publish-testpypi`, so a missing TestPyPI publisher blocks PyPI | PyPI account owner | the project's Publishing settings on each index |
 | GHCR package | `ghcr.io/hoshiori-dev/annotools`, set public after the first push; tags `<version>` (every release), `<major>.<minor>` + `latest` (full releases), `nightly` (rolling, from main) | repo admin | package settings |
 
 Status 2026-08-27: merge-method and ruleset changes returned 403 for the working token and are pending
