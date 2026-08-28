@@ -28,6 +28,9 @@ or CI job commands.
   `pytest-asyncio` runs with `asyncio_mode = "auto"`.
 - Tests that need docker carry `@pytest.mark.container` and are deselected by `just test`; run them with
   `just test-container` after `just docker-build`. Every documented raise gets a test.
+- Coverage: `fail_under = 95` (line + branch) in `pyproject.toml` is the only threshold; `just test-cov` and
+  CI enforce it per Python version. Close gaps with tests — never with `omit`. Tests that call
+  `config.configure()` must import `annotools.server` before `reset_settings()` (see `tests/test_cli.py`).
 
 ## Toolchain
 
@@ -65,6 +68,6 @@ or CI job commands.
 
 | Check | Command |
 |---|---|
-| Lint / format / types / taxonomy / README sync / unit tests | `just check` |
+| Lint / format / types / taxonomy / README sync / unit tests + coverage gate | `just check` |
 | Container tests | `just docker-build && just test-container` |
 | Workflow YAML | `actionlint` |

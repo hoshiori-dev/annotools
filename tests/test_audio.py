@@ -133,9 +133,12 @@ def test_video_without_audio_stream_is_rejected(tmp_path):
         clip(str(path))
 
 
-def test_start_beyond_duration_and_late_window(audio_file):
+def test_start_beyond_duration_is_rejected(audio_file):
     with pytest.raises(ValueError, match="beyond the source duration"):
         clip(str(audio_file), start=20)
+
+
+def test_late_window_skips_frames_before_start(audio_file):
     data, meta = clip(str(audio_file), start=5.0, end=5.5)
     duration, _rate, _channels = wav_info(data)
     assert abs(duration - 0.5) < 0.01 and meta["start"] == 5.0

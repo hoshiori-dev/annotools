@@ -68,7 +68,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 
 | Check | Command |
 |---|---|
-| Everything CI requires on a PR (lint, format, types, taxonomy, README sync, unit tests) | `just check` |
+| Everything CI requires on a PR (lint, format, types, taxonomy, README sync, unit tests with the 95 % coverage gate) | `just check` |
 | Container tests (needs docker; build first with `just docker-build`) | `just test-container` |
 | Workflow YAML | `actionlint` (install via the official download script) |
 | Docs build | `just docs` |

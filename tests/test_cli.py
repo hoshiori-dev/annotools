@@ -64,7 +64,12 @@ def test_flag_name_in_error_uses_kebab_case(capsys):
 
 @pytest.fixture
 def fresh_settings():
-    """``main()`` installs settings, which ``configure()`` only allows on an unresolved process."""
+    """Leave the process unresolved so ``main()`` can ``configure()`` it.
+
+    ``annotools.server`` is imported first: the tool modules snapshot ``get_settings()`` at import, so
+    importing them after the reset would resolve the settings again and make ``configure()`` raise.
+    """
+    import annotools.server  # noqa: F401
     from annotools import config
 
     config.reset_settings()
