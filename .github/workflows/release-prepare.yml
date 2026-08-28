@@ -1,0 +1,102 @@
+# Prepare a release: nothing is tagged until the full gate is green.
+# Normal path: `gh workflow run release-prepare.yml -f tag=v<version>` from the commit to release.
+# The tag is created only after tests and artifact scanning pass, then a draft release is opened for
+# review. A tag pushed by GITHUB_TOKEN raises no event, which is why one run does all three steps.
+# Publishing that draft (as a person, not GITHUB_TOKEN) is what triggers release.yml.
+name: Release Prepare
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to create, for example v0.1.0-rc1. Must match pyproject.toml.
+        required: true
+        type: string
+  push:
+    # Fallback for a tag pushed by hand: the gate still runs before the draft release appears.
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-prepare-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve.outputs.tag }}
+      prerelease: ${{ steps.resolve.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - id: resolve
+        name: Resolve the tag and whether it is a pre-release
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+          EVENT: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+          # PEP 440 decides, not the tag's punctuation: rc/a/b/dev are pre-releases, finals are not.
+          prerelease=$(uv run --no-project --with packaging python -c \
+            'import sys; from packaging.version import Version; print(str(Version(sys.argv[1].removeprefix("v")).is_prerelease).lower())' \
+            "$TAG")
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
+          echo "Resolved $TAG (prerelease=$prerelease)"
+
+          # Fail before spending the test budget, and keep a dispatch from clobbering an existing tag.
+          if [ "$EVENT" = "workflow_dispatch" ] && git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "ERROR: tag $TAG already exists. Bump the version or delete the tag first."
+            exit 1
+          fi
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "ERROR: a release for $TAG already exists."
+            exit 1
+          fi
+
+  tests:
+    needs: resolve
+    uses: ./.github/workflows/release-tests.yml
+    with:
+      tag: ${{ needs.resolve.outputs.tag }}
+    # ci.yml's pr-title job declares pull-requests: read; a called workflow may not exceed the caller's grant.
+    permissions:
+      contents: read
+      pull-requests: read
+
+  draft-release:
+    needs: [resolve, tests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Create the tag
+        # The push path arrives with the tag already in place.
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          TAG: ${{ needs.resolve.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git tag "$TAG" "$GITHUB_SHA"
+          git push origin "refs/tags/$TAG"
+      # If this step fails after the tag was pushed, the guards in `resolve` will reject a re-run.
+      # Recover with `git push origin --delete <tag>`, then dispatch again.
+      - name: Open the draft release
+        env:
+          TAG: ${{ needs.resolve.outputs.tag }}
+          PRERELEASE: ${{ needs.resolve.outputs.prerelease }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          args=(--draft --generate-notes --target "$GITHUB_SHA")
+          if [ "$PRERELEASE" = "true" ]; then
+            args+=(--prerelease)
+          fi
+          gh release create "$TAG" "${args[@]}"
+          echo "Draft release $TAG is ready for review. Publishing it (as a person, not GITHUB_TOKEN) starts the Release workflow."

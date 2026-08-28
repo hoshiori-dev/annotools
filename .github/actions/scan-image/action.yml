@@ -1,0 +1,73 @@
+# Content gate for a container image that is about to be published: the layers must carry no
+# credentials, and the files annotools itself puts in the image must carry no personal data.
+# Used by release-tests.yml (before a release publishes) and nightly.yml (before :nightly moves).
+name: Scan a container image
+description: Fail when a locally loaded image carries credentials in its layers or PII in its first-party files.
+
+inputs:
+  image:
+    description: Locally loaded image reference to scan, for example annotools:release.
+    required: true
+  gitleaks-config:
+    description: Repository-relative path to the gitleaks configuration holding the PII rules.
+    required: false
+    default: .gitleaks.toml
+
+runs:
+  using: composite
+  steps:
+    - name: Scan the image layers for credentials
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+        # Pinned: an unpinned scanner turns a release gate into a moving target.
+        TRUFFLEHOG_IMAGE: ghcr.io/trufflesecurity/trufflehog:3.97.1
+      run: |
+        set -euo pipefail
+        # TruffleHog reads a local image only through a tarball (file://), never the daemon.
+        docker save "$IMAGE" -o "${RUNNER_TEMP}/scan-image.tar"
+        docker run --rm -v "${RUNNER_TEMP}:/scan:ro" "$TRUFFLEHOG_IMAGE" \
+          docker --image "file:///scan/scan-image.tar" --results=verified,unknown --fail
+        rm -f "${RUNNER_TEMP}/scan-image.tar"
+
+    - name: Extract the first-party files from the image
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+      run: |
+        set -euo pipefail
+        # Only what this repository puts in the image. A whole-rootfs PII scan would fire on the
+        # author emails in every third-party dist-info, which says nothing about annotools.
+        rm -rf "${RUNNER_TEMP}/first-party"
+        mkdir -p "${RUNNER_TEMP}/first-party"
+        docker run --rm --entrypoint sh "$IMAGE" -c '
+          set -eu
+          site_packages=$(echo /app/.venv/lib/python*/site-packages)
+          mkdir -p /tmp/first-party
+          # uv.lock and pyproject.toml sit at the scan root so the path exclusions in the
+          # gitleaks config (semantic versions read as IPv4 addresses) still apply.
+          cp /app/pyproject.toml /app/uv.lock /app/README.md /tmp/first-party/
+          cp -r /app/src /tmp/first-party/src
+          # uv installs the project editable, so site-packages holds annotools.pth and the dist-info
+          # while the code itself stays in /app/src, copied above. The glob covers both layouts.
+          cp -r "$site_packages"/annotools* /tmp/first-party/
+          tar cf - -C /tmp/first-party .
+        ' > "${RUNNER_TEMP}/first-party.tar"
+        tar xf "${RUNNER_TEMP}/first-party.tar" -C "${RUNNER_TEMP}/first-party"
+        rm -f "${RUNNER_TEMP}/first-party.tar"
+
+    - name: Scan the first-party files for PII
+      shell: bash
+      env:
+        GITLEAKS_CONFIG: ${{ inputs.gitleaks-config }}
+        # Pinned to the rev pre-commit uses, so a finding here reproduces locally.
+        GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.24.2
+      run: |
+        set -euo pipefail
+        # -w /scan with a relative source keeps reported paths relative, which is what the
+        # `paths` exclusions in the config are written against.
+        docker run --rm -w /scan \
+          -v "${RUNNER_TEMP}/first-party:/scan:ro" \
+          -v "${GITHUB_WORKSPACE}/${GITLEAKS_CONFIG}:/gitleaks.toml:ro" \
+          "$GITLEAKS_IMAGE" \
+          dir . --config /gitleaks.toml --no-banner --redact --exit-code 1

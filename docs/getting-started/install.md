@@ -4,7 +4,10 @@ icon: lucide/download
 
 # Install
 
-annotools needs Python 3.12 or newer. PyPI publishing is not enabled yet, so install from git.
+annotools needs Python 3.12 or newer. Install from git: the first full release publishes to PyPI, and
+until then only pre-releases exist. Pre-releases are uploaded to TestPyPI to rehearse the publishing
+pipeline and to let developers grab a build quickly — install those from git too, not from TestPyPI,
+whose dependency resolution is incomplete.
 
 ## As a library
 
@@ -46,7 +49,8 @@ docker run --rm -i -v "$PWD:/data" ghcr.io/hoshiori-dev/annotools:0.1.0-rc1
 ```
 
 Only the `0.1.0-rc1` pre-release image exists so far; `latest` and the `<major>.<minor>` tags are
-published by the first full release. The image is not yet anonymously pullable — see
+published by the first full release. A `nightly` tag tracks `main` — built, smoke-tested and scanned
+every night, but unreleased, so treat it as a preview. The image is not yet anonymously pullable — see
 [#93](https://github.com/hoshiori-dev/annotools/issues/93).
 
 The container's working directory is `/data`, so a source path an agent passes is resolved relative to

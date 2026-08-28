@@ -32,7 +32,7 @@ Two kinds of agents use the project:
 - FastMCP 3 for the MCP server (stdio default, `--http` optional).
 - Pillow + numpy for rendering, fsspec for local/remote file access, pydantic for parameter models.
 - PyAV (`av`) behind the optional `media` extra for video frame extraction and audio clipping.
-- Container image on GHCR (`ghcr.io/hoshiori-dev/annotools`); PyPI publishing is prepared but disabled.
+- Container image on GHCR (`ghcr.io/hoshiori-dev/annotools`); wheels on PyPI, pre-releases on TestPyPI, both through OIDC trusted publishing.
 
 ## Layout
 
@@ -72,8 +72,11 @@ skills/ examples/   publishable skills; independent example projects (each with 
 2. **Segmentation preview** — single-channel ID mask (uint8/uint16, 0 = background) resized to the
    source with nearest-neighbour, colored by `color_from_text(str(id))`, blended at `alpha`; `legend`
    mode appends a legend strip before the final resize so the output still fits the limits.
-3. **Release** — GitHub release `v<version>` → CI workflow (verify) → wheel + image build → smoke tests
-   → GHCR push; see `.github/workflows/release.yml`.
+3. **Release** — two stages over one shared gate (`release-tests.yml`: version check → CI → wheel and
+   image build → smoke tests + credential/PII scan). `release-prepare.yml` runs the gate, then creates
+   the tag and a draft release; publishing that draft runs the gate again and then pushes to GHCR and to
+   PyPI (full release) or TestPyPI (pre-release). `nightly.yml` rebuilds main into the GHCR `nightly` tag
+   daily, skipping when main has not moved.
 
 ## Knowledge Layers
 

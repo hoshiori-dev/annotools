@@ -1,0 +1,132 @@
+# The gate every publishable artifact passes, called twice: by release-prepare.yml before a tag and
+# a draft release exist, and by release.yml before anything reaches PyPI or GHCR.
+# A composite action cannot hold this — it is a job graph (matrix tests, a fan-out to smoke and scan),
+# not a step list. The wheel and the image it builds are uploaded as artifacts of the *caller's* run,
+# so release.yml's publish jobs download them without rebuilding.
+name: Release Tests
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Release tag to validate, for example v0.1.0-rc1.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - name: Tag must match pyproject version
+        env:
+          TAG: ${{ inputs.tag }}
+        run: uv run --no-project --with packaging scripts/check_release_version.py "$TAG"
+
+  verify:
+    needs: check-version
+    uses: ./.github/workflows/ci.yml
+    # ci.yml's pr-title job declares pull-requests: read; a called workflow may not exceed the caller's grant.
+    permissions:
+      contents: read
+      pull-requests: read
+
+  build:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - run: uv build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: annotools:release
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - run: docker save annotools:release -o image.tar
+      - uses: actions/upload-artifact@v7
+        with:
+          name: image
+          path: image.tar
+          if-no-files-found: error
+
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - name: Smoke test the wheel in a fresh environment
+        run: |
+          uv venv smoke-venv
+          uv pip install --python smoke-venv dist/*.whl
+          smoke-venv/bin/annotools --help
+          smoke-venv/bin/python scripts/smoke_stdio.py smoke-venv/bin/annotools
+      - uses: actions/download-artifact@v8
+        with:
+          name: image
+      - run: docker load -i image.tar
+      - run: uv sync --group dev
+      - name: Smoke test the container image
+        run: uv run pytest -m container
+        env:
+          ANNOTOOLS_IMAGE: annotools:release
+
+  scan:
+    # Passing tests say the artifact works; this says it carries nothing it should not.
+    # Runs beside smoke — both must pass before a caller publishes.
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - name: Unpack the wheel and the sdist
+        run: |
+          set -euo pipefail
+          mkdir -p unpacked/wheel unpacked/sdist
+          for wheel in dist/*.whl; do unzip -q "$wheel" -d unpacked/wheel; done
+          for sdist in dist/*.tar.gz; do tar xzf "$sdist" -C unpacked/sdist; done
+      - name: Scan the distributions for credentials
+        env:
+          TRUFFLEHOG_IMAGE: ghcr.io/trufflesecurity/trufflehog:3.97.1
+        run: |
+          docker run --rm -v "${PWD}/unpacked:/scan:ro" "$TRUFFLEHOG_IMAGE" \
+            filesystem /scan --results=verified,unknown --fail
+      # The `paths` exclusions in .gitleaks.toml are anchored at the scan root, so they do not reach
+      # the sdist's nested pyproject.toml. Harmless today; a dependency pinned to a four-component
+      # version would read as an IPv4 address and fail here.
+      - name: Scan the distributions for PII
+        env:
+          GITLEAKS_IMAGE: ghcr.io/gitleaks/gitleaks:v8.24.2
+        run: |
+          docker run --rm -w /scan \
+            -v "${PWD}/unpacked:/scan:ro" \
+            -v "${PWD}/.gitleaks.toml:/gitleaks.toml:ro" \
+            "$GITLEAKS_IMAGE" \
+            dir . --config /gitleaks.toml --no-banner --redact --exit-code 1
+      - uses: actions/download-artifact@v8
+        with:
+          name: image
+      - run: docker load -i image.tar
+      - uses: ./.github/actions/scan-image
+        with:
+          image: annotools:release

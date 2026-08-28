@@ -15,7 +15,7 @@ skills/               <- publishable skills (npx skills add hoshiori-dev/annotoo
 examples/             <- independent example projects; each has its own CONTEXT.md
 .agents/knowledge/    <- agent knowledge base (this file routes into it); spec/ one spec per MCP tool; references/ dated external facts
 .agents/skills/       <- development skills (Claude Code sees them via .claude/skills symlink)
-.github/              <- workflows, issue forms, labels.json, release.yml, CODEOWNERS
+.github/              <- workflows, actions/ (composite), issue forms, labels.json, release.yml, CODEOWNERS
 scripts/              <- repo maintenance scripts (labels, taxonomy, release checks)
 ```
 
@@ -85,8 +85,12 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 - Before every PR: run the retrospective skill and list skill candidates in the issue thread.
 - Publishing (issues, PRs, comments, releases) needs a sensitivity self-check on the exact payload;
   remote settings changes need explicit user approval.
-- Releases: tag `v<version>` matching `pyproject.toml`; a `-rcN` pre-release publishes only to GHCR
-  `<version>`; a full release also updates `<major>.<minor>` and `latest`. PyPI is a disabled placeholder.
+- Releases are two staged pipelines. `release-prepare.yml` (dispatch with a `tag` input) runs the full
+  gate — tests plus credential/PII scanning of the wheel, sdist and image — and only then creates the tag
+  and a draft release; publishing that draft by hand runs the same gate again and then publishes. A
+  pre-release goes to TestPyPI (rehearsal and developer testing; the documented install stays git) and
+  GHCR `<version>`; a full release goes to PyPI and also updates GHCR `<major>.<minor>` and `latest`.
+  `nightly.yml` pushes GHCR `nightly` from main at 22:00 JST. Tags always match `pyproject.toml`.
 
 ## Keep In Sync
 
