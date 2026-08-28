@@ -20,6 +20,16 @@ nav = [
     { "As an MCP server" = "usage/mcp-server.md" },
     { "As a library" = "usage/library.md" },
   ] },
+  { "Recipes" = [
+    "recipes/index.md",
+    { "Image captioning" = "recipes/image-captioning.md" },
+    { "Object detection" = "recipes/object-detection.md" },
+    { "Keypoints" = "recipes/keypoints.md" },
+    { "Polygons" = "recipes/polygons.md" },
+    { "Segmentation" = "recipes/segmentation.md" },
+    { "Video" = "recipes/video.md" },
+    { "Audio" = "recipes/audio.md" },
+  ] },
   { "Cookbook" = [
     "cookbook/index.md",
     { "1. Interview" = "cookbook/interview.md" },

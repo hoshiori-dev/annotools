@@ -99,6 +99,6 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 | A setting in `annotools.config.Settings` | the settings table in `docs/usage/mcp-server.md` and `.agents/knowledge/spec/mcp-overview.md` |
 | A new public module or a docstring section keyword | `docs/api/` stub page + nav entry in `zensical.toml` (see `.agents/knowledge/docs-site.md`) |
 | A new knowledge file or development skill | this file's When To Read What table |
-| A vendor fact or dependency version | `.agents/knowledge/references/*.md` (date it) and the skill copy derived from it |
+| A vendor fact or dependency version | `.agents/knowledge/references/*.md` (date it), the skill copy derived from it, and any `docs/recipes/*.md` page quoting it (token units, sampling rates, per-model coordinate spaces) |
 | Python tool versions in `pyproject.toml` dev group | matching `rev` in `.pre-commit-config.yaml` |
 | A dependency group or extra of annotools | `uv sync` in each `examples/<project>/` and commit the refreshed `uv.lock` |

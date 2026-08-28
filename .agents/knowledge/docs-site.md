@@ -8,6 +8,9 @@ built by zensical (`just docs-check` = strict build, part of `just check`; `just
 | Page | Source of truth | How it gets there |
 |---|---|---|
 | `docs/index.md` | hand-written | edit directly |
+| `docs/getting-started/*.md` | hand-written | edit directly; nothing enforces it, so check the install commands (`install.md`) and the client configuration blocks (`register.md`) against both READMEs, `.mcp.json`, `.codex/config.toml`, and `opencode.json` when any of those change |
+| `docs/usage/*.md` | hand-written, except the settings table in `mcp-server.md` | edit directly; the settings table restates `annotools.config.Settings` and must move with it and with `.agents/knowledge/spec/mcp-overview.md` (see the AGENTS.md Keep In Sync row) |
+| `docs/recipes/*.md` | hand-written | edit directly; every Library snippet must be executed before it is committed, and every MCP arguments object must match the schema in `docs/mcp/tools.md` |
 | `docs/api/*.md` | the public docstrings (`annotools.__all__`) | 3-line stubs holding a `::: annotools.<module>` directive; mkdocstrings renders signatures and sections at build time |
 | `docs/architecture.md`, `docs/contributing.md` | `ARCHITECTURE.md`, `CONTRIBUTING.md` | snippet include of the whole file |
 | `docs/cookbook/*.md` | the publishable skills under `skills/` | hand-written summaries that link the skill; anything quoted verbatim is snippet-included (`skills/sqlite-annotation-store/assets/schema.sql`, and `skills/mllm-multimodal-input/SKILL.md` sections `tokens`, `sizes`, `coordinates`) |
@@ -97,7 +100,9 @@ numbers labelled as an estimate.
   adding a stub page and a nav entry; nothing else is hand-maintained. `show_root_heading` prints the
   module heading itself, so a page must not repeat it as markdown.
 - Cross-reference other public names with `[`name`][annotools.name]`, not Sphinx roles (`:func:`…``),
-  which render as literal text.
+  which render as literal text. That form works only inside docstrings; a Markdown page links to the
+  rendered anchor, which is the **full module path** even though the heading is short —
+  `../api/image.md#annotools.image.overlay.draw_bboxes`, not `#annotools.image.draw_bboxes`.
 - The docstring section keyword must be **`Examples:`** (plural). griffe only recognises the plural form;
   with `Example:` the doctest is rendered as nested blockquotes instead of a highlighted code block.
   `References:` is not a griffe section and renders as a collapsible details block, which is what we want.
