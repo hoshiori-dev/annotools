@@ -49,11 +49,11 @@ src/annotools/
   color.py          text → stable color hash, color parsing, inversion
   image/            preview (crop+resize), grid, overlay (bbox/keypoint/polygon), segmentation
   video.py          frame sampling by fps → image pipeline (PyAV, media extra)
-  audio.py          (planned) clip + resample → WAV
-  tools/            MCP wrappers: image_tools, color_tools, geometry_tools, video_tools, audio_tools (planned)
+  audio.py          clip + resample → WAV (PyAV, media extra)
+  tools/            MCP wrappers: image_tools, color_tools, geometry_tools, video_tools, audio_tools
 tests/              unit tests with generated fixtures; container tests behind the `container` marker
 .agents/knowledge/  spec/ one specification per MCP tool (goal, parameters, return, acceptance criteria)
-skills/ examples/   (planned) publishable skills; independent example projects (each with CONTEXT.md)
+skills/ examples/   publishable skills; independent example projects (each with CONTEXT.md)
 ```
 
 ## Key Flows

@@ -89,6 +89,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 
 | When this changes | Update |
 |---|---|
+| A cycle opens or closes | the "Current cycle" line in this file (Workflow), the tracking issue's final-status comment |
 | A CI job is renamed or added | `.agents/knowledge/platform-settings.md` job map and the `main` ruleset required checks |
 | A label, issue form, `release.yml`, or dependabot label | `.github/labels.json` — `just check-taxonomy` fails otherwise |
 | An MCP tool's parameters or return | its `.agents/knowledge/spec/` file, tests, and README tool table (both languages) |
