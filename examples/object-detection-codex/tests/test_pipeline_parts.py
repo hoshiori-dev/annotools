@@ -208,5 +208,7 @@ async def test_mcp_server_contract(workspace):
         assert committed.structured_content["status"] == "final"
         bad = await client.call_tool("look_at_item", {"uri": "../../etc/passwd"}, raise_on_error=False)
         assert bad.is_error and "outside the workspace" in bad.content[0].text
-    assert mcp_config(ctx)["mcp_servers"]["detection"]["args"][:2] == ["-m", "detection.tools"]
+    server = mcp_config(ctx)["mcp_servers"]["detection"]
+    assert server["args"][:2] == ["-m", "detection.tools"]
+    assert server["default_tools_approval_mode"] == "approve"  # deny_all would reject every MCP call otherwise
     assert flatten_usage({"total": {"input_tokens": 10, "output_tokens": 3}})["input_tokens"] == 10
