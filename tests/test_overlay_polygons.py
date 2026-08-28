@@ -75,12 +75,18 @@ def test_label_at_top_edge_stays_inside():
     assert (plain != labeled).any()
 
 
-def test_empty_objects_and_small_width_raise():
+@pytest.mark.parametrize(
+    ("objects", "kwargs", "match"),
+    [
+        ([], {}, "at least one polygon"),
+        ([PolygonObject(points=TRIANGLE)], {"line_width": 0}, "line_width and point_diameter"),
+    ],
+    ids=["empty", "width"],
+)
+def test_guards_raise(objects, kwargs, match):
     result = preview(make_image(200, 200), max_width=200, max_height=200)
-    with pytest.raises(ValueError, match="at least one polygon"):
-        draw_polygons(result, [])
-    with pytest.raises(ValueError, match="line_width and point_diameter"):
-        draw_polygons(result, [PolygonObject(points=TRIANGLE)], line_width=0)
+    with pytest.raises(ValueError, match=match):
+        draw_polygons(result, objects, **kwargs)
 
 
 def test_polygon_entirely_outside_the_crop_is_skipped_but_counted():

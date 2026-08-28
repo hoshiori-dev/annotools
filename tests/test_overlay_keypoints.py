@@ -65,8 +65,11 @@ async def test_ac5_tool(mcp_server, image_file):
     assert json.loads(result.content[1].text)["objects"] == 2
 
 
-def test_empty_objects_and_small_diameter_raise():
-    with pytest.raises(ValueError, match="at least one keypoint"):
-        render(objects=[])
-    with pytest.raises(ValueError, match="point_diameter"):
-        render(objects=[KeypointObject(point=[0.5, 0.5])], point_diameter=0)
+@pytest.mark.parametrize(
+    ("objects", "kwargs", "match"),
+    [([], {}, "at least one keypoint"), ([KeypointObject(point=(0.5, 0.5))], {"point_diameter": 0}, "point_diameter")],
+    ids=["empty", "diameter"],
+)
+def test_guards_raise(objects, kwargs, match):
+    with pytest.raises(ValueError, match=match):
+        render(objects=objects, **kwargs)
