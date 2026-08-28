@@ -54,7 +54,7 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 | `normalize_coordinates` | 模型坐标系（预览像素或 0–1000）→ 归一化 0–1 |
 | `denormalize_coordinates` | 归一化 0–1 → 模型坐标系（预览像素或 0–1000） |
 | `preview_video` | 按 N fps 抽帧 → 每帧一张预览 |
-| `preview_video_grid` | 按 N fps 抽帧 → 一张拼接预览 |
+| `preview_video_grid` | 按 N fps 抽帧 → 每帧叠加网格 |
 | `clip_audio` | 音频切片与重采样 |
 
 规范文档位于 `.agents/knowledge/spec/`（共享约定：`.agents/knowledge/spec/mcp-overview.md`）；

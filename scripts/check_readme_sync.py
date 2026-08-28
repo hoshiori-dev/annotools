@@ -21,8 +21,11 @@ TOOLS_PAGE = Path("docs/mcp/tools.md")
 
 
 def readme_tools(path: Path) -> set[str]:
-    """Tool names from table rows that start with a backticked identifier."""
-    return set(TOOL_ROW.findall(path.read_text(encoding="utf-8")))
+    """Tool names from table rows of the Tools section (the `## ` section whose heading starts with a tool word)."""
+    text = path.read_text(encoding="utf-8")
+    sections = re.split(r"^## ", text, flags=re.MULTILINE)
+    tools_sections = [s for s in sections if s.startswith(("Tools", "工具"))]
+    return set(TOOL_ROW.findall(tools_sections[0] if tools_sections else ""))
 
 
 def normalize(code: str) -> str:

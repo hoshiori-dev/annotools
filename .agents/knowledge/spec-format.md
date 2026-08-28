@@ -34,8 +34,9 @@ followed by a blank line:
 
 Two sections are needed because Acceptance criteria sits between Behavior and Out of scope and a snippet
 section must be contiguous. `mcp-overview.md` has a single `user` section from `## Goal` to before
-`## References`. A new spec must carry both sections: `just docs-check` fails (`check_paths`) when a
-section referenced from `docs/mcp/tools.md` is missing.
+`## References`. A new spec must carry both sections: `scripts/gen_mcp_reference.py` (run by
+`just docs-check`) aborts when a tool's spec lacks one, and `docs/mcp/index.md` fails the strict build
+(`check_paths`) if the overview's section disappears.
 
 ## Rules
 

@@ -58,7 +58,7 @@ Claude, GPT, or Qwen start the server with a larger limit, e.g. `uv run annotool
 | `normalize_coordinates` | a model's frame (pixels of the preview, or 0–1000) → normalized 0–1 |
 | `denormalize_coordinates` | normalized 0–1 → a model's frame (pixels of the preview, or 0–1000) |
 | `preview_video` | frame sampling at N fps → one preview per frame |
-| `preview_video_grid` | frame sampling at N fps → one contact-sheet preview |
+| `preview_video_grid` | frame sampling at N fps → a grid on every frame |
 | `clip_audio` | clip and resample audio |
 
 Specifications live in `.agents/knowledge/spec/` (shared conventions: `.agents/knowledge/spec/mcp-overview.md`);
