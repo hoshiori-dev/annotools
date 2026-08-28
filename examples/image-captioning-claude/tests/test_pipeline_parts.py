@@ -127,3 +127,31 @@ def test_failure_keeps_good_captions_and_item_pending(workspace):
         assert conn.execute("SELECT COUNT(*) FROM items_pending").fetchone()[0] == 1
         store.record(conn, 1, run_id, "caption", "medium", {"text": " ".join(["w"] * 40)})
         assert any("over budget" in p for p in verify(conn, 1, run_id, {"medium": 25}))
+
+
+async def test_caption_item_keeps_the_cost_of_a_budget_error(workspace, monkeypatch):
+    from claude_agent_sdk import ResultMessage
+
+    from captioning import pipeline
+
+    ws, db = workspace
+    config = json.loads((ROOT / "config" / "default.json").read_text())
+    ctx = ToolContext(ws, db, 1, config["preview"])
+
+    async def failing_query(prompt, options):
+        yield ResultMessage(
+            subtype="error_max_budget_usd",
+            duration_ms=1,
+            duration_api_ms=1,
+            is_error=True,
+            num_turns=1,
+            session_id="s",
+            total_cost_usd=0.16,
+            usage={"cache_read_input_tokens": 18000},
+        )
+        raise RuntimeError("Reached maximum budget")
+
+    monkeypatch.setattr(pipeline, "query", failing_query)
+    usage = await pipeline.caption_item(ctx, "data/raw/coco-cats/a.jpg", config, "system")
+    assert usage["error"] == "Reached maximum budget" and usage["subtype"] == "error_max_budget_usd"
+    assert usage["cost_usd"] == 0.16 and usage["cache_read_input_tokens"] == 18000 and usage["seconds"] >= 0

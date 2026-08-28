@@ -50,4 +50,5 @@ replaces whatever the item had in this run.
 
 ## Budget
 - ≤ 4 model calls per image (1 propose + ≤ 3 corrections); ≤ 4 workers; stop after 10 failures in a row
-  (`max_failures`); `max_budget_usd_per_item` 0.15.
+  (`max_failures`); `max_budget_usd_per_item` 0.30 (SDK client-side estimate; a
+  successful item costs about 0.06–0.10 and the estimate at the first tool result is already about 0.16).
