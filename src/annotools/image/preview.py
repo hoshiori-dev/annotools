@@ -59,8 +59,9 @@ def preview(
 
     The result is what an MLLM will see: agents localize on this view, so the returned metadata carries
     everything needed to map their answers back to the uncropped source (see
-    :func:`annotools.normalize_coordinates`). Downscaling uses LANCZOS; upscaling (only with
-    ``allow_upscale``) uses BICUBIC. EXIF orientation must already be applied (:func:`load_image` does).
+    [`normalize_coordinates`][annotools.normalize_coordinates]). Downscaling uses LANCZOS; upscaling (only with
+    ``allow_upscale``) uses BICUBIC. EXIF orientation must already be applied ([`load_image`][annotools.load_image]
+    does).
 
     Args:
         image: Source image; not modified.
@@ -72,7 +73,7 @@ def preview(
         allow_upscale: Enlarge small images or crops up to the limits instead of returning them as is.
 
     Returns:
-        A :class:`PreviewResult` whose ``metadata`` has ``original_size`` / ``original_width`` /
+        A [`PreviewResult`][annotools.PreviewResult] whose ``metadata`` has ``original_size`` / ``original_width`` /
         ``original_height``, the applied ``crop``, ``output_size`` / ``output_width`` /
         ``output_height``, and ``scale``; ``crop_pixels`` holds the exact source-pixel crop or ``None``.
 

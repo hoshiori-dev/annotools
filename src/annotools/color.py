@@ -13,6 +13,7 @@ __all__ = [
 ]
 
 RGB = tuple[int, int, int]
+"""An RGB color as ``(r, g, b)``, each channel 0-255."""
 
 
 def parse_color(value: str, name: str = "color") -> RGB:

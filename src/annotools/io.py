@@ -77,8 +77,8 @@ def load_image(uri: str) -> Image.Image:
         The decoded, orientation-corrected PIL image (mode as stored: RGB, RGBA, L, P, ...).
 
     Raises:
-        FileNotFoundError: When the URI does not exist (from :func:`open_bytes`).
-        OSError: For other read failures (from :func:`open_bytes`).
+        FileNotFoundError: When the URI does not exist (from [`open_bytes`][annotools.open_bytes]).
+        OSError: For other read failures (from [`open_bytes`][annotools.open_bytes]).
         ValueError: When the content is not a decodable image (unknown format, truncated or corrupt
             data); the message names the URI.
 

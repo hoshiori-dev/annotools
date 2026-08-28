@@ -25,7 +25,7 @@ def sample_frames(
     Frames are picked at the first decoded timestamp at or after each target time, then thinned
     evenly to ``max_frames`` (first and last kept when ``max_frames > 1``) so a long clip cannot blow the
     token budget; feed the result through
-    :func:`preview` (and a grid) before sending it to a model that has no native video input.
+    [`preview`][annotools.preview] (and a grid) before sending it to a model that has no native video input.
 
     Args:
         uri: Local path or fsspec URL of a video PyAV can decode.

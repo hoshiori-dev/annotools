@@ -77,9 +77,13 @@ hence two sections per tool spec. Full rules: `.agents/knowledge/spec-format.md`
 
 - `mkdocstrings[python]` is a dev dependency; zensical shims the mkdocs plugin, so the configuration lives
   under `[project.plugins.mkdocstrings.config]` in `zensical.toml` (`handlers.python.paths = ["src"]`,
-  google docstring style, `filters = ["!^_"]` so internals never appear).
+  google docstring style, `filters = "public"` so a page shows exactly the module's `__all__` — an
+  exported name needs a docstring to render, which is why the type aliases and constants carry one).
 - A page is a heading, a sentence of context, and `::: annotools.<module>`. Adding a public module means
-  adding a stub page and a nav entry; nothing else is hand-maintained.
+  adding a stub page and a nav entry; nothing else is hand-maintained. `show_root_heading` prints the
+  module heading itself, so a page must not repeat it as markdown.
+- Cross-reference other public names with `[`name`][annotools.name]`, not Sphinx roles (`:func:`…``),
+  which render as literal text.
 - The docstring section keyword must be **`Examples:`** (plural). griffe only recognises the plural form;
   with `Example:` the doctest is rendered as nested blockquotes instead of a highlighted code block.
   `References:` is not a griffe section and renders as a collapsible details block, which is what we want.

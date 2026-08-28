@@ -17,7 +17,9 @@ __all__ = [
 ]
 
 OutputFormat = Literal["jpeg", "png", "webp"]
+"""Encodings a preview can be returned in."""
 GridMode = Literal["ratio", "fixed"]
+"""``ratio``: a fixed number of equal cells; ``fixed``: cells of a given pixel size."""
 
 
 class Settings(BaseSettings):
@@ -25,7 +27,8 @@ class Settings(BaseSettings):
 
     One object serves both audiences: the ``annotools`` command resolves it once from flags and
     ``ANNOTOOLS_*`` variables and bakes the values into the MCP tool schemas; library callers read it
-    through :func:`get_settings` at call time, so every ``None`` parameter falls back to these values.
+    through [`get_settings`][annotools.get_settings] at call time, so every ``None`` parameter falls back to these
+    values.
 
     Precedence: ``annotools`` command-line flags (``--max-width``), then ``ANNOTOOLS_<FIELD>``
     environment variables (``ANNOTOOLS_MAX_WIDTH``), then the field defaults. Empty environment values
@@ -80,10 +83,10 @@ _settings: Settings | None = None
 
 
 def get_settings() -> Settings:
-    """Return the process-wide :class:`Settings`, resolving them from the environment on first use.
+    """Return the process-wide [`Settings`][annotools.Settings], resolving them from the environment on first use.
 
     Library functions call this whenever a parameter is ``None``; the result is cached until
-    :func:`configure` or :func:`reset_settings` replaces it.
+    [`configure`][annotools.configure] or [`reset_settings`][annotools.reset_settings] replaces it.
 
     Returns:
         The active settings object (shared, not a copy).
@@ -102,7 +105,7 @@ def get_settings() -> Settings:
 def configure(settings: Settings) -> None:
     """Replace the process-wide settings.
 
-    Library functions read :func:`get_settings` at call time, so the new values apply to every later
+    Library functions read [`get_settings`][annotools.get_settings] at call time, so the new values apply to every later
     call. The MCP tool schemas snapshot the settings when ``annotools.mcp.server`` is first imported;
     call this before that import (as ``annotools.mcp.cli`` does) to change the defaults the server
     advertises.
@@ -122,9 +125,9 @@ def configure(settings: Settings) -> None:
 
 
 def reset_settings() -> None:
-    """Forget the resolved settings so the next :func:`get_settings` reads the environment again.
+    """Forget the resolved settings so the next [`get_settings`][annotools.get_settings] reads the environment again.
 
-    Meant for tests and interactive sessions; production code calls :func:`configure` instead.
+    Meant for tests and interactive sessions; production code calls [`configure`][annotools.configure] instead.
 
     Examples:
         >>> from annotools import Settings, configure, get_settings, reset_settings

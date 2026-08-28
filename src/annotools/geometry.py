@@ -23,8 +23,11 @@ __all__ = [
 ]
 
 Box = tuple[float, float, float, float]
+"""A box as ``(x_min, y_min, x_max, y_max)``, normalized 0-1 relative to the uncropped source."""
 PixelBox = tuple[int, int, int, int]
+"""A box in whole source pixels, as Pillow's ``crop`` expects it."""
 FULL_FRAME: Box = (0.0, 0.0, 1.0, 1.0)
+"""The whole image: the crop applied when a caller passes none."""
 
 
 def validate_normalized_box(box: Sequence[float], name: str = "box") -> Box:
@@ -272,7 +275,9 @@ def is_rectangle(points: Sequence[float], *, angle_tol_deg: float = 2.0, length_
 
 
 AxisOrder = Literal["xy", "yx"]
+"""Whether a model writes each pair ``x, y`` or ``y, x`` (Gemini uses ``yx``)."""
 Coordinates = Sequence[Sequence[float]]
+"""Entries of flat ``x, y, x, y, ...`` values: one point, box, or polygon per entry."""
 
 
 def _check_base(base_width: float, base_height: float, name: str) -> None:
@@ -367,7 +372,9 @@ def denormalize_coordinates(
     axis_order: AxisOrder = "xy",
     name: str = "coordinates",
 ) -> list[list[float]]:
-    """Inverse of :func:`normalize_coordinates`: source-normalized coordinates to the model's frame.
+    """Map source-normalized coordinates back into a model's own frame.
+
+    The inverse of [`normalize_coordinates`][annotools.normalize_coordinates].
 
     Use it to draw stored annotations in the frame a model reasons in (for example to ask "is this box
     right?" in pixels of the preview it saw) or to feed ground truth to a model in its native space.

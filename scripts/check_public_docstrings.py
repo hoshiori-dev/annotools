@@ -39,12 +39,12 @@ REFERENCED = {
     "draw_keypoints",
     "draw_polygons",
 }
-SECTION = re.compile(r"^\s*(Args|Returns|Raises|Examples?|References|Attributes):\s*$", re.MULTILINE)
+SECTION = re.compile(r"^\s*(Args|Returns|Raises|Examples|References|Attributes):\s*$", re.MULTILINE)
 
 
 def sections(doc: str) -> set[str]:
-    found = {m.group(1) for m in SECTION.finditer(doc)}
-    return {"Examples" if s.startswith("Example") else s for s in found}
+    # ``Examples`` is deliberately plural: griffe only renders the plural keyword as a code block.
+    return {m.group(1) for m in SECTION.finditer(doc)}
 
 
 def body_raises(obj) -> bool:
