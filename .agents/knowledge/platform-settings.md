@@ -23,7 +23,7 @@ the default token.
 | `deploy` (Documentation) | `zensical build --clean --strict` → Pages | main push |
 | `check-version` → `verify` (CI) → `build` → `smoke` + `scan` (Release Tests) | see `release-tests.yml`; `scan` runs TruffleHog over the distributions and the image layers, gitleaks over the first-party files | called by Release Prepare and Release |
 | Release Prepare: `resolve` → `tests` (Release Tests) → `draft-release` | see `release-prepare.yml`; creates the tag and a draft release only after the gate passes | `workflow_dispatch` with a `tag` input, or a pushed `v*` tag |
-| Release: `tests` (Release Tests) → `publish-ghcr` + `publish-pypi` | see `release.yml` | release published |
+| Release: `tests` (Release Tests) → `publish-ghcr` + `publish-testpypi` → `publish-pypi` | see `release.yml`; `publish-pypi` runs only when `tests` reports the tag is not a PEP 440 pre-release | release published |
 | Nightly: `changed` → `nightly` | see `nightly.yml`; container smoke test + image scan, then pushes the rolling `nightly` tag | 13:00 UTC (22:00 JST) daily, `workflow_dispatch` |
 
 A commit on a PR branch produces two CI runs (push + pull_request); the push run shows the test jobs as
@@ -67,7 +67,7 @@ CI runs it; checking a pinned scanner image tag exists with an anonymous GHCR to
 | Security | CodeQL default setup (org), Dependabot version updates via `.github/dependabot.yml`, private vulnerability reporting | repo admin | repository security settings |
 | Secrets / variables | none required; publishing uses OIDC, never a token | repo admin | `gh variable list` |
 | Environments | `pypi` and `testpypi`, created by the first run that references them, with no protection rules — which is the intent; the name is half the OIDC claim, so it selects the index. Configuring one by hand needs org-repo admin, which the working token does not have | created by the workflow | `gh api repos/hoshiori-dev/annotools/environments` |
-| Trusted publishers | pypi.org and test.pypi.org both: owner `hoshiori-dev`, repository `annotools`, workflow `release.yml`, environment `pypi` / `testpypi` | PyPI account owner | the project's Publishing settings on each index |
+| Trusted publishers | pypi.org and test.pypi.org both: owner `hoshiori-dev`, repository `annotools`, workflow `release.yml`, environment `pypi` / `testpypi`. **Both are required for a full release** — `publish-pypi` needs `publish-testpypi`, so a missing TestPyPI publisher blocks PyPI | PyPI account owner | the project's Publishing settings on each index |
 | GHCR package | `ghcr.io/hoshiori-dev/annotools`, set public after the first push; tags `<version>` (every release), `<major>.<minor>` + `latest` (full releases), `nightly` (rolling, from main) | repo admin | package settings |
 
 Status 2026-08-27: merge-method and ruleset changes returned 403 for the working token and are pending

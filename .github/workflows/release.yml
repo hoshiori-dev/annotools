@@ -1,9 +1,9 @@
 # Publish: re-run the full gate (tests + artifact scanning), then ship.
 # Trigger: publishing the draft release that release-prepare.yml created. Publishing must be done by a
 # person or a user token — a draft published with GITHUB_TOKEN raises no event and nothing ships.
-# A full release goes to PyPI and updates the <major>.<minor> and latest image tags; a pre-release goes
-# to TestPyPI (a rehearsal and developer-test channel, not a documented install path) and only moves
-# its own version image tag.
+# Every release uploads to TestPyPI; a full release then continues to PyPI and updates the
+# <major>.<minor> and latest image tags. A pre-release stops at TestPyPI (a rehearsal and
+# developer-test channel, not a documented install path) and only moves its own version image tag.
 name: Release
 
 on:
@@ -60,12 +60,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  publish-pypi:
+  # Every release goes to TestPyPI first, so the path that matters is never exercised for the first
+  # time on PyPI. Only a full release continues, with the artifact this run just built and scanned.
+  publish-testpypi:
     needs: tests
     runs-on: ubuntu-latest
-    # The environment name is half the OIDC claim the index checks, so it selects the index as surely
-    # as repository-url does: pre-release -> TestPyPI, full release -> PyPI.
-    environment: ${{ github.event.release.prerelease && 'testpypi' || 'pypi' }}
+    environment: testpypi
     permissions:
       id-token: write
     steps:
@@ -75,4 +75,24 @@ jobs:
           path: dist
       - uses: pypa/gh-action-pypi-publish@v1.14.2
         with:
-          repository-url: ${{ github.event.release.prerelease && 'https://test.pypi.org/legacy/' || 'https://upload.pypi.org/legacy/' }}
+          repository-url: https://test.pypi.org/legacy/
+          # Re-running a release whose PyPI step failed must not trip over this upload.
+          skip-existing: true
+
+  publish-pypi:
+    needs: [tests, publish-testpypi]
+    # The tag's PEP 440 version decides, not the release's prerelease checkbox — the checkbox is
+    # descriptive, and letting it choose the index would put a pre-release on PyPI permanently.
+    if: needs.tests.outputs.prerelease == 'false'
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist
+      - uses: pypa/gh-action-pypi-publish@v1.14.2
+        with:
+          repository-url: https://upload.pypi.org/legacy/

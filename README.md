@@ -46,9 +46,9 @@ uncropped source.
 uv add "annotools[media] @ git+https://github.com/hoshiori-dev/annotools"
 ```
 
-Pre-1.0: install from git. The first full release publishes to PyPI; pre-releases only rehearse on
-TestPyPI, which is not an install channel. The `media` extra adds PyAV, which the video and audio tools
-need; drop it for images only.
+Pre-1.0: install from git. The first full release publishes to PyPI; every release also goes to
+TestPyPI, which rehearses the publishing path and is not an install channel. The `media` extra adds
+PyAV, which the video and audio tools need; drop it for images only.
 
 ### As an MCP server
 
