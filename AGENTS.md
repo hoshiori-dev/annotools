@@ -101,3 +101,4 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 | A new knowledge file or development skill | this file's When To Read What table |
 | A vendor fact or dependency version | `.agents/knowledge/references/*.md` (date it) and the skill copy derived from it |
 | Python tool versions in `pyproject.toml` dev group | matching `rev` in `.pre-commit-config.yaml` |
+| A dependency group or extra of annotools | `uv sync` in each `examples/<project>/` and commit the refreshed `uv.lock` |
