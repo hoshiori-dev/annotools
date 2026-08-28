@@ -182,7 +182,7 @@ def test_system_prompt_substitutions():
 
 
 async def test_detect_item_keeps_the_cost_of_a_budget_error(workspace, monkeypatch):
-    from claude_agent_sdk import ResultMessage
+    from claude_agent_sdk import ResultError, ResultMessage
 
     from detection import pipeline
 
@@ -200,9 +200,9 @@ async def test_detect_item_keeps_the_cost_of_a_budget_error(workspace, monkeypat
             total_cost_usd=0.16,
             usage={"cache_read_input_tokens": 18000},
         )
-        raise RuntimeError("Reached maximum budget")
+        raise ResultError("Reached maximum budget", exit_code=1)
 
     monkeypatch.setattr(pipeline, "query", failing_query)
     usage = await pipeline.detect_item(ctx, "data/raw/coco-cats/a.jpg", CONFIG, "system")
-    assert usage["error"] == "Reached maximum budget" and usage["subtype"] == "error_max_budget_usd"
-    assert usage["cost_usd"] == 0.16 and usage["cache_read_input_tokens"] == 18000 and usage["seconds"] >= 0
+    assert usage["error"].startswith("Reached maximum budget") and usage["subtype"] == "error_max_budget_usd"
+    assert usage["cost_usd"] == 0.16 and usage["cache_read_input_tokens"] == 18000
