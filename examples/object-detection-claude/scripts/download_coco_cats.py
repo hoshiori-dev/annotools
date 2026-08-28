@@ -21,8 +21,8 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-ANNOTATIONS_URL = "https://images.cocodataset.org/annotations/annotations_trainval2017.zip"
-IMAGE_URL = "https://images.cocodataset.org/val2017/{file_name}"
+ANNOTATIONS_URL = "http://images.cocodataset.org/annotations/annotations_trainval2017.zip"
+IMAGE_URL = "http://images.cocodataset.org/val2017/{file_name}"
 CAT_CATEGORY_ID = 17
 
 
