@@ -243,8 +243,15 @@ def is_rectangle(points: Sequence[float], *, angle_tol_deg: float = 2.0, length_
     within ``length_tol`` (relative). Use it to decide whether a model's 4-point answer can be stored as
     a rotated box or must stay a polygon.
 
+    Angles are measured in whatever space the points are given in. Normalizing scales x and y by
+    different amounts on a non-square image, which shears a *rotated* rectangle until it no longer
+    passes: run the test on the model's pixel answer, before normalizing. An axis-aligned rectangle is
+    unaffected, so a negative result on normalized coordinates means "rotated on a non-square image",
+    not necessarily "not a rectangle".
+
     Args:
-        points: Eight numbers; anything other than 4 points returns ``False``.
+        points: Eight numbers ``[x1, y1, ..., x4, y4]`` in one consistent space, pixels for preference;
+            anything other than 4 points returns ``False``.
         angle_tol_deg: Allowed deviation from 90 degrees between adjacent edges.
         length_tol: Allowed relative difference between opposite edge lengths.
 
@@ -255,6 +262,16 @@ def is_rectangle(points: Sequence[float], *, angle_tol_deg: float = 2.0, length_
         >>> from annotools import is_rectangle
         >>> is_rectangle([0, 0, 1, 0, 1, 1, 0, 1]), is_rectangle([0, 0, 1, 0, 1, 1, 0, 0.5])
         (True, False)
+
+        A rectangle rotated 30 degrees, in pixels of an 800x600 image and then normalized:
+
+        >>> rotated = [338.0, 161.4, 551.0, 284.4, 462.0, 438.6, 249.0, 315.6]
+        >>> is_rectangle(rotated)
+        True
+        >>> is_rectangle(
+        ...     [v / 800 if i % 2 == 0 else v / 600 for i, v in enumerate(rotated)]
+        ... )
+        False
 
     References:
         - Spec: ``.agents/knowledge/spec/rotated-bbox-to-polygon.md`` (annotools repository).

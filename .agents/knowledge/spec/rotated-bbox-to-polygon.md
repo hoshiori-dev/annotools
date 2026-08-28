@@ -36,7 +36,9 @@ the same frame as the input.
    follow-up).
 4. `is_rectangle(points, *, angle_tol_deg=2.0, length_tol=0.02)` (tolerances keyword-only): true when the polygon has 4 points,
    adjacent edges are perpendicular within `angle_tol_deg`, and opposite edges have equal length within
-   `length_tol` (relative).
+   `length_tol` (relative). Angles are measured in the space the points are given in: normalizing scales
+   x and y differently on a non-square image, which shears a rotated rectangle until it fails the test,
+   so run it on the model's pixel answer. Axis-aligned rectangles are unaffected.
 - Error: empty `boxes`, `w`/`h` ≤ 0, `cx`/`cy` outside [0, 1], `aspect_ratio` ≤ 0 → `ValueError` naming
   `boxes[i].<field>` or the parameter.
 

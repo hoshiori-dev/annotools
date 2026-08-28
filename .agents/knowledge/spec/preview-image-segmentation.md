@@ -40,7 +40,9 @@ inverse mapping of `mcp-overview.md` applies to `image_size` (and `scale` refers
 5. `label`: draw the ID (or its `id_names` entry) as a tag at the region centroid, clamped inside the
    frame. `legend`: append a strip below the image listing `swatch id name` rows (wrapping into
    columns), then re-fit the combined image inside `max_width` × `max_height` and `target_pixels`
-   (plain resize of the composite); report `image_size` and rescale `scale` accordingly.
+   (plain resize of the composite); report `image_size` and rescale `scale` accordingly. The limits
+   apply to the composite and default to the settings, not to the preview's own size, so a caller that
+   previewed at 768 px and passes no limits gets a 384 px composite back.
 6. Grid (if any) is drawn before the mask colours.
 - Error: `alpha` outside `[0, 1]`, `line_width < 0`, unknown `annotation` → `ValueError`.
 
