@@ -98,7 +98,9 @@ numbers labelled as an estimate.
   adding a stub page and a nav entry; nothing else is hand-maintained. `show_root_heading` prints the
   module heading itself, so a page must not repeat it as markdown.
 - Cross-reference other public names with `[`name`][annotools.name]`, not Sphinx roles (`:func:`…``),
-  which render as literal text.
+  which render as literal text. That form works only inside docstrings; a Markdown page links to the
+  rendered anchor, which is the **full module path** even though the heading is short —
+  `../api/image.md#annotools.image.overlay.draw_bboxes`, not `#annotools.image.draw_bboxes`.
 - The docstring section keyword must be **`Examples:`** (plural). griffe only recognises the plural form;
   with `Example:` the doctest is rendered as nested blockquotes instead of a highlighted code block.
   `References:` is not a griffe section and renders as a collapsible details block, which is what we want.
