@@ -21,8 +21,10 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-ANNOTATIONS_URL = "https://images.cocodataset.org/annotations/annotations_trainval2017.zip"
-IMAGE_URL = "https://images.cocodataset.org/val2017/{file_name}"
+# http, not https: the host is a CNAME to S3 whose certificate (CN=s3.amazonaws.com) does not cover it,
+# and the official COCO download links are plain http.
+ANNOTATIONS_URL = "http://images.cocodataset.org/annotations/annotations_trainval2017.zip"
+IMAGE_URL = "http://images.cocodataset.org/val2017/{file_name}"
 CAT_CATEGORY_ID = 17
 
 
