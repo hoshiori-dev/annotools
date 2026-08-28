@@ -342,7 +342,9 @@ inverse mapping of `mcp-overview.md` applies to `image_size` (and `scale` refers
 5. `label`: draw the ID (or its `id_names` entry) as a tag at the region centroid, clamped inside the
    frame. `legend`: append a strip below the image listing `swatch id name` rows (wrapping into
    columns), then re-fit the combined image inside `max_width` × `max_height` and `target_pixels`
-   (plain resize of the composite); report `image_size` and rescale `scale` accordingly.
+   (plain resize of the composite); report `image_size` and rescale `scale` accordingly. The limits
+   apply to the composite and default to the settings, not to the preview's own size, so a caller that
+   previewed at 768 px and passes no limits gets a 384 px composite back.
 6. Grid (if any) is drawn before the mask colours.
 - Error: `alpha` outside `[0, 1]`, `line_width < 0`, unknown `annotation` → `ValueError`.
 
@@ -581,7 +583,9 @@ the same frame as the input.
    follow-up).
 4. `is_rectangle(points, *, angle_tol_deg=2.0, length_tol=0.02)` (tolerances keyword-only): true when the polygon has 4 points,
    adjacent edges are perpendicular within `angle_tol_deg`, and opposite edges have equal length within
-   `length_tol` (relative).
+   `length_tol` (relative). Angles are measured in the space the points are given in: normalizing scales
+   x and y differently on a non-square image, which shears a rotated rectangle until it fails the test,
+   so run it on the model's pixel answer. Axis-aligned rectangles are unaffected.
 - Error: empty `boxes`, `w`/`h` ≤ 0, `cx`/`cy` outside [0, 1], `aspect_ratio` ≤ 0 → `ValueError` naming
   `boxes[i].<field>` or the parameter.
 

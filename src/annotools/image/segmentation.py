@@ -131,14 +131,18 @@ def overlay_mask(
         alpha: Blend strength of the region color in [0, 1].
         line_width: Boundary width in output pixels (0 = no boundary); ``None`` uses
             ``Settings.line_width``.
-        max_width: Size limit for the legend composite; ``None`` uses ``Settings.max_width``.
+        max_width: Size limit for the legend composite, which is re-fitted after the strip is appended;
+            ``None`` uses ``Settings.max_width`` (384) rather than the preview's own size, so a 768 px
+            preview comes back at 384 px unless you pass the limits you previewed with. Ignored by
+            ``annotation="label"``.
         max_height: Likewise; ``None`` uses ``Settings.max_height``.
         target_pixels: Optional area cap for the legend composite.
 
     Returns:
         A new [`PreviewResult`][annotools.PreviewResult] with ``metadata["ids"]`` (count of visible IDs) and, for the
         legend, ``metadata["legend"]`` (entries ``{"id", "name", "color"}``), ``image_size`` (the area the
-        inverse mapping applies to, above the strip) and refreshed size keys.
+        inverse mapping applies to, above the strip) and size keys refreshed for the re-fitted composite —
+        ``output_size`` covers image plus strip, so map coordinates through ``image_size``, not it.
 
     Raises:
         ValueError: For ``alpha`` outside [0, 1], ``line_width < 0``, or an unknown ``annotation``.
