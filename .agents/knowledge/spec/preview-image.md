@@ -1,5 +1,7 @@
 # preview_image
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Return an image at a size an MLLM can read within a bounded token budget, optionally zoomed into a
@@ -30,6 +32,8 @@ Returns: `[Image, metadata]` with the base metadata keys.
   `ValueError`; all name the URI.
 - EXIF orientation is applied on load (a rotated-by-tag portrait reports its display size).
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_downscale_fits_limits`: 4000×3000 → 384×288 with the default settings; for every width in
@@ -47,9 +51,13 @@ Returns: `[Image, metadata]` with the base metadata keys.
    block with `image/jpeg` then a JSON text block with the documented keys.
 8. `test_ac8_save_to_writes_file`: `save_to` produces a file whose bytes equal the returned image.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Grids, overlays, video frames (own specs).
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

@@ -45,15 +45,20 @@ uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
 |---|---|
 | `preview_image` | 裁剪 + 缩小到 384×384 以内（可配置） |
 | `preview_image_grid` | 叠加半透明 10×10 网格的预览 |
-| `preview_image_bboxes` / `_keypoints` / `_polygons` | 基于归一化坐标的叠加层，可带标签 |
+| `preview_image_bboxes` | 基于归一化坐标的边界框叠加层，可带标签 |
+| `preview_image_keypoints` | 基于归一化坐标的关键点叠加层，可带标签 |
+| `preview_image_polygons` | 基于归一化坐标的多边形叠加层，可带标签 |
 | `preview_image_segmentation` | ID 掩码叠加，标签或图例模式 |
 | `color_from_text` | 由任意文本得到稳定颜色 |
 | `rotated_bbox_to_polygon` | (cx, cy, w, h, θ) → DOTA 8 数角点 |
-| `normalize_coordinates` / `denormalize_coordinates` | 模型坐标系（预览像素或 0–1000）↔ 归一化 0–1 |
-| `preview_video` / `preview_video_grid` | 按 N fps 抽帧 → 预览 |
+| `normalize_coordinates` | 模型坐标系（预览像素或 0–1000）→ 归一化 0–1 |
+| `denormalize_coordinates` | 归一化 0–1 → 模型坐标系（预览像素或 0–1000） |
+| `preview_video` | 按 N fps 抽帧 → 每帧一张预览 |
+| `preview_video_grid` | 按 N fps 抽帧 → 每帧叠加网格 |
 | `clip_audio` | 音频切片与重采样 |
 
-规范文档位于 `.agents/knowledge/spec/`（共享约定：`.agents/knowledge/spec/mcp-overview.md`）。
+规范文档位于 `.agents/knowledge/spec/`（共享约定：`.agents/knowledge/spec/mcp-overview.md`）；
+生成的工具参考见 `docs/mcp/tools.md`。
 
 ## Skills 与示例
 

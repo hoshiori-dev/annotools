@@ -1,5 +1,7 @@
 # clip_audio
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Hand a model only the audio segment it needs, at the sample rate the caller chooses, without shipping
@@ -31,6 +33,8 @@ Returns: one `audio/wav` block followed by one JSON text block: `source_duration
 - Error: `start < 0`, `end ≤ start` (start defaults to 0), `sample_rate < 1` → `ValueError`; `start`
   beyond the source duration → `ValueError`.
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_clip_bounds`: a 10 s synthetic tone clipped 2–5 s → WAV duration 3 s ± 0.05.
@@ -41,9 +45,13 @@ Returns: one `audio/wav` block followed by one JSON text block: `source_duration
 5. `test_ac6_multichannel_kept`: a 6-channel source clips to a 6-channel WAV.
 6. `test_ac7_errors_name_source`: a non-media file → `ValueError` naming it; `end=0` → `ValueError`.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Compressed output formats; loudness normalization; channel mixing.
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

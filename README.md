@@ -49,15 +49,20 @@ Claude, GPT, or Qwen start the server with a larger limit, e.g. `uv run annotool
 |---|---|
 | `preview_image` | crop + downscale to fit 384×384 (configurable) |
 | `preview_image_grid` | preview with a semi-transparent 10×10 grid |
-| `preview_image_bboxes` / `_keypoints` / `_polygons` | overlays from normalized coordinates, optional labels |
+| `preview_image_bboxes` | bounding-box overlays from normalized coordinates, optional labels |
+| `preview_image_keypoints` | keypoint overlays from normalized coordinates, optional labels |
+| `preview_image_polygons` | polygon overlays from normalized coordinates, optional labels |
 | `preview_image_segmentation` | ID-mask overlay with labels or a legend |
 | `color_from_text` | stable color from any text |
 | `rotated_bbox_to_polygon` | (cx, cy, w, h, θ) → DOTA 8-number corners |
-| `normalize_coordinates` / `denormalize_coordinates` | a model's frame (pixels of the preview, or 0–1000) ↔ normalized 0–1 |
-| `preview_video` / `preview_video_grid` | frame sampling at N fps → previews |
+| `normalize_coordinates` | a model's frame (pixels of the preview, or 0–1000) → normalized 0–1 |
+| `denormalize_coordinates` | normalized 0–1 → a model's frame (pixels of the preview, or 0–1000) |
+| `preview_video` | frame sampling at N fps → one preview per frame |
+| `preview_video_grid` | frame sampling at N fps → a grid on every frame |
 | `clip_audio` | clip and resample audio |
 
-Specifications live in `.agents/knowledge/spec/` (shared conventions: `.agents/knowledge/spec/mcp-overview.md`).
+Specifications live in `.agents/knowledge/spec/` (shared conventions: `.agents/knowledge/spec/mcp-overview.md`);
+the generated tool reference is at `docs/mcp/tools.md`.
 
 ## Skills and examples
 

@@ -1,5 +1,7 @@
 # preview_image_keypoints
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Show keypoint annotations as dots (with optional labels) on the preview, optionally over the grid, so an
@@ -27,6 +29,8 @@ Returns: `[Image, metadata]` with the base keys, `grid` when drawn, and `objects
 - Error: empty `objects`, point outside `[0, 1]`, unknown color, `point_diameter < 1` → `ValueError`
   naming the object index.
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_dot_pixels`: point (0.5, 0.5), diameter 3 on 768×768 white (`max_*=768`) → blue at (384, 384) and its
@@ -38,9 +42,13 @@ Returns: `[Image, metadata]` with the base keys, `grid` when drawn, and `objects
    lands at the output centre.
 5. `test_ac5_tool`: via `Client(mcp)` → metadata `objects == 2`.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Skeleton edges between keypoints; visibility flags.
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

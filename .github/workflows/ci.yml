@@ -61,6 +61,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --group dev --all-extras
+      - run: uv run scripts/gen_mcp_reference.py --check
       - run: uv run zensical build --clean --strict
 
   pr-title:

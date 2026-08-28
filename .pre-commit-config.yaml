@@ -27,6 +27,12 @@ repos:
         language: system
         types_or: [python, pyi]
         pass_filenames: false
+      - id: gen-mcp-reference-check
+        name: docs/mcp/tools.md is current
+        entry: uv run scripts/gen_mcp_reference.py --check
+        language: system
+        pass_filenames: false
+        files: ^(src/annotools/|\.agents/knowledge/spec/|docs/mcp/|scripts/gen_mcp_reference\.py)
 
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.12.6

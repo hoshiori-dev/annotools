@@ -1,5 +1,7 @@
 # preview_video / preview_video_grid
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Show a video as a bounded sequence of small frames — sampled at a low frame rate, capped in count, and
@@ -40,6 +42,8 @@ first frame plus `frames: N`, `timestamps: [seconds…]`, `duration: seconds`, `
   no video stream, or no frame inside `[start, end)` → `ValueError` naming the source; unreadable source
   → as `preview_image`.
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_default_fps`: 5 s synthetic video at 10 fps → 5 frames at t ≈ 0, 1, 2, 3, 4 s (±0.1).
@@ -56,9 +60,13 @@ first frame plus `frames: N`, `timestamps: [seconds…]`, `duration: seconds`, `
 8. `test_ac8_errors_name_source`: an audio-only file, a non-media file, and an empty range each raise
    `ValueError` naming the source.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Audio; scene detection; overlays on frames (use the image tools on saved frames).
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

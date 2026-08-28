@@ -12,6 +12,7 @@ repo_name = "hoshiori-dev/annotools"
 
 nav = [
   { "Get started" = "index.md" },
+  { "MCP tools" = ["mcp/index.md", { "Tool reference" = "mcp/tools.md" }] },
 ]
 
 # extra_css = ["stylesheets/extra.css"]
@@ -107,7 +108,8 @@ pymdownx.keys = {}
 pymdownx.magiclink = {}
 pymdownx.mark = {}
 pymdownx.smartsymbols = {}
-# pymdownx.snippets.base_path = "includes"
+pymdownx.snippets.base_path = [".", "docs"]
+pymdownx.snippets.check_paths = true
 pymdownx.superfences.custom_fences = [
   { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
 ]

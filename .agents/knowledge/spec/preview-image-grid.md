@@ -1,5 +1,7 @@
 # preview_image_grid
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Overlay a semi-transparent grid on a preview so an MLLM can anchor positions to cells; 10×10 by default
@@ -31,6 +33,8 @@ columns`, or the configured widths in fixed mode). When a later step re-fits the
 - Error: `columns`/`rows` < 1, `opacity` outside `[0, 1]`, `line_width` < 1 → `ValueError`.
 - Error: `mode="fixed"` without both widths, or a width < 1 → `ValueError("column_width/row_width …")`.
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_default_grid_line_positions`: 768×768 white preview → pixels at x = round(76.8·i) for
@@ -45,9 +49,13 @@ columns`, or the configured widths in fixed mode). When a later step re-fits the
 6. `test_ac6_tool_metadata`: via `Client(mcp)` the metadata carries `grid` with `step_x == 0.1` and
    `cell_width == output_width / 10`.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Row/column index labels; overlays (own specs).
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

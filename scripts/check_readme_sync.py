@@ -2,7 +2,9 @@
 
 Compares the heading depth sequence and fenced code blocks (language + content with trailing `#`
 comments removed, so comments may be translated), so a change to one README that is not mirrored in the
-other fails fast. Prose is not compared.
+other fails fast. Prose is not compared. Also checks that the backticked tool names in each README's
+tool table equal the `## ` headings of the generated docs/mcp/tools.md, so a tool added to or renamed in
+the server (and regenerated with `just docs-gen`) is documented in both READMEs.
 Exit 0 when in sync, 1 with a diff-style report otherwise.
 """
 
@@ -13,6 +15,17 @@ from pathlib import Path
 HEADING = re.compile(r"^(#{1,6})\s", re.MULTILINE)
 FENCE = re.compile(r"^```(\w*)\n(.*?)^```", re.MULTILINE | re.DOTALL)
 COMMENT = re.compile(r"^[ \t]*#.*$|[ \t]+#.*$", re.MULTILINE)
+TOOL_ROW = re.compile(r"^\| `([a-z_]+)`", re.MULTILINE)
+TOOL_HEADING = re.compile(r"^## ([a-z_]+)$", re.MULTILINE)
+TOOLS_PAGE = Path("docs/mcp/tools.md")
+
+
+def readme_tools(path: Path) -> set[str]:
+    """Tool names from table rows of the Tools section (the `## ` section whose heading starts with a tool word)."""
+    text = path.read_text(encoding="utf-8")
+    sections = re.split(r"^## ", text, flags=re.MULTILINE)
+    tools_sections = [s for s in sections if s.startswith(("Tools", "工具"))]
+    return set(TOOL_ROW.findall(tools_sections[0] if tools_sections else ""))
 
 
 def normalize(code: str) -> str:
@@ -35,9 +48,21 @@ def main() -> int:
         problems.append(f"heading structure differs: README.md {en_heads} vs README.zh.md {zh_heads}")
     if en_code != zh_code:
         problems.append("fenced code blocks differ (language or content); keep commands identical in both files")
+    reference = set(TOOL_HEADING.findall(TOOLS_PAGE.read_text(encoding="utf-8")))
+    for path in (en, zh):
+        listed = readme_tools(path)
+        if listed != reference:
+            problems.append(
+                f"{path} tool table differs from {TOOLS_PAGE}: missing {sorted(reference - listed)}, "
+                f"unknown {sorted(listed - reference)}"
+            )
     for p in problems:
         print(f"check_readme_sync: {p}")
-    print("README.md and README.zh.md are in sync." if not problems else "Fix: mirror the change in the other README.")
+    print(
+        "README.md and README.zh.md are in sync."
+        if not problems
+        else "Fix: mirror the change in the other README; regenerate docs/mcp/tools.md with `just docs-gen`."
+    )
     return 1 if problems else 0
 
 
