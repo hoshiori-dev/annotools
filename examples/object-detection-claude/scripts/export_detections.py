@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Export final boxes to output/detections.jsonl.
 
 Record shape: {"uri", "coco_id", "boxes": [{"bbox", "label", "confidence", "rounds"}]}.

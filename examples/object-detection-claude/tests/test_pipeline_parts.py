@@ -80,13 +80,17 @@ def test_tools_loop_and_export(workspace, tmp_path):
         [sys.executable, str(ROOT / "scripts" / "export_detections.py"), "--db", str(db), "--out", str(out)],
         capture_output=True,
         text=True,
+        check=False,
     )
     assert export.returncode == 0, export.stderr
     record = json.loads(out.read_text().splitlines()[0])
     assert record["coco_id"] == 1 and record["boxes"][0]["label"] == "black_cat"
     assert record["boxes"][0]["bbox"] == pytest.approx([0.1, 0.1, 0.5, 0.5])
     sanity = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "sanity_iou.py"), "--db", str(db)], capture_output=True, text=True
+        [sys.executable, str(ROOT / "scripts" / "sanity_iou.py"), "--db", str(db)],
+        capture_output=True,
+        text=True,
+        check=False,
     )
     assert json.loads(sanity.stdout)["mean_best_iou"] == pytest.approx(1.0, abs=0.01)
 
@@ -164,7 +168,7 @@ def test_duplicates_keep_the_first_box():
     kept, rejected = clean(
         [
             {"label": "other_cat", "box": [10 * i, 10 * i, 300 + 10 * i, 300 + 10 * i], "confidence": 1.0}
-            for i in range(0, 40)
+            for i in range(40)
         ],
         meta,
         set(CONFIG["classes"]),

@@ -58,6 +58,7 @@ def test_tools_preview_record_and_export(workspace, tmp_path):
         [sys.executable, str(ROOT / "scripts" / "export_captions.py"), "--db", str(db), "--out", str(out)],
         capture_output=True,
         text=True,
+        check=False,
     )
     assert result.returncode == 0, result.stderr
     record = json.loads(out.read_text().splitlines()[0])
