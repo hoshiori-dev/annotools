@@ -64,7 +64,13 @@ def mcp_config(ctx: ToolContext) -> dict:
         "--preview",
         json.dumps(ctx.preview_cfg),
     ]
-    return {"mcp_servers": {"captioning": {"command": sys.executable, "args": args}}}
+    # approve: Codex gates MCP tool calls behind approval by default, and deny_all (approval_policy "never")
+    # would reject every call; this is our own server, so its tools are pre-approved.
+    return {
+        "mcp_servers": {
+            "captioning": {"command": sys.executable, "args": args, "default_tools_approval_mode": "approve"}
+        }
+    }
 
 
 async def caption_item(ctx: ToolContext, uri: str, config: dict, system: str) -> dict:
@@ -77,7 +83,7 @@ async def caption_item(ctx: ToolContext, uri: str, config: dict, system: str) ->
             thread = codex.thread_start(
                 model=config["model"],
                 sandbox=Sandbox.read_only,
-                approval_mode=ApprovalMode.deny_all,  # unattended: nothing outside the pre-approved MCP tools
+                approval_mode=ApprovalMode.deny_all,  # unattended; MCP tools are approved in mcp_config()
                 cwd=str(ctx.workspace),
                 config=mcp_config(ctx),
                 base_instructions=system,

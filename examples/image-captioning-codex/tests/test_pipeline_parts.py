@@ -155,6 +155,7 @@ async def test_mcp_server_contract(workspace):
         assert bad.is_error and "outside the workspace" in bad.content[0].text
     config = mcp_config(ctx)
     assert config["mcp_servers"]["captioning"]["args"][:2] == ["-m", "captioning.tools"]
+    assert config["mcp_servers"]["captioning"]["default_tools_approval_mode"] == "approve"
     assert flatten_usage({"total": {"input_tokens": 10, "output_tokens": 3}}) == {
         "input_tokens": 10,
         "cached_input_tokens": 0,
