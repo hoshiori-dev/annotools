@@ -69,9 +69,12 @@ Tag `v<version>` must equal `pyproject.toml` (`scripts/check_release_version.py`
 PEP 440 `rcN`). Never create the tag or the release by hand — the pipeline does both, and only after the
 gate passes:
 
-1. `gh workflow run release-prepare.yml -f tag=v<version>` from the commit to release. It validates the
-   tag, runs `release-tests.yml` (CI → wheel and image build → smoke tests + credential/PII scan), then
-   creates the tag and a draft release. `--prerelease` is set automatically from the version (PEP 440).
+1. `gh workflow run release-prepare.yml` from the commit to release — the tag is derived from
+   `pyproject.toml` as `v<semver>[-rcN]`, so bump the version in a merged PR first. Add
+   `-f tag=v<version>` to assert what you believe you are releasing; it fails if main disagrees. The run
+   refuses a version already tagged in any spelling, runs `release-tests.yml` (CI → wheel and image
+   build → smoke tests + credential/PII scan), then creates the tag and a draft release. `--prerelease`
+   is set automatically from the version (PEP 440).
 2. Review the generated notes on the draft.
 3. Publish the draft **with user credentials** (`gh release edit v<version> --draft=false`, or the web
    UI). A draft published by `GITHUB_TOKEN` raises no event and nothing ships.
@@ -90,8 +93,9 @@ Read back `gh api repos/hoshiori-dev/annotools/rulesets` before promising a requ
   with `gh api repos/hoshiori-dev/annotools/milestones`.
 - A tag pushed, or a draft release published, with `GITHUB_TOKEN` raises no event — no workflow reacts.
   Anything that must trigger a workflow is done by a person or a user token.
-- gitleaks (pre-commit) flags `::error::` annotations as IPv6 and needs non-capturing groups in custom
-  rules; print `ERROR:` in scripts.
+- gitleaks (pre-commit) flags `::error::` annotations as IPv6 and a four-component version string as a
+  public IPv4, and needs non-capturing groups in custom rules; print `ERROR:` in scripts. An inline
+  `gitleaks:allow` must sit on the finding's own line — a comment on the preceding line does nothing.
 - A skipped job reports success; `ci-gate` checks test jobs actually ran on PR/main/release.
 - The default token cannot read org issue types or Actions policy, and cannot write rulesets, create
   environments, or dispatch a workflow (403 "Resource not accessible by integration"): report the manual

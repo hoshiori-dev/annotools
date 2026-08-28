@@ -22,7 +22,7 @@ the default token.
 | `secret-scan` (Secret Scanning) | TruffleHog `--results=verified,unknown` | main push, PR |
 | `deploy` (Documentation) | `zensical build --clean --strict` → Pages | main push |
 | `check-version` → `verify` (CI) → `build` → `smoke` + `scan` (Release Tests) | see `release-tests.yml`; `scan` runs TruffleHog over the distributions and the image layers, gitleaks over the first-party files | called by Release Prepare and Release |
-| Release Prepare: `resolve` → `tests` (Release Tests) → `draft-release` | see `release-prepare.yml`; creates the tag and a draft release only after the gate passes | `workflow_dispatch` with a `tag` input, or a pushed `v*` tag |
+| Release Prepare: `resolve` → `tests` (Release Tests) → `draft-release` | see `release-prepare.yml`; creates the tag and a draft release only after the gate passes | `workflow_dispatch` (optional `tag` input; derived from `pyproject.toml` otherwise), or a pushed `v*` tag |
 | Release: `tests` (Release Tests) → `publish-ghcr` + `publish-testpypi` → `publish-pypi` | see `release.yml`; `publish-pypi` runs only when `tests` reports the tag is not a PEP 440 pre-release | release published |
 | Nightly: `changed` → `nightly` | see `nightly.yml`; container smoke test + image scan, then pushes the rolling `nightly` tag | 13:00 UTC (22:00 JST) daily, `workflow_dispatch` |
 
