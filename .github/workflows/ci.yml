@@ -52,6 +52,16 @@ jobs:
       - run: uv sync --group dev --all-extras
       - run: uv run ty check
 
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+      - run: uv sync --group dev --all-extras
+      - run: uv run zensical build --clean --strict
+
   pr-title:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -109,7 +119,7 @@ jobs:
   ci-gate:
     # Aggregator: a skipped job reports success, so this job inspects every result explicitly.
     if: always()
-    needs: [lint, format, typecheck, pr-title, test-unit, test-container]
+    needs: [lint, format, typecheck, docs, pr-title, test-unit, test-container]
     runs-on: ubuntu-latest
     steps:
       - name: Check dependency results
