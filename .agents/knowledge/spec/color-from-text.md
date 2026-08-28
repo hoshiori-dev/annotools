@@ -1,5 +1,7 @@
 # color_from_text
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Give agents (and the segmentation tool) a stable colour for any label or ID without maintaining a
@@ -26,6 +28,8 @@ Returns (structured): `{"hex": "#rrggbb", "rgb": [r, g, b]}` with `hex` lowercas
 
 No error conditions.
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_deterministic`: two calls with the same text return identical values.
@@ -35,9 +39,13 @@ No error conditions.
 4. `test_ac4_tool`: `Client(mcp).call_tool("color_from_text", {"text": "cat"})` returns structured
    content with `hex` matching `^#[0-9a-f]{6}$` and `rgb` of three ints in 0–255.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Palette optimisation for contrast between arbitrary label sets.
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

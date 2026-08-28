@@ -1,5 +1,7 @@
 # MCP overview: shared conventions
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Every annotools MCP tool returns a compact preview an MLLM can read cheaply, plus machine-readable
@@ -108,6 +110,8 @@ Invalid parameters raise `ValueError` naming the parameter (surfaced as an MCP t
 source raises `FileNotFoundError`; any other read failure (permissions, unknown protocol, missing backend
 or credentials) raises `OSError`; undecodable, truncated, or corrupt content raises `ValueError`; a failed
 `save_to` raises `OSError`. Each message names the URI. Tools never return partial images.
+
+<!-- --8<-- [end:user] -->
 
 ## References
 

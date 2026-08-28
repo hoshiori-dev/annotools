@@ -1,5 +1,7 @@
 # rotated_bbox_to_polygon
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Turn rotated detections `(cx, cy, w, h, theta)` into the DOTA-style 8-number corner lists that
@@ -38,6 +40,8 @@ the same frame as the input.
 - Error: empty `boxes`, `w`/`h` ≤ 0, `cx`/`cy` outside [0, 1], `aspect_ratio` ≤ 0 → `ValueError` naming
   `boxes[i].<field>` or the parameter.
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_zero_angle`: (0.5, 0.5, 0.4, 0.2, 0) → [0.3, 0.4, 0.7, 0.4, 0.7, 0.6, 0.3, 0.6].
@@ -51,9 +55,13 @@ the same frame as the input.
 6. `test_ac6_tool`: structured output `polygons` with 8 numbers per box; invalid `w` → tool error
    naming `boxes[0].w`.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Polygon → rotated box conversion; angle-range normalization.
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

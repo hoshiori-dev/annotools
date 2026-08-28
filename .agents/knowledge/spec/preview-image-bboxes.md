@@ -1,5 +1,7 @@
 # preview_image_bboxes
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Let an agent see its candidate bounding boxes on the preview (optionally over the grid) before writing
@@ -29,6 +31,8 @@ Returns: `[Image, metadata]` with the base keys, `grid` when a grid was drawn, a
 - Error: empty `objects`, invalid box (range/order), unknown color, `line_width < 1` → `ValueError`
   naming the object index (`objects[2].bbox: …`).
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_box_pixels`: bbox (0.1, 0.1, 0.5, 0.5) on a 768×768 white preview (`max_width=max_height=768`) → blue pixels on all four
@@ -42,9 +46,13 @@ Returns: `[Image, metadata]` with the base keys, `grid` when a grid was drawn, a
 6. `test_ac6_empty_objects_raises`: `objects=[]` → `ValueError`.
 7. `test_ac7_tool`: via `Client(mcp)` with `grid` and two objects → metadata `objects == 2`, `grid` present.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Keypoints, polygons, segmentation, filled boxes.
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

@@ -1,5 +1,7 @@
 # preview_image_polygons
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Preview polygons — COCO-style segmentation outlines or DOTA-style rotated boxes given as 4 corners — with
@@ -28,6 +30,8 @@ Returns: `[Image, metadata]` with the base keys, `grid` when drawn, and `objects
 - Error: empty `objects`, odd number of values or fewer than 3 points, a value outside `[0, 1]`,
   unknown color, `line_width`/`point_diameter < 1` → `ValueError` naming the object index.
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_outline_and_vertices`: triangle (0.1,0.1), (0.5,0.1), (0.1,0.5) on 768×768 white (`max_*=768`) →
@@ -39,9 +43,13 @@ Returns: `[Image, metadata]` with the base keys, `grid` when drawn, and `objects
    outline whose edge midpoints are `color`.
 5. `test_ac5_tool`: via `Client(mcp)` with `grid` → metadata `objects == 1`, `grid` present.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Filled polygons; segmentation masks (own spec); rotated-box conversion (`rotated_bbox_to_polygon`, P2).
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

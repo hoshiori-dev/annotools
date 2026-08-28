@@ -1,5 +1,7 @@
 # normalize_coordinates / denormalize_coordinates
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Models answer localization questions in their own frame — Claude and Qwen2.5-VL in pixels of the image
@@ -39,6 +41,8 @@ Returns: `{"coordinates": list[list[float]]}` with the same shape as the input.
 - Error `coordinates[i]: (x, y) is outside [0, 1]` when denormalizing a value outside the range.
 - Error `crop: …` from the shared crop validation.
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_pixel_base_normalizes`: base 384×288, `[[192, 144]]` → `[[0.5, 0.5]]`.
@@ -54,10 +58,14 @@ Returns: `{"coordinates": list[list[float]]}` with the same shape as the input.
 9. `test_ac9_tools`: both tools through `Client(mcp)`, including a 0–999 (GPT-style) case; the odd-length
    error surfaces as a tool error naming `coordinates[0]`.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 Choosing the convention for a model (the `mllm-multimodal-input` skill); rotated boxes (use
 `rotated_bbox_to_polygon` first, then convert the 8-number entry); rounding to integer pixels.
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 

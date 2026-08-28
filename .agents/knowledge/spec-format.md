@@ -21,6 +21,22 @@ disagree, the spec file wins and the issue is updated.
 5. **Out of scope** — what the feature deliberately does not do.
 6. **References** — related issues, `ARCHITECTURE.md` decisions, upstream docs used to verify facts.
 
+## Snippet markers (docs site)
+
+The docs site includes the user-facing part of every spec through `pymdownx.snippets` sections (see
+`.agents/knowledge/docs-site.md`). Each tool spec carries four HTML comments on their own lines, each
+followed by a blank line:
+
+- `<!-- --8<-- [start:user] -->` before `## Goal` and `<!-- --8<-- [end:user] -->` before
+  `## Acceptance criteria` — section `user` = Goal + Interface + Behavior;
+- `<!-- --8<-- [start:user2] -->` before `## Out of scope` and `<!-- --8<-- [end:user2] -->` before
+  `## References` — section `user2` = Out of scope.
+
+Two sections are needed because Acceptance criteria sits between Behavior and Out of scope and a snippet
+section must be contiguous. `mcp-overview.md` has a single `user` section from `## Goal` to before
+`## References`. A new spec must carry both sections: `just docs-check` fails (`check_paths`) when a
+section referenced from `docs/mcp/tools.md` is missing.
+
 ## Rules
 
 - Write the spec before tests; tests are named after acceptance criteria (`test_ac3_upscale_disabled`).

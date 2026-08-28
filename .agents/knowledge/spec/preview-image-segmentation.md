@@ -1,5 +1,7 @@
 # preview_image_segmentation
 
+<!-- --8<-- [start:user] -->
+
 ## Goal
 
 Show an instance / panoptic / semantic mask on top of the preview (optionally over the grid) so an agent
@@ -42,6 +44,8 @@ inverse mapping of `mcp-overview.md` applies to `image_size` (and `scale` refers
 6. Grid (if any) is drawn before the mask colours.
 - Error: `alpha` outside `[0, 1]`, `line_width < 0`, unknown `annotation` → `ValueError`.
 
+<!-- --8<-- [end:user] -->
+
 ## Acceptance criteria
 
 1. `test_ac1_mask_colours_regions`: 2-ID mask on white → both regions blended toward distinct colours
@@ -60,9 +64,13 @@ inverse mapping of `mcp-overview.md` applies to `image_size` (and `scale` refers
 9. `test_ac9_legend_metadata`: legend mode reports `image_size` (image area) and `scale ==
    image_size[0] / cropped source width`.
 
+<!-- --8<-- [start:user2] -->
+
 ## Out of scope
 
 RGB-encoded panoptic masks; polygonization; per-ID custom colours.
+
+<!-- --8<-- [end:user2] -->
 
 ## References
 
