@@ -68,7 +68,7 @@ Every field except `color` is nullable; `null` (the schema default for the neste
 
 | Model | Fields |
 |---|---|
-| `BBoxObject` | `bbox: [x_min, y_min, x_max, y_max]`, `label: str \| null`, `color: str = "blue"` |
+| `BBoxObject` | `bbox: [x_min, y_min, x_max, y_max]`, `label: str \| null`, `color: str \| null = null` (null → `Settings.color`, built-in `blue`) |
 | `KeypointObject` | `point: [x, y]`, `label`, `color` |
 | `PolygonObject` | `points: [x1, y1, x2, y2, …]` (even count, ≥ 6), `label`, `color` |
 

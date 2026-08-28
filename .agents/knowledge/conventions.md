@@ -31,8 +31,9 @@ or CI job commands.
 - Tests that need docker carry `@pytest.mark.container` and are deselected by `just test`; run them with
   `just test-container` after `just docker-build`. Every documented raise gets a test.
 - Coverage: `fail_under = 95` (line + branch) in `pyproject.toml` is the only threshold; `just test-cov` and
-  CI enforce it per Python version. Close gaps with tests — never with `omit`. Tests that call
-  `config.configure()` must import `annotools.mcp.server` before `reset_settings()` (see `tests/test_cli.py`).
+  CI enforce it per Python version. Close gaps with tests — never with `omit`. A test that needs the MCP
+  server's import-time snapshot to reflect `configure()`d values must import `annotools.mcp.server` before
+  `reset_settings()` (see `tests/test_cli.py`); plain library tests just call `configure()`.
 
 ## Toolchain
 

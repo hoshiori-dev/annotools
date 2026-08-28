@@ -67,7 +67,7 @@ def fresh_settings():
     """Leave the process unresolved so ``main()`` can ``configure()`` it.
 
     ``annotools.mcp.server`` is imported first: the tool modules snapshot ``get_settings()`` at import, so
-    importing them after the reset would resolve the settings again and make ``configure()`` raise.
+    importing them after the reset would bake whatever ``main()`` installed into the tool schemas.
     """
     import annotools.mcp.server  # noqa: F401
     from annotools import config

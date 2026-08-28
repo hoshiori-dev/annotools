@@ -17,16 +17,20 @@ class GridOptions(BaseModel):
     ``None`` fields take their value from ``Settings`` when the grid is drawn (``resolved()``).
     """
 
-    columns: int | None = Field(default=None, ge=1, description="Cells per row (columns-1 vertical lines)")
-    rows: int | None = Field(default=None, ge=1, description="Cells per column (rows-1 horizontal lines)")
+    columns: int | None = Field(
+        default=None, ge=1, description="Cells per row (columns-1 vertical lines); null = setting (10)"
+    )
+    rows: int | None = Field(
+        default=None, ge=1, description="Cells per column (rows-1 horizontal lines); null = setting (10)"
+    )
     mode: Literal["ratio", "fixed"] | None = Field(
-        default=None, description="ratio: equal cells; fixed: cells of given px"
+        default=None, description="ratio: equal cells; fixed: cells of given px; null = setting (ratio)"
     )
     column_width: int | None = Field(default=None, ge=1, description="Cell width in output px (fixed mode)")
     row_width: int | None = Field(default=None, ge=1, description="Cell height in output px (fixed mode)")
     color: Literal["white", "black", "invert"] = Field(default="white")
-    opacity: float | None = Field(default=None, ge=0.0, le=1.0)
-    line_width: int | None = Field(default=None, ge=1)
+    opacity: float | None = Field(default=None, ge=0.0, le=1.0, description="null = setting (0.5)")
+    line_width: int | None = Field(default=None, ge=1, description="Output pixels; null = setting (1)")
 
     def resolved(self) -> "GridOptions":
         """Return a copy with every ``None`` filled from ``Settings``.

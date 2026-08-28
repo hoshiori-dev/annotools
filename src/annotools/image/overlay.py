@@ -70,7 +70,7 @@ def draw_bboxes(result: PreviewResult, objects: Sequence[BBoxObject], line_width
     image, draw = canvas(result)
     for index, obj in enumerate(objects):
         box = validate_normalized_box(obj.bbox, name=f"objects[{index}].bbox")
-        color = parse_color(obj.color or settings.color, name=f"objects[{index}].color")
+        color = parse_color(settings.color if obj.color is None else obj.color, name=f"objects[{index}].color")
         x0, y0 = mapper.to_pixels(box[0], box[1])
         x1, y1 = mapper.to_pixels(box[2], box[3])
         if x1 < 0 or y1 < 0 or x0 > mapper.width or y0 > mapper.height:
@@ -101,7 +101,7 @@ def draw_keypoints(
     image, draw = canvas(result)
     for index, obj in enumerate(objects):
         x, y = validate_normalized_point(obj.point, name=f"objects[{index}].point")
-        color = parse_color(obj.color or settings.color, name=f"objects[{index}].color")
+        color = parse_color(settings.color if obj.color is None else obj.color, name=f"objects[{index}].color")
         px, py = mapper.to_pixels(x, y)
         if not mapper.inside(px, py):
             continue
@@ -146,7 +146,7 @@ def draw_polygons(
     image, draw = canvas(result)
     for index, obj in enumerate(objects):
         vertices = validate_polygon(obj.points, name=f"objects[{index}].points")
-        color = parse_color(obj.color or settings.color, name=f"objects[{index}].color")
+        color = parse_color(settings.color if obj.color is None else obj.color, name=f"objects[{index}].color")
         pixels = [mapper.to_pixels(x, y) for x, y in vertices]
         if not any(mapper.inside(px, py) for px, py in pixels):
             continue
