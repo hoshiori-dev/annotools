@@ -7,6 +7,10 @@ from PIL import Image
 
 from annotools._media import open_container, require_av
 
+__all__ = [
+    "sample_frames",
+]
+
 
 def sample_frames(
     uri: str,

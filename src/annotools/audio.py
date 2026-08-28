@@ -9,8 +9,12 @@ import numpy as np
 
 from annotools._media import open_container, require_av
 
+__all__ = [
+    "clip_audio",
+]
 
-def clip(
+
+def clip_audio(
     uri: str,
     *,
     start: float | None = None,

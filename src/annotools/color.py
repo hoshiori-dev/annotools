@@ -5,6 +5,13 @@ import hashlib
 
 from PIL import ImageColor
 
+__all__ = [
+    "RGB",
+    "color_from_text",
+    "parse_color",
+    "to_hex",
+]
+
 RGB = tuple[int, int, int]
 
 

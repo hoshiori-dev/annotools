@@ -10,6 +10,11 @@ from pydantic import BaseModel, Field
 from annotools.config import get_settings
 from annotools.image.preview import PreviewResult
 
+__all__ = [
+    "GridOptions",
+    "draw_grid",
+]
+
 
 class GridOptions(BaseModel):
     """Grid parameters shared by every tool that accepts ``grid`` (see .agents/knowledge/spec/mcp-overview.md).

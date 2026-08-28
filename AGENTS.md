@@ -29,6 +29,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
   issue; write the failing test before the implementation.
 - Coordinates are normalized 0.0–1.0 relative to the uncropped source; colors are names or `#RRGGBB`.
 - The library layer never imports `fastmcp`; MCP wrappers only validate parameters and encode results.
+- Public API = `annotools.__all__` (mirrors each module's `__all__`); anything else is internal.
 - Never store binary data in an annotation database — store file pointers (fsspec URL or local path).
 - Changing anything under `examples/<project>/` requires reading that project's `CONTEXT.md` first;
   example projects do not use AGENTS.md.

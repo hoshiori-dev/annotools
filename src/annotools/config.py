@@ -7,6 +7,15 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from annotools.color import parse_color
 
+__all__ = [
+    "GridMode",
+    "OutputFormat",
+    "Settings",
+    "configure",
+    "get_settings",
+    "reset_settings",
+]
+
 OutputFormat = Literal["jpeg", "png", "webp"]
 GridMode = Literal["ratio", "fixed"]
 

@@ -10,6 +10,15 @@ from annotools.geometry import validate_normalized_box, validate_normalized_poin
 from annotools.image._draw import canvas, draw_dot, draw_label
 from annotools.image.preview import PreviewResult
 
+__all__ = [
+    "BBoxObject",
+    "KeypointObject",
+    "PolygonObject",
+    "draw_bboxes",
+    "draw_keypoints",
+    "draw_polygons",
+]
+
 
 class BBoxObject(BaseModel):
     """A bounding box in normalized coordinates of the uncropped source."""
