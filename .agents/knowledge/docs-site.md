@@ -8,6 +8,7 @@ built by zensical (`just docs-check` = strict build, part of `just check`; `just
 | Page | Source of truth | How it gets there |
 |---|---|---|
 | `docs/index.md` | hand-written | edit directly |
+| `docs/recipes/*.md` | hand-written | edit directly; every Library snippet must be executed before it is committed, and every MCP arguments object must match the schema in `docs/mcp/tools.md` |
 | `docs/api/*.md` | the public docstrings (`annotools.__all__`) | 3-line stubs holding a `::: annotools.<module>` directive; mkdocstrings renders signatures and sections at build time |
 | `docs/architecture.md`, `docs/contributing.md` | `ARCHITECTURE.md`, `CONTRIBUTING.md` | snippet include of the whole file |
 | `docs/cookbook/*.md` | the publishable skills under `skills/` | hand-written summaries that link the skill; anything quoted verbatim is snippet-included (`skills/sqlite-annotation-store/assets/schema.sql`, and `skills/mllm-multimodal-input/SKILL.md` sections `tokens`, `sizes`, `coordinates`) |
