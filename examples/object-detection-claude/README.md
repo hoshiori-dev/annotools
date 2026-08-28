@@ -40,13 +40,13 @@ say normalized requests work poorly; `geometry.py` maps them back through the pr
 
 | Field | Value |
 |---|---|
-| Model | _pending first full run_ |
-| Items | _pending_ |
-| Mean rounds per image | _pending_ |
-| Input / output tokens | _pending_ |
-| Cost (USD, SDK estimate) | _pending_ |
-| Wall time | _pending_ |
-| Sanity: mean best IoU / recall@0.5 | _pending_ (`just sanity`) |
+| Model | `claude-opus-5` (effort `medium`, 768 px JPEG preview, 10×10 grid, `coordinates: "pixels"`, max 3 rounds, `max_budget_usd_per_item` 0.30) |
+| Items | 3 (`just trial 3`, 2026-08-28, run 1; 0 `needs_review`) |
+| Mean rounds per image | 1.0 |
+| Input / output tokens | 24 / 1,222 (cache read 60,379; cache creation 15,616) |
+| Cost (USD, SDK estimate) | 0.220 (0.073 per image) |
+| Wall time | 67.1 s summed over items (`just trial` runs items sequentially) |
+| Sanity: mean best IoU / recall@0.5 | 0.913 / 1.0 on 3 images, 3 COCO boxes (`just sanity`) |
 
 Fill this table from the JSON summary `just run` prints (`cost_usd`, `seconds`, `items`, `mean_rounds`)
 and `just sanity`; `total_cost_usd` is a client-side estimate, not a bill.
