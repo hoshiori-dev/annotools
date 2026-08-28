@@ -5,8 +5,8 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
 from annotools import geometry
+from annotools.app import mcp
 from annotools.geometry import RotatedBox, rotated_box_to_corners
-from annotools.server import mcp
 from annotools.tools.common import CropParam
 
 CoordinatesParam = Annotated[

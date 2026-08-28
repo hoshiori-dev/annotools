@@ -24,7 +24,10 @@ and add it here.
   of content blocks must be declared `@mcp.tool(output_schema=None)`, otherwise FastMCP raises
   "outputSchema defined but no structured output". Pydantic-model returns get structured output
   automatically (`rotated_bbox_to_polygon`).
-- `FastMCP(name, instructions=...)`; tool modules register by importing them (`server.register_tools`).
+- `FastMCP(name, instructions=...)` lives in `annotools/app.py` (imports nothing from `tools/`); tool modules
+  register by importing them, which `server.py` does at module level (composition root).
+- Enumerate registered tools with `await mcp.list_tools()` (2026-08-28, 3.4.7): there is no public
+  `_tool_manager` attribute on the server object.
 - Tools returning a pydantic model give structured output; tests read it via
   `result.structured_content["key"]` (`result.data` is a generated `Root` object, not a dict).
 - Tests use the in-memory transport: `async with Client(mcp) as client: await client.call_tool(name,

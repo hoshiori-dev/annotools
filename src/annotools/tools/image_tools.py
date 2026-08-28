@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
+from annotools.app import mcp
 from annotools.config import get_settings
 from annotools.image.grid import GridOptions, draw_grid
 from annotools.image.overlay import (
@@ -15,7 +16,6 @@ from annotools.image.overlay import (
     draw_polygons,
 )
 from annotools.image.segmentation import load_mask, overlay_mask
-from annotools.server import mcp
 from annotools.tools.common import (
     DEFAULT_OUTPUT_FORMAT,
     AllowUpscaleParam,
