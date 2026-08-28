@@ -14,12 +14,13 @@ the default token.
 | `lint` (CI) | `uv run ruff check .` + `scripts/check_taxonomy.py` + `scripts/check_readme_sync.py` | every push, PR |
 | `format` (CI) | `uv run ruff format --check .` | every push, PR |
 | `typecheck` (CI) | `uv run ty check` | every push, PR |
+| `docs` (CI) | `uv run zensical build --clean --strict` (warnings fail the build) | every push, PR |
 | `pr-title` (CI) | Conventional Commits title check | PR |
 | `test-unit` (CI) | `uv run pytest -m "not container" --cov --cov-report=term --cov-report=xml` (3.12, 3.13); fails below `fail_under = 95` from `pyproject.toml`, enforced per leg; `coverage.xml` uploaded as `coverage-<py>` | main push, PR, release |
 | `test-container` (CI) | docker build + `uv run pytest -m container` | main push, PR, release |
 | `ci-gate` (CI) | aggregates all of the above; required check | same |
 | `secret-scan` (Secret Scanning) | TruffleHog `--results=verified,unknown` | main push, PR |
-| `deploy` (Documentation) | `zensical build` → Pages | main push |
+| `deploy` (Documentation) | `zensical build --clean --strict` → Pages | main push |
 | Release: `check-version` → `verify` → `build` → `smoke` → `publish-ghcr` (→ `publish-pypi` disabled) | see `release.yml` | release published |
 
 A commit on a PR branch produces two CI runs (push + pull_request); the push run shows the test jobs as
