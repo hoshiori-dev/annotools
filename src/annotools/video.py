@@ -37,7 +37,7 @@ def sample_frames(
         raise ValueError(f"end ({end}) must be greater than start ({start or 0.0})")
     if max_frames < 1:
         raise ValueError(f"max_frames must be >= 1, got {max_frames}")
-    av: Any = require_av("video")
+    av = require_av("video")
     begin = start or 0.0
     with ExitStack() as stack:
         container = open_container(av, uri, stack)

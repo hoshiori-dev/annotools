@@ -25,6 +25,35 @@ def test_every_facade_name_resolves():
         assert getattr(annotools, name) is not None, name
 
 
+INTERNAL_NAMES = {
+    "annotools.image.preview": ("size_metadata", "FORMATS", "MIME_TYPES"),
+    "annotools.image.overlay": ("Mapper", "validate_polygon"),
+    "annotools.image.grid": ("line_positions",),
+    "annotools.color": ("text_color_for",),
+    "annotools.geometry": ("normalized_box_to_pixels",),
+}
+
+
+@pytest.mark.parametrize(("module", "names"), INTERNAL_NAMES.items(), ids=list(INTERNAL_NAMES))
+def test_internal_names_stay_out_of_the_public_api(module, names):
+    exported = importlib.import_module(module).__all__
+    for name in names:
+        assert name not in exported and name not in annotools.__all__, (module, name)
+
+
+def test_every_library_module_is_listed():
+    """A new library module with an ``__all__`` must be added to LIBRARY_MODULES (and the facade)."""
+    import pkgutil
+
+    found = set()
+    for info in pkgutil.walk_packages(annotools.__path__, prefix="annotools."):
+        if info.name.startswith("annotools.mcp") or info.name.rsplit(".", 1)[-1].startswith("_"):
+            continue
+        if hasattr(importlib.import_module(info.name), "__all__"):
+            found.add(info.name)
+    assert found == set(LIBRARY_MODULES)
+
+
 def test_facade_is_the_union_of_the_module_exports():
     exported = {"__version__"}
     for module in LIBRARY_MODULES:

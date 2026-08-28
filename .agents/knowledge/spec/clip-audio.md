@@ -7,7 +7,7 @@ the whole file.
 
 ## Interface
 
-Tool: `clip_audio` (MCP) / `annotools.audio.clip` (library)
+Tool: `clip_audio` (MCP) / `annotools.audio.clip_audio` (library)
 
 | Parameter | Type | Default | Constraints |
 |---|---|---|---|
