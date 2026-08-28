@@ -6,7 +6,7 @@ from typing import Annotated
 from fastmcp.utilities.types import Audio as McpAudio
 from pydantic import Field
 
-from annotools.audio import clip
+from annotools.audio import clip_audio as _clip_audio
 from annotools.io import write_bytes
 from annotools.mcp.app import mcp
 from annotools.mcp.common import SourceParam
@@ -29,7 +29,7 @@ def clip_audio(
     Returns the audio followed by one JSON metadata object (source_duration, start, end, duration,
     sample_rate, channels).
     """
-    data, metadata = clip(source, start=start, end=end, sample_rate=sample_rate)
+    data, metadata = _clip_audio(source, start=start, end=end, sample_rate=sample_rate)
     metadata["format"] = "wav"
     if save_to:
         write_bytes(save_to, data)

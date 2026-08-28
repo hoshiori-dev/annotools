@@ -102,3 +102,7 @@ skills/ examples/   publishable skills; independent example projects (each with 
 - Segmentation masks are single-channel ID images (uint8/uint16 PNG/TIFF; 0 = background; `MASK_MODES`
   in `image/segmentation.py`); any other mode is an error rather than a guess.
 - Separate, complete example projects per SDK rather than shared scaffolding — closer to real usage.
+- The public library API is exactly `annotools.__all__` (re-exported from each module's `__all__`); it gets
+  full docstrings and appears in the API reference. Module paths (`annotools.image.preview`, ...) stay
+  importable, underscore modules and everything outside `__all__` are internal, and `annotools.mcp` is not
+  part of the library API (#84).

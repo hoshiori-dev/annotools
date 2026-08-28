@@ -5,6 +5,12 @@ import io
 import fsspec
 from PIL import Image, ImageOps, UnidentifiedImageError
 
+__all__ = [
+    "load_image",
+    "open_bytes",
+    "write_bytes",
+]
+
 
 def open_bytes(uri: str) -> bytes:
     """Read the full content of a local path or fsspec URL.

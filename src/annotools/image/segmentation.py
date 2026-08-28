@@ -13,6 +13,12 @@ from annotools.image._draw import draw_label
 from annotools.image.preview import PreviewResult, size_metadata
 from annotools.io import load_image
 
+__all__ = [
+    "MASK_MODES",
+    "load_mask",
+    "overlay_mask",
+]
+
 # Keep in step with .agents/knowledge/spec/preview-image-segmentation.md.
 MASK_MODES = {"L", "P", "I", "I;16", "I;16B", "I;16L"}
 
