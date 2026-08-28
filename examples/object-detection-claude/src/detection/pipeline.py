@@ -57,6 +57,42 @@ async def detect_item(ctx: ToolContext, uri: str, config: dict, system: str) -> 
     return usage
 
 
+def budget_stopped(usage: dict) -> bool:
+    """The query crossed ``max_budget_usd``, the SDK's client-side estimate, rather than failing."""
+    return "error" in usage and usage.get("subtype") == "error_max_budget_usd"
+
+
+def settle(conn, item_id: int, run_id: int, status: str | None, usage: dict) -> tuple[str, bool]:
+    """Record the item's outcome; return its status and whether the budget stopped a finished item.
+
+    A budget stop after `commit_boxes` keeps the commit and the verdict the commit itself gave: the cap
+    guards against runaway loops on an estimate that is high early in a cold-cache item, so crossing it
+    says nothing about the boxes. Nothing committed, or any other error, demotes every row of the item in
+    this run so nothing is overwritten and the item stays pending.
+    """
+    if status is not None and budget_stopped(usage):
+        payload = {"tags": ["budget_stop"], "error": usage["error"]}
+        store.record(conn, item_id, run_id, "tag", "budget_stop", payload, status)
+        return status, True
+    if status is None or "error" in usage:
+        store.record(
+            conn,
+            item_id,
+            run_id,
+            "tag",
+            "error",
+            {"tags": ["error"], "error": usage.get("error", "nothing committed")},
+            "needs_review",
+        )
+        conn.execute(
+            "UPDATE annotations SET status = 'needs_review' WHERE item_id = ? AND run_id = ?",
+            (item_id, run_id),
+        )
+        conn.commit()
+        return "needs_review", False
+    return status, False
+
+
 def committed(conn, item_id: int, run_id: int) -> tuple[int, str | None, int]:
     """(box count, aggregate status, rounds) for the item in this run; needs_review if any row is."""
     rows = conn.execute(
@@ -81,7 +117,14 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
         ctx.trial_dir = WORKSPACE / "data" / "interim" / "trial"
         ctx.trial_dir.mkdir(parents=True, exist_ok=True)
     semaphore = asyncio.Semaphore(1 if trial else config["workers"])
-    totals: dict[str, float] = {"items": 0, "cost_usd": 0.0, "needs_review": 0, "seconds": 0.0, "rounds": 0}
+    totals: dict[str, float] = {
+        "items": 0,
+        "cost_usd": 0.0,
+        "needs_review": 0,
+        "budget_stop": 0,
+        "seconds": 0.0,
+        "rounds": 0,
+    }
     totals.update(dict.fromkeys(TOKEN_KEYS, 0))
     failures = 0
     stop = asyncio.Event()
@@ -97,22 +140,8 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
                 usage = {"cost_usd": 0.0, "seconds": 0.0, "error": str(exc)}
             with store.connect(DB) as conn:
                 _boxes, status, rounds = committed(conn, item_id, run_id)
-                if status is None or "error" in usage:
-                    store.record(
-                        conn,
-                        item_id,
-                        run_id,
-                        "tag",
-                        "error",
-                        {"tags": ["error"], "error": usage.get("error", "nothing committed")},
-                        "needs_review",
-                    )
-                    conn.execute(
-                        "UPDATE annotations SET status = 'needs_review' WHERE item_id = ? AND run_id = ?",
-                        (item_id, run_id),
-                    )
-                    conn.commit()
-                    status = "needs_review"
+                status, stopped = settle(conn, item_id, run_id, status, usage)
+                totals["budget_stop"] += int(stopped)
                 if status == "needs_review":
                     totals["needs_review"] += 1
                     failures += 1
@@ -124,7 +153,8 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
                         "WHERE item_id = ? AND run_id = ? AND kind = 'bbox' ORDER BY CAST(key AS INTEGER)",
                         (item_id, run_id),
                     ).fetchall()
-                    print(f"\n== {WORKSPACE / uri}  status={status} rounds={rounds}  overlays: {ctx.trial_dir}")
+                    mark = " budget_stop" if stopped else ""
+                    print(f"\n== {WORKSPACE / uri}  status={status}{mark} rounds={rounds}  overlays: {ctx.trial_dir}")
                     for key, label, confidence, payload in rows:
                         print(f"  [{key}] {label} conf={confidence} bbox={json.loads(payload)['bbox']}")
             totals["items"] += 1
