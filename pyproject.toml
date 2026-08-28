@@ -60,7 +60,7 @@ line-length = 120
 extend-exclude = [".agents", "skills", "examples"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM", "N", "D", "RUF"]
+extend-select = ["E", "F", "I", "UP", "B", "SIM", "N", "D", "RUF"]
 ignore = ["D203", "D213"]
 
 [tool.ruff.lint.pydocstyle]

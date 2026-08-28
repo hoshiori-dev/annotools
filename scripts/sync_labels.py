@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Sync a GitHub repository's labels to a JSON taxonomy file via the gh CLI.
 
 Reads the desired labels from a JSON array of {"name", "color",
