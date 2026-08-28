@@ -29,9 +29,10 @@ the English version.
 `gh issue create` and `gh api` ignore issue forms. Mirror the Task form headings from
 `.github/ISSUE_TEMPLATE/03-task.yml` as `### Content`, `### Outcome`, `### Context and references`,
 `### Solution direction and breakdown`, `### Acceptance criteria`, `### Out of scope`, `### Cautions`,
-then pass `--label`, `--milestone`, and attach it as a sub-issue of the tracking issue:
-`gh api repos/hoshiori-dev/annotools/issues/1/sub_issues -F sub_issue_id=<issue id>` (the id, not the
-number). Conventions: `.agents/knowledge/planning.md`.
+then pass `--label`, `--milestone`, and attach it as a sub-issue of the current cycle's tracking issue
+(number under "Current cycle" in `AGENTS.md`):
+`gh api repos/hoshiori-dev/annotools/issues/<tracker>/sub_issues -F sub_issue_id=<issue id>` (the id,
+not the number). Conventions: `.agents/knowledge/planning.md`.
 
 ## Publish gate
 

@@ -11,8 +11,8 @@ methodology; `examples/` show Claude Agent SDK and Codex SDK pipelines. See `ARC
 src/annotools/        <- library layer (image/video/audio/geometry/color/io) + MCP wrappers (tools/, server.py)
 tests/                <- pytest; `container` marker needs docker
 docs/                 <- zensical site only (user-facing pages); specs are not here
-skills/               <- (planned, P4) publishable skills (npx skills add hoshiori-dev/annotools); English
-examples/             <- (planned, P5/P6) independent example projects; each has its own CONTEXT.md
+skills/               <- publishable skills (npx skills add hoshiori-dev/annotools); English
+examples/             <- independent example projects; each has its own CONTEXT.md
 .agents/knowledge/    <- agent knowledge base (this file routes into it); spec/ one spec per MCP tool; references/ dated external facts
 .agents/skills/       <- development skills (Claude Code sees them via .claude/skills symlink)
 .github/              <- workflows, issue forms, labels.json, release.yml, CODEOWNERS
@@ -75,6 +75,8 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 
 ## Workflow
 
+- Current cycle: tracking issue #77, milestone P8 (library identity). Every work item is one of its
+  sub-issues; planning rules in `.agents/knowledge/planning.md`.
 - Branch per issue (`gh issue develop -c <n>`), draft PR early with `Closes #n`, squash merge; the PR title is
   the commit message and must follow Conventional Commits (`pr-title` check).
 - Before every PR: run the retrospective skill and list skill candidates in the issue thread.
@@ -87,6 +89,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 
 | When this changes | Update |
 |---|---|
+| A cycle opens or closes | the "Current cycle" line in this file (Workflow), the tracking issue's final-status comment |
 | A CI job is renamed or added | `.agents/knowledge/platform-settings.md` job map and the `main` ruleset required checks |
 | A label, issue form, `release.yml`, or dependabot label | `.github/labels.json` — `just check-taxonomy` fails otherwise |
 | An MCP tool's parameters or return | its `.agents/knowledge/spec/` file, tests, and README tool table (both languages) |
