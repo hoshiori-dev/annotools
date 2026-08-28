@@ -36,12 +36,14 @@ def load_mask(uri: str) -> np.ndarray:
         A 2-D ``int64`` array of IDs, the size of the mask image.
 
     Raises:
-        ValueError: Naming ``mask_source`` when the image is not single-channel.
-        FileNotFoundError: When the URI does not exist (from :func:`load_image`).
+        ValueError: Naming ``mask_source`` when the image is not single-channel, or naming the URI when
+            the content is not a decodable image (from :func:`load_image`).
+        FileNotFoundError: When the URI does not exist (from :func:`open_bytes`).
+        OSError: For other read failures (from :func:`open_bytes`).
 
     Example:
         >>> from annotools import load_mask
-        >>> load_mask("masks/000000001675.png").max()  # doctest: +SKIP
+        >>> int(load_mask("masks/000000001675.png").max())  # doctest: +SKIP
         3
 
     References:
@@ -134,8 +136,8 @@ def overlay_mask(
 
     Returns:
         A new :class:`PreviewResult` with ``metadata["ids"]`` (count of visible IDs) and, for the
-        legend, ``metadata["legend"]``, ``image_size`` (the area the inverse mapping applies to) and
-        refreshed size keys.
+        legend, ``metadata["legend"]`` (entries ``{"id", "name", "color"}``), ``image_size`` (the area the
+        inverse mapping applies to, above the strip) and refreshed size keys.
 
     Raises:
         ValueError: For ``alpha`` outside [0, 1], ``line_width < 0``, or an unknown ``annotation``.

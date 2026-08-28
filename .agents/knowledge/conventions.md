@@ -43,7 +43,8 @@ or CI job commands.
 - Coverage: `fail_under = 95` (line + branch) in `pyproject.toml` is the only threshold; `just test-cov` and
   CI enforce it per Python version. Close gaps with tests — never with `omit`. A test that needs the MCP
   server's import-time snapshot to reflect `configure()`d values must import `annotools.mcp.server` before
-  `reset_settings()` (see `tests/test_cli.py`); plain library tests just call `configure()`.
+  `reset_settings()` (see `tests/test_cli.py`); plain library tests just call `configure()`. Doctest
+  collection skips `src/annotools/mcp` so importing the server stays an explicit act of a test.
 
 ## Toolchain
 

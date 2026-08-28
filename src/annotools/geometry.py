@@ -132,8 +132,8 @@ def fit_size(
 
     References:
         - Spec: ``.agents/knowledge/spec/preview-image.md`` (annotools repository).
-        - Why a token budget maps to a size cap: ``.agents/knowledge/mllm-token-budget.md``; Gemini tiles
-          768x768 images at 258 tokens each, https://ai.google.dev/gemini-api/docs/image-understanding
+        - Why a token budget maps to a size cap: ``.agents/knowledge/mllm-token-budget.md``; Gemini bills each
+          768x768 tile at 258 tokens, https://ai.google.dev/gemini-api/docs/image-understanding
           (verified 2026-08-27).
     """
     if max_width < 1 or max_height < 1:

@@ -23,7 +23,8 @@ def sample_frames(
     """Decode ``uri`` and return frames sampled at ``fps`` between ``start`` and ``end``.
 
     Frames are picked at the first decoded timestamp at or after each target time, then thinned
-    evenly to ``max_frames`` so a long clip cannot blow the token budget; feed the result through
+    evenly to ``max_frames`` (first and last kept when ``max_frames > 1``) so a long clip cannot blow the
+    token budget; feed the result through
     :func:`preview` (and a grid) before sending it to a model that has no native video input.
 
     Args:
@@ -31,15 +32,15 @@ def sample_frames(
         fps: Target sampling rate in frames per second (> 0).
         start: Start time in seconds (>= 0); ``None`` = 0.
         end: End time in seconds (> ``start``); ``None`` = until the end.
-        max_frames: Upper bound on returned frames (>= 1); thinning keeps the first and last.
+        max_frames: Upper bound on returned frames (>= 1).
 
     Returns:
         ``(frames, metadata)`` where ``frames`` is a list of ``(timestamp_seconds, PIL image)`` and
         ``metadata`` has ``duration``, ``requested_fps``, and ``thinned``.
 
     Raises:
-        ValueError: For an invalid range or rate, a source without a video stream, or a window with
-            no frames; the message names the URI.
+        ValueError: For an invalid range, rate, or ``max_frames``, a source without a video stream, or a
+            window with no frames; the message names the URI.
         FileNotFoundError: When the URI does not exist.
         OSError: For other read failures.
         ImportError: When PyAV is not installed (``annotools[media]``).

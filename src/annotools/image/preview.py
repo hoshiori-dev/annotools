@@ -28,7 +28,7 @@ class PreviewResult:
         metadata: ``original_size`` / ``original_width`` / ``original_height``, the applied ``crop``
             (normalized), ``output_size`` / ``output_width`` / ``output_height``, and ``scale`` (output
             pixels per source pixel of the cropped view); overlays add their own keys (``grid``,
-            ``objects``, ``ids``, ``legend``).
+            ``objects``, ``ids``, ``legend``, ``image_size``).
         crop_pixels: The applied crop in source pixels (``None`` = full frame); exact, unlike
             re-deriving it from ``crop``.
 

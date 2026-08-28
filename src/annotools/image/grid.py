@@ -93,12 +93,11 @@ def draw_grid(image: Image.Image, options: GridOptions) -> PreviewResult:
         options: Grid layout; ``None`` fields resolve from ``Settings``.
 
     Returns:
-        A :class:`PreviewResult` whose ``metadata["grid"]`` holds ``columns``, ``rows``, ``mode``, and
-        the cell pixel sizes.
+        A :class:`PreviewResult` whose ``metadata["grid"]`` holds ``columns``, ``rows``, ``step_x`` /
+        ``step_y`` (normalized cell step) and ``cell_width`` / ``cell_height`` (output pixels).
 
     Raises:
-        ValueError: Via :meth:`GridOptions.resolved` when ``mode="fixed"`` has no cell widths, or from
-            pydantic for out-of-range fields.
+        ValueError: Via :meth:`GridOptions.resolved` when ``mode="fixed"`` has no cell widths.
 
     Example:
         >>> from PIL import Image

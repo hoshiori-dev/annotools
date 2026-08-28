@@ -3,7 +3,8 @@
 
 Rules (see .agents/knowledge/conventions.md, "Docstrings"):
 - functions: ``Args`` iff the signature has parameters, ``Returns`` iff the annotation is not ``None``,
-  ``Raises`` iff the body contains ``raise``, and an ``Example`` always;
+  ``Raises`` iff the body contains ``raise`` (errors that propagate from helpers must be documented by
+  hand — the checker cannot see them), and an ``Example`` that is a doctest, always;
 - classes: a summary, an ``Example``, and ``Attributes`` (or pydantic ``Field`` descriptions on every field);
 - ``References`` for names whose contract comes from a spec or vendor document (REFERENCED below).
 Constants and type aliases have no docstring object and are skipped.
@@ -34,6 +35,9 @@ REFERENCED = {
     "color_from_text",
     "Settings",
     "GridOptions",
+    "draw_bboxes",
+    "draw_keypoints",
+    "draw_polygons",
 }
 SECTION = re.compile(r"^\s*(Args|Returns|Raises|Examples?|References|Attributes):\s*$", re.MULTILINE)
 
@@ -70,6 +74,8 @@ def check_function(name: str, fn) -> list[str]:
         want.add("References")
     for section in sorted(want - have):
         errors.append(f"ERROR: annotools.{name}: missing section {section}")
+    if "Example" in have and ">>>" not in doc:
+        errors.append(f"ERROR: annotools.{name}: Example is not a doctest (no >>>)")
     if "Args" in have:
         for p in params:
             if not re.search(rf"^\s+{re.escape(p.name)}( \(.*\))?:", doc, re.MULTILINE):
@@ -89,6 +95,8 @@ def check_class(name: str, cls) -> list[str]:
         errors.append(f"ERROR: annotools.{name}: missing section Attributes (or Field descriptions)")
     if "Example" not in have:
         errors.append(f"ERROR: annotools.{name}: missing section Example")
+    elif ">>>" not in doc:
+        errors.append(f"ERROR: annotools.{name}: Example is not a doctest (no >>>)")
     if name in REFERENCED and "References" not in have:
         errors.append(f"ERROR: annotools.{name}: missing section References")
     return errors

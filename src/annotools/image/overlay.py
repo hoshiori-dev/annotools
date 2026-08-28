@@ -89,7 +89,8 @@ def draw_bboxes(result: PreviewResult, objects: Sequence[BBoxObject], line_width
     view are skipped but still counted; partially visible ones are clipped.
 
     Args:
-        result: A preview from :func:`preview` (with or without a grid); its image is modified.
+        result: A preview from :func:`preview` (with or without a grid); RGB/RGBA images are drawn on in
+            place, other modes are converted to a new RGB image.
         objects: At least one box; ``label`` is drawn as a tag above the box, ``color`` defaults to
             ``Settings.color``.
         line_width: Outline width in output pixels; ``None`` uses ``Settings.line_width`` (2).
@@ -111,6 +112,9 @@ def draw_bboxes(result: PreviewResult, objects: Sequence[BBoxObject], line_width
         ...     result, [BBoxObject(bbox=(0.1, 0.1, 0.5, 0.5), label="cat")]
         ... ).metadata["objects"]
         1
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-image-bboxes.md`` (annotools repository).
     """
     if not objects:
         raise ValueError("objects: at least one bounding box is required")
@@ -160,6 +164,9 @@ def draw_keypoints(
         ... )
         >>> draw_keypoints(result, [KeypointObject(point=(0.5, 0.5))]).metadata["objects"]
         1
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-image-keypoints.md`` (annotools repository).
     """
     if not objects:
         raise ValueError("objects: at least one keypoint is required")
@@ -229,6 +236,9 @@ def draw_polygons(
         ...     result, [PolygonObject(points=[0.1, 0.1, 0.5, 0.1, 0.1, 0.5])]
         ... ).metadata["objects"]
         1
+
+    References:
+        - Spec: ``.agents/knowledge/spec/preview-image-polygons.md`` (annotools repository).
     """
     if not objects:
         raise ValueError("objects: at least one polygon is required")
