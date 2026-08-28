@@ -45,8 +45,8 @@ say normalized requests work poorly; `geometry.py` maps them back through the pr
 | Mean rounds per image | 1.0 |
 | Input / output tokens | 24 / 1,222 (cache read 60,379; cache creation 15,616) |
 | Cost (USD, SDK estimate) | 0.220 (0.073 per image) |
-| Wall time | 67.1 s summed over items (4 workers) |
-| Sanity: mean best IoU / recall@0.5 | 0.913 / 1.0 on 3 COCO boxes (`just sanity`) |
+| Wall time | 67.1 s summed over items (`just trial` runs items sequentially) |
+| Sanity: mean best IoU / recall@0.5 | 0.913 / 1.0 on 3 images, 3 COCO boxes (`just sanity`) |
 
 Fill this table from the JSON summary `just run` prints (`cost_usd`, `seconds`, `items`, `mean_rounds`)
 and `just sanity`; `total_cost_usd` is a client-side estimate, not a bill.

@@ -34,9 +34,9 @@ and the item stays pending for the next run) and stops the run after 10 failures
 |---|---|
 | Model | `claude-opus-5` (effort `low`, 768 px JPEG preview, budgets medium 25 / short 10 words, `max_budget_usd_per_item` 0.25) |
 | Items | 3 (`just trial 3`, 2026-08-28, run 1; 1 `needs_review` — short caption 11 > 10 words). One retry (`just run`, run 2, 1 item) hit the $0.25 item budget with the same 11-word short caption and stayed `needs_review`; `just export` wrote 2 items. |
-| Input / output tokens | run 1: 24 / 2,108 (cache read 46,938; cache creation 15,482) — run 2: 4 / 285 (cache read 3,419; cache creation 5,297) |
+| Input / output tokens | run 1: 24 / 2,108 (cache read 46,938; cache creation 15,482) — run 2: 4 / 285 (cache read 3,419; cache creation 5,297). Token fields come from each item's final result message, while `cost_usd` covers every turn of the item, so the two are not directly divisible |
 | Cost (USD, SDK estimate) | run 1: 0.234 (0.078 per image) — run 2: 0.258 |
-| Wall time | run 1: 69.0 s summed over items (4 workers) — run 2: 20.2 s |
+| Wall time | run 1: 69.0 s — run 2: 20.2 s; summed over items (`just trial` runs items sequentially) |
 
 Fill this table from the JSON summary `just run` prints (`items`, `input_tokens`, `output_tokens`,
 `cache_read_input_tokens`, `cache_creation_input_tokens`, `cost_usd`, `seconds`); `cost_usd` sums the SDK's client-side estimates, not a bill.

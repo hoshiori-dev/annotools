@@ -43,12 +43,12 @@ follows the `mllm-multimodal-input` size table for GPT patch models.
 | Field | Value |
 |---|---|
 | Model | `gpt-5.6-terra` (effort `medium`, 768 px JPEG preview, 10×10 grid, `coordinates: "gpt"`, max 3 rounds, `max_seconds_per_item` 300, MCP tool calls pre-approved, read-only sandbox) |
-| Items | 3 (`just trial 3`, 2026-08-28, run 1; 1 `needs_review` — the model finished without committing any box, 0 rounds). One retry (`just run`, run 2, 1 item) committed it as `final` in 1 round: 89,458 / 83,840 / 504 / 192 tokens, 28.1 s; `just export` then wrote 3 items. |
+| Items | 3 (`just trial 3`, 2026-08-28, run 1; 1 `needs_review` — the model finished without committing any box, 0 rounds). One retry (`just run`, run 2, 1 item) committed it as `final` in 1 round; `just export` then wrote 3 items. |
 | Mean rounds per image | 0.67 (1.0 over the 2 finished images) |
-| Input / cached / output / reasoning tokens | 405,846 / 331,648 / 1,797 / 741 (total 407,643) |
+| Input / cached / output / reasoning tokens | run 1: 405,846 / 331,648 / 1,797 / 741 (total 407,643) — run 2: 89,458 / 83,840 / 504 / 192 (total 89,962) |
 | Cost (USD, from the provider dashboard) | not reported — subscription login, `cost_usd` is 0.0 in the summary; the Codex SDK does not estimate cost |
-| Wall time | 125.6 s summed over items (4 workers) |
-| Sanity: mean best IoU / recall@0.5 | 0.929 / 1.0 after run 1 (2 finished images); 0.866 / 1.0 after the retry (3 images) (`just sanity`) |
+| Wall time | run 1: 125.6 s — run 2: 28.1 s; summed over items (`just trial` runs items sequentially) |
+| Sanity: mean best IoU / recall@0.5 | 0.929 / 1.0 after run 1 (2 finished images, 2 COCO boxes); 0.866 / 1.0 after the retry (3 images, 3 COCO boxes) (`just sanity`) |
 
 Fill this table from the JSON summary `just run` prints (`seconds`, `items`, `mean_rounds`, token fields)
 and `just sanity`; the Codex SDK does not estimate cost, so take the amount from the provider dashboard.
