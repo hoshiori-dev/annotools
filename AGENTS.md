@@ -88,8 +88,9 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 - Releases are two staged pipelines. `release-prepare.yml` (dispatch with a `tag` input) runs the full
   gate — tests plus credential/PII scanning of the wheel, sdist and image — and only then creates the tag
   and a draft release; publishing that draft by hand runs the same gate again and then publishes. A
-  pre-release goes to TestPyPI (rehearsal and developer testing; the documented install stays git) and
-  GHCR `<version>`; a full release goes to PyPI and also updates GHCR `<major>.<minor>` and `latest`.
+  every release uploads to TestPyPI (rehearsal and developer testing; the documented install stays git)
+  and GHCR `<version>`; a full release then continues to PyPI and also updates GHCR `<major>.<minor>`
+  and `latest`. The tag's PEP 440 version decides how far it goes, never the release's prerelease flag.
   `nightly.yml` pushes GHCR `nightly` from main at 22:00 JST. Tags always match `pyproject.toml`.
 
 ## Keep In Sync

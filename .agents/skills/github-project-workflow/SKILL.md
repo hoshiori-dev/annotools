@@ -75,8 +75,9 @@ gate passes:
 2. Review the generated notes on the draft.
 3. Publish the draft **with user credentials** (`gh release edit v<version> --draft=false`, or the web
    UI). A draft published by `GITHUB_TOKEN` raises no event and nothing ships.
-4. `release.yml` then re-runs the same gate and publishes: GHCR always, PyPI for a full release,
-   TestPyPI for a pre-release. Watch it with `gh run watch`.
+4. `release.yml` then re-runs the same gate and publishes: GHCR and TestPyPI always, then PyPI when the
+   tag is not a PEP 440 pre-release. Watch it with `gh run watch`. Toggling the release's prerelease
+   checkbox changes nothing — the version decides.
 
 Read back `gh api repos/hoshiori-dev/annotools/rulesets` before promising a required check exists.
 

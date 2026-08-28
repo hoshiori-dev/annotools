@@ -12,6 +12,10 @@ on:
         description: Release tag to validate, for example v0.1.0-rc1.
         required: true
         type: string
+    outputs:
+      prerelease:
+        description: Whether the tag is a PEP 440 pre-release. Decides how far the upload goes.
+        value: ${{ jobs.check-version.outputs.prerelease }}
 
 permissions:
   contents: read
@@ -19,10 +23,13 @@ permissions:
 jobs:
   check-version:
     runs-on: ubuntu-latest
+    outputs:
+      prerelease: ${{ steps.check.outputs.prerelease }}
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v10.0.1
-      - name: Tag must match pyproject version
+      - id: check
+        name: Tag must match pyproject version
         env:
           TAG: ${{ inputs.tag }}
         run: uv run --no-project --with packaging scripts/check_release_version.py "$TAG"

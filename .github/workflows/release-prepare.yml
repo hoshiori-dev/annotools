@@ -28,12 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       tag: ${{ steps.resolve.outputs.tag }}
-      prerelease: ${{ steps.resolve.outputs.prerelease }}
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10.0.1
       - id: resolve
-        name: Resolve the tag and whether it is a pre-release
+        name: Resolve the tag
         env:
           TAG: ${{ inputs.tag || github.ref_name }}
           EVENT: ${{ github.event_name }}
@@ -41,13 +39,9 @@ jobs:
         run: |
           set -euo pipefail
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-
-          # PEP 440 decides, not the tag's punctuation: rc/a/b/dev are pre-releases, finals are not.
-          prerelease=$(uv run --no-project --with packaging python -c \
-            'import sys; from packaging.version import Version; print(str(Version(sys.argv[1].removeprefix("v")).is_prerelease).lower())' \
-            "$TAG")
-          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
-          echo "Resolved $TAG (prerelease=$prerelease)"
+          echo "Resolved $TAG"
+          # Whether this is a pre-release is decided once, by check_release_version.py inside the
+          # gate below, and read back from the workflow output.
 
           # Fail before spending the test budget, and keep a dispatch from clobbering an existing tag.
           if [ "$EVENT" = "workflow_dispatch" ] && git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
@@ -90,7 +84,7 @@ jobs:
       - name: Open the draft release
         env:
           TAG: ${{ needs.resolve.outputs.tag }}
-          PRERELEASE: ${{ needs.resolve.outputs.prerelease }}
+          PRERELEASE: ${{ needs.tests.outputs.prerelease }}
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
