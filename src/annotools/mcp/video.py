@@ -5,12 +5,12 @@ from typing import Annotated, Any
 
 from pydantic import Field
 
-from annotools.app import mcp
 from annotools.config import get_settings
 from annotools.image.grid import GridOptions
 from annotools.image.preview import encode, preview
 from annotools.io import write_bytes
-from annotools.tools.common import (
+from annotools.mcp.app import mcp
+from annotools.mcp.common import (
     DEFAULT_OUTPUT_FORMAT,
     AllowUpscaleParam,
     CropParam,
@@ -27,8 +27,8 @@ from annotools.tools.common import (
     PreviewOptions,
     SourceParam,
     TargetPixelsParam,
+    apply_grid,
 )
-from annotools.tools.image_tools import _with_grid
 from annotools.video import sample_frames
 
 settings = get_settings()
@@ -66,7 +66,7 @@ def _render_frames(
         )
         if index == 0:
             metadata.update(result.metadata)
-        _with_grid(result, grid, metadata)
+        apply_grid(result, grid, metadata)
         data = encode(result.image, options.output_format)
         if options.save_to:
             name = f"frame_{index:04d}_{timestamp:.3f}.{options.output_format}"

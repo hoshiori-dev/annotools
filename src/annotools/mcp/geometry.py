@@ -5,9 +5,9 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
 from annotools import geometry
-from annotools.app import mcp
 from annotools.geometry import RotatedBox, rotated_box_to_corners
-from annotools.tools.common import CropParam
+from annotools.mcp.app import mcp
+from annotools.mcp.common import CropParam
 
 CoordinatesParam = Annotated[
     list[list[float]],

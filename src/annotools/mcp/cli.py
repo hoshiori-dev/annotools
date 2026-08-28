@@ -50,7 +50,7 @@ def main(argv: Sequence[str] | None = None) -> None:
     args, settings = parse(argv)
     config.configure(settings)
     # Deferred so that --help and --version stay fast, and so tool defaults see the configured settings.
-    from annotools.server import mcp
+    from annotools.mcp.server import mcp
 
     if args.http:
         mcp.run(transport="http", host=args.host, port=args.port)

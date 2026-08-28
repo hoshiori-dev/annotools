@@ -4,7 +4,7 @@ from PIL import Image
 
 @pytest.fixture
 def mcp_server():
-    from annotools.server import mcp
+    from annotools.mcp.server import mcp
 
     return mcp
 
