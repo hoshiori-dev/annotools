@@ -47,9 +47,10 @@ src/annotools/
   io.py             open_bytes(uri) via fsspec; decode to PIL
   geometry.py       normalized↔pixel coordinates, crop math, rotated box → 4 corners, is_rectangle
   color.py          text → stable color hash, color parsing, inversion
-  image/            preview (crop+resize), grid, overlay (bbox/keypoint/polygon), segmentation
+  image/            preview (crop+resize), grid, overlay (bbox/keypoint/polygon), segmentation; _draw.py internal helpers
   video.py          frame sampling by fps → image pipeline (PyAV, media extra)
   audio.py          clip + resample → WAV (PyAV, media extra)
+  _media.py         internal: PyAV import guard + fsspec-backed container opening shared by video/audio
   mcp/              MCP layer (the only package importing fastmcp):
     app.py            FastMCP("annotools") instance + instructions; imports no tool module (no import cycle)
     server.py         composition root: imports app.mcp and every tool module so their @mcp.tool decorators run

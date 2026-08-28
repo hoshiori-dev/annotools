@@ -5,30 +5,9 @@ import wave
 from contextlib import ExitStack
 from typing import Any
 
-import fsspec
 import numpy as np
 
-
-def _av():
-    try:
-        import av
-    except ImportError as exc:
-        raise ImportError("audio support requires PyAV: install annotools[media]") from exc
-    return av
-
-
-def _open_container(av, uri: str, stack: ExitStack):
-    """Open ``uri`` with PyAV through a streamed fsspec handle; errors name the URI."""
-    try:
-        handle = stack.enter_context(fsspec.open(uri, "rb"))
-    except FileNotFoundError as exc:
-        raise FileNotFoundError(f"cannot read {uri}: not found") from exc
-    except Exception as exc:  # backend-specific errors share no base class
-        raise OSError(f"cannot read {uri}: {exc}") from exc
-    try:
-        return stack.enter_context(av.open(handle))
-    except Exception as exc:
-        raise ValueError(f"{uri}: not a decodable media file ({exc})") from exc
+from annotools._media import open_container, require_av
 
 
 def clip(
@@ -53,10 +32,10 @@ def clip(
         raise ValueError(f"end ({end}) must be greater than start ({start or 0.0})")
     if sample_rate is not None and sample_rate < 1:
         raise ValueError(f"sample_rate must be >= 1, got {sample_rate}")
-    av = _av()
+    av = require_av("audio")
     begin = start or 0.0
     with ExitStack() as stack:
-        container = _open_container(av, uri, stack)
+        container = open_container(av, uri, stack)
         if not container.streams.audio:
             raise ValueError(f"{uri}: no audio stream")
         stream = container.streams.audio[0]

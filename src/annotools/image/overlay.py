@@ -2,15 +2,13 @@
 
 from collections.abc import Sequence
 
-from PIL import Image, ImageDraw, ImageFont
 from pydantic import BaseModel, Field
 
-from annotools.color import RGB, parse_color, text_color_for
+from annotools.color import parse_color
 from annotools.config import get_settings
 from annotools.geometry import validate_normalized_box, validate_normalized_point
+from annotools.image._draw import canvas, draw_dot, draw_label
 from annotools.image.preview import PreviewResult
-
-settings = get_settings()
 
 
 class BBoxObject(BaseModel):
@@ -18,7 +16,7 @@ class BBoxObject(BaseModel):
 
     bbox: tuple[float, float, float, float] = Field(description="(x_min, y_min, x_max, y_max), normalized 0-1")
     label: str | None = Field(default=None, description="Optional text drawn above the box")
-    color: str = Field(default=settings.color, description="Color name or #RRGGBB")
+    color: str | None = Field(default=None, description="Color name or #RRGGBB; None uses Settings.color")
 
 
 class KeypointObject(BaseModel):
@@ -26,7 +24,7 @@ class KeypointObject(BaseModel):
 
     point: tuple[float, float] = Field(description="(x, y), normalized 0-1")
     label: str | None = Field(default=None, description="Optional text drawn beside the point")
-    color: str = Field(default=settings.color, description="Color name or #RRGGBB")
+    color: str | None = Field(default=None, description="Color name or #RRGGBB; None uses Settings.color")
 
 
 class PolygonObject(BaseModel):
@@ -34,7 +32,7 @@ class PolygonObject(BaseModel):
 
     points: list[float] = Field(description="[x1, y1, x2, y2, ...], even count, at least 3 points, normalized 0-1")
     label: str | None = Field(default=None, description="Optional text drawn at the first vertex")
-    color: str = Field(default=settings.color, description="Color name or #RRGGBB")
+    color: str | None = Field(default=None, description="Color name or #RRGGBB; None uses Settings.color")
 
 
 class Mapper:
@@ -56,43 +54,7 @@ class Mapper:
         return 0 <= px <= self.width and 0 <= py <= self.height
 
 
-def _canvas(result: PreviewResult) -> tuple[Image.Image, ImageDraw.ImageDraw]:
-    image = result.image if result.image.mode in ("RGB", "RGBA") else result.image.convert("RGB")
-    return image, ImageDraw.Draw(image)
-
-
-def _draw_dot(draw: ImageDraw.ImageDraw, px: float, py: float, diameter: int, color: RGB) -> None:
-    r = diameter / 2
-    draw.ellipse((px - r, py - r, px + r, py + r), fill=color)
-
-
-def _draw_label(
-    draw: ImageDraw.ImageDraw,
-    text: str,
-    x: float,
-    y: float,
-    color: RGB,
-    size: tuple[int, int],
-    anchor: str = "above",
-) -> None:
-    """Draw a filled tag with ``text`` near (x, y), kept fully inside ``size``.
-
-    ``anchor="above"`` puts the tag's bottom-left at (x, y) (falling back to below when there is no room);
-    ``anchor="middle"`` centres it vertically on y with its left edge at x.
-    """
-    font = ImageFont.load_default()
-    left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
-    tw, th = right - left + 4, bottom - top + 4
-    ty = y - th / 2 if anchor == "middle" else (y - th if y - th >= 0 else y)
-    tx = min(max(0, x), max(0, size[0] - tw))
-    ty = min(max(0, ty), max(0, size[1] - th))
-    draw.rectangle((tx, ty, tx + tw, ty + th), fill=color)
-    draw.text((tx + 2 - left, ty + 2 - top), text, fill=text_color_for(color), font=font)
-
-
-def draw_bboxes(
-    result: PreviewResult, objects: Sequence[BBoxObject], line_width: int = settings.line_width
-) -> PreviewResult:
+def draw_bboxes(result: PreviewResult, objects: Sequence[BBoxObject], line_width: int | None = None) -> PreviewResult:
     """Draw ``objects`` on ``result.image`` (in place) and add ``objects`` count to the metadata.
 
     Raises:
@@ -100,13 +62,15 @@ def draw_bboxes(
     """
     if not objects:
         raise ValueError("objects: at least one bounding box is required")
+    settings = get_settings()
+    line_width = settings.line_width if line_width is None else line_width
     if line_width < 1:
         raise ValueError(f"line_width must be >= 1, got {line_width}")
     mapper = Mapper(result)
-    image, draw = _canvas(result)
+    image, draw = canvas(result)
     for index, obj in enumerate(objects):
         box = validate_normalized_box(obj.bbox, name=f"objects[{index}].bbox")
-        color = parse_color(obj.color, name=f"objects[{index}].color")
+        color = parse_color(settings.color if obj.color is None else obj.color, name=f"objects[{index}].color")
         x0, y0 = mapper.to_pixels(box[0], box[1])
         x1, y1 = mapper.to_pixels(box[2], box[3])
         if x1 < 0 or y1 < 0 or x0 > mapper.width or y0 > mapper.height:
@@ -114,12 +78,12 @@ def draw_bboxes(
         # The outline band starts at the mapped edge and extends inward by line_width.
         draw.rectangle((round(x0), round(y0), round(x1) - 1, round(y1) - 1), outline=color, width=line_width)
         if obj.label:
-            _draw_label(draw, obj.label, round(x0), round(y0), color, image.size)
+            draw_label(draw, obj.label, round(x0), round(y0), color, image.size)
     return PreviewResult(image=image, metadata={**result.metadata, "objects": len(objects)})
 
 
 def draw_keypoints(
-    result: PreviewResult, objects: Sequence[KeypointObject], point_diameter: int = settings.point_diameter
+    result: PreviewResult, objects: Sequence[KeypointObject], point_diameter: int | None = None
 ) -> PreviewResult:
     """Draw ``objects`` as filled dots (optional labels) and add ``objects`` count to the metadata.
 
@@ -129,19 +93,21 @@ def draw_keypoints(
     """
     if not objects:
         raise ValueError("objects: at least one keypoint is required")
+    settings = get_settings()
+    point_diameter = settings.point_diameter if point_diameter is None else point_diameter
     if point_diameter < 1:
         raise ValueError(f"point_diameter must be >= 1, got {point_diameter}")
     mapper = Mapper(result)
-    image, draw = _canvas(result)
+    image, draw = canvas(result)
     for index, obj in enumerate(objects):
         x, y = validate_normalized_point(obj.point, name=f"objects[{index}].point")
-        color = parse_color(obj.color, name=f"objects[{index}].color")
+        color = parse_color(settings.color if obj.color is None else obj.color, name=f"objects[{index}].color")
         px, py = mapper.to_pixels(x, y)
         if not mapper.inside(px, py):
             continue
-        _draw_dot(draw, px, py, point_diameter, color)
+        draw_dot(draw, px, py, point_diameter, color)
         if obj.label:
-            _draw_label(draw, obj.label, px + point_diameter, py, color, image.size, anchor="middle")
+            draw_label(draw, obj.label, px + point_diameter, py, color, image.size, anchor="middle")
     return PreviewResult(image=image, metadata={**result.metadata, "objects": len(objects)})
 
 
@@ -159,8 +125,8 @@ def validate_polygon(points: Sequence[float], name: str) -> list[tuple[float, fl
 def draw_polygons(
     result: PreviewResult,
     objects: Sequence[PolygonObject],
-    line_width: int = settings.line_width,
-    point_diameter: int = settings.point_diameter,
+    line_width: int | None = None,
+    point_diameter: int | None = None,
     show_point_index: bool = True,
 ) -> PreviewResult:
     """Draw closed polygons with vertex dots and optional 1-based vertex indices; add ``objects`` to metadata.
@@ -171,13 +137,16 @@ def draw_polygons(
     """
     if not objects:
         raise ValueError("objects: at least one polygon is required")
+    settings = get_settings()
+    line_width = settings.line_width if line_width is None else line_width
+    point_diameter = settings.point_diameter if point_diameter is None else point_diameter
     if line_width < 1 or point_diameter < 1:
         raise ValueError(f"line_width and point_diameter must be >= 1, got {line_width} and {point_diameter}")
     mapper = Mapper(result)
-    image, draw = _canvas(result)
+    image, draw = canvas(result)
     for index, obj in enumerate(objects):
         vertices = validate_polygon(obj.points, name=f"objects[{index}].points")
-        color = parse_color(obj.color, name=f"objects[{index}].color")
+        color = parse_color(settings.color if obj.color is None else obj.color, name=f"objects[{index}].color")
         pixels = [mapper.to_pixels(x, y) for x, y in vertices]
         if not any(mapper.inside(px, py) for px, py in pixels):
             continue
@@ -185,12 +154,12 @@ def draw_polygons(
         cx = sum(px for px, _ in pixels) / len(pixels)
         cy = sum(py for _, py in pixels) / len(pixels)
         for number, (px, py) in enumerate(pixels, start=1):
-            _draw_dot(draw, px, py, point_diameter, color)
+            draw_dot(draw, px, py, point_diameter, color)
             if show_point_index:
                 dx, dy = (px - cx), (py - cy)
                 norm = max(1e-6, (dx * dx + dy * dy) ** 0.5)
                 offset = point_diameter + 8
-                _draw_label(draw, str(number), px + dx / norm * offset, py + dy / norm * offset, color, image.size)
+                draw_label(draw, str(number), px + dx / norm * offset, py + dy / norm * offset, color, image.size)
         if obj.label:
-            _draw_label(draw, obj.label, pixels[0][0], pixels[0][1] - point_diameter - 12, color, image.size)
+            draw_label(draw, obj.label, pixels[0][0], pixels[0][1] - point_diameter - 12, color, image.size)
     return PreviewResult(image=image, metadata={**result.metadata, "objects": len(objects)})

@@ -5,37 +5,54 @@ from typing import Literal
 
 import numpy as np
 from PIL import Image
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 from annotools.config import get_settings
 from annotools.image.preview import PreviewResult
 
-settings = get_settings()
-
 
 class GridOptions(BaseModel):
-    """Grid parameters shared by every tool that accepts ``grid`` (see .agents/knowledge/spec/mcp-overview.md)."""
+    """Grid parameters shared by every tool that accepts ``grid`` (see .agents/knowledge/spec/mcp-overview.md).
 
-    columns: int = Field(default=settings.grid_columns, ge=1, description="Cells per row (columns-1 vertical lines)")
-    rows: int = Field(default=settings.grid_rows, ge=1, description="Cells per column (rows-1 horizontal lines)")
-    mode: Literal["ratio", "fixed"] = Field(
-        default=settings.grid_mode, description="ratio: equal cells; fixed: cells of given px"
+    ``None`` fields take their value from ``Settings`` when the grid is drawn (``resolved()``).
+    """
+
+    columns: int | None = Field(
+        default=None, ge=1, description="Cells per row (columns-1 vertical lines); null = setting (10)"
     )
-    column_width: int | None = Field(
-        default=settings.grid_column_width, ge=1, description="Cell width in output px (fixed mode)"
+    rows: int | None = Field(
+        default=None, ge=1, description="Cells per column (rows-1 horizontal lines); null = setting (10)"
     )
-    row_width: int | None = Field(
-        default=settings.grid_row_width, ge=1, description="Cell height in output px (fixed mode)"
+    mode: Literal["ratio", "fixed"] | None = Field(
+        default=None, description="ratio: equal cells; fixed: cells of given px; null = setting (ratio)"
     )
+    column_width: int | None = Field(default=None, ge=1, description="Cell width in output px (fixed mode)")
+    row_width: int | None = Field(default=None, ge=1, description="Cell height in output px (fixed mode)")
     color: Literal["white", "black", "invert"] = Field(default="white")
-    opacity: float = Field(default=settings.grid_opacity, ge=0.0, le=1.0)
-    line_width: int = Field(default=settings.grid_line_width, ge=1)
+    opacity: float | None = Field(default=None, ge=0.0, le=1.0, description="null = setting (0.5)")
+    line_width: int | None = Field(default=None, ge=1, description="Output pixels; null = setting (1)")
 
-    @model_validator(mode="after")
-    def _fixed_needs_widths(self) -> "GridOptions":
-        if self.mode == "fixed" and (self.column_width is None or self.row_width is None):
+    def resolved(self) -> "GridOptions":
+        """Return a copy with every ``None`` filled from ``Settings``.
+
+        Raises:
+            ValueError: when ``mode`` is ``fixed`` and a cell width is still unknown.
+        """
+        s = get_settings()
+        out = self.model_copy(
+            update={
+                "columns": s.grid_columns if self.columns is None else self.columns,
+                "rows": s.grid_rows if self.rows is None else self.rows,
+                "mode": s.grid_mode if self.mode is None else self.mode,
+                "column_width": s.grid_column_width if self.column_width is None else self.column_width,
+                "row_width": s.grid_row_width if self.row_width is None else self.row_width,
+                "opacity": s.grid_opacity if self.opacity is None else self.opacity,
+                "line_width": s.grid_line_width if self.line_width is None else self.line_width,
+            }
+        )
+        if out.mode == "fixed" and (out.column_width is None or out.row_width is None):
             raise ValueError("column_width/row_width are required when mode='fixed'")
-        return self
+        return out
 
 
 def line_positions(size: int, cells: int, cell_size: int | None, mode: str) -> tuple[list[int], int]:
@@ -53,6 +70,9 @@ def draw_grid(image: Image.Image, options: GridOptions) -> PreviewResult:
     Raises:
         ValueError: via ``GridOptions`` validation for invalid parameters.
     """
+    options = options.resolved()
+    assert options.columns is not None and options.rows is not None and options.mode is not None
+    assert options.opacity is not None and options.line_width is not None
     width, height = image.size
     xs, columns = line_positions(width, options.columns, options.column_width, options.mode)
     ys, rows = line_positions(height, options.rows, options.row_width, options.mode)
