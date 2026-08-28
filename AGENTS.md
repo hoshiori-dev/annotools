@@ -10,7 +10,7 @@ methodology; `examples/` show Claude Agent SDK and Codex SDK pipelines. See `ARC
 ```text
 src/annotools/        <- library layer (image/video/audio/geometry/color/io/config); mcp/ = FastMCP app, tool wrappers, CLI
 tests/                <- pytest; `container` marker needs docker
-docs/                 <- zensical site only (user-facing pages); specs are not here
+docs/                 <- zensical site (user-facing pages); mcp/tools.md is generated (`just docs-gen`), spec sections are included from .agents/knowledge/spec/
 skills/               <- publishable skills (npx skills add hoshiori-dev/annotools); English
 examples/             <- independent example projects; each has its own CONTEXT.md
 .agents/knowledge/    <- agent knowledge base (this file routes into it); spec/ one spec per MCP tool; references/ dated external facts
@@ -56,6 +56,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 | Implementing a feature end to end (issue, spec, tests, code) | `.agents/skills/spec-driven-feature/` |
 | Before opening a PR: lessons learned, skill candidates | `.agents/skills/retrospective-to-skill/` |
 | README changes | `.agents/skills/readme-bilingual-sync/` |
+| Editing `docs/`, `zensical.toml`, or generated reference pages | `.agents/knowledge/docs-site.md` |
 
 ## Development Environment
 
@@ -94,7 +95,7 @@ scripts/              <- repo maintenance scripts (labels, taxonomy, release che
 | A cycle opens or closes | the "Current cycle" line in this file (Workflow), the tracking issue's final-status comment |
 | A CI job is renamed or added | `.agents/knowledge/platform-settings.md` job map and the `main` ruleset required checks |
 | A label, issue form, `release.yml`, or dependabot label | `.github/labels.json` — `just check-taxonomy` fails otherwise |
-| An MCP tool's parameters or return | its `.agents/knowledge/spec/` file, tests, and README tool table (both languages) |
+| An MCP tool's parameters or return | its `.agents/knowledge/spec/` file, tests, README tool table (both languages), and `just docs-gen` (commit `docs/mcp/tools.md`) |
 | A new knowledge file or development skill | this file's When To Read What table |
 | A vendor fact or dependency version | `.agents/knowledge/references/*.md` (date it) and the skill copy derived from it |
 | Python tool versions in `pyproject.toml` dev group | matching `rev` in `.pre-commit-config.yaml` |
