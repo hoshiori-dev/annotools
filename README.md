@@ -1,89 +1,129 @@
-# annotools
+<p align="center">
+  <img src="docs/assets/logo.svg" width="88" alt="annotools">
+</p>
 
-[中文](README.zh.md)
+<h1 align="center">annotools</h1>
 
-MCP server and Python library that help agents look at multimodal data — images, video, audio — within an
-MLLM token budget, plus skills and examples for building agentic annotation pipelines on SQLite.
+<p align="center">
+  Let agents see and annotate multimodal data within a token budget.
+</p>
 
-## Why
+<p align="center">
+  <a href="https://github.com/hoshiori-dev/annotools/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hoshiori-dev/annotools/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="Coverage" src="https://img.shields.io/badge/coverage-99%25-brightgreen">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.12%2B-blue">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
+  <a href="https://hoshiori-dev.github.io/annotools/"><img alt="Docs" src="https://img.shields.io/badge/docs-site-blue"></a>
+</p>
 
-Feeding full-resolution media to a multimodal model is expensive and imprecise. annotools gives coding
-agents cheap, purpose-built views: downscaled previews, crop-zoom, grid guide lines, and overlays of
-BBoxes, keypoints, polygons, and segmentation masks so an agent can check its own annotations before
-committing them. The same functions are available as a library for the execution agents you build with
-the Claude Agent SDK or the Codex SDK.
+<p align="center">
+  <a href="https://hoshiori-dev.github.io/annotools/">Documentation</a> ·
+  <a href="README.zh.md">中文</a>
+</p>
 
-## Status
+<p align="center">
+  <img src="docs/assets/pipeline.svg" width="700" alt="Source image, downscaled preview, grid overlay, box overlay, coordinates normalized to the source">
+</p>
 
-Under construction — all milestones implemented; the example projects await their first live runs
-(usage records). All planned MCP tools are available. Follow
-the [tracking issue](https://github.com/hoshiori-dev/annotools/issues/1).
+Feeding full-resolution media to a multimodal model is expensive and imprecise. annotools gives an
+agent purpose-built views instead — downscaled previews, crop-zoom, grid guide lines, and overlays of
+boxes, keypoints, polygons and segmentation masks so it can check its own annotations before
+committing them. Every coordinate stays in one convention: normalized 0.0–1.0 relative to the
+uncropped source.
 
-## Install
+## Two ways to use it
+
+| 🔌 An MCP server for coding agents | 📦 A library for agent developers |
+|---|---|
+| 13 tools for Claude Code, Codex and OpenCode | The same previews, overlays and conversions as functions |
+| The agent looks at a dataset without spending its context | Give your own execution agent eyes, no MCP client needed |
+| Preview size is a setting, so cost is tuned per model | `import annotools` never loads `fastmcp` |
+| [→ Tool reference](https://hoshiori-dev.github.io/annotools/mcp/tools/) | [→ API reference](https://hoshiori-dev.github.io/annotools/api/) |
+
+## Quick start
 
 ```bash
-uv add annotools            # library + MCP server (PyPI publishing is not enabled yet; install from git)
-uv add "annotools[media]"   # adds PyAV for video and audio tools
+uv add "annotools @ git+https://github.com/hoshiori-dev/annotools"
 ```
 
-Container: `docker run --rm -i ghcr.io/hoshiori-dev/annotools` (stdio) or add `--http --host 0.0.0.0`
-with `-p 8000:8000`.
+### As an MCP server
 
-## Use as an MCP server
+Register the `annotools` command over stdio. For Claude Code, `.mcp.json`:
 
-Register `uv run annotools` (stdio) with your agent framework. This repository's own configuration shows
-the three shapes: `.mcp.json` (Claude Code), `.codex/config.toml` (Codex), `opencode.json` (OpenCode).
-`annotools --http --port 8000` serves Streamable HTTP for shared or remote use.
+```json
+{
+  "mcpServers": {
+    "annotools": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "annotools"],
+      "env": { "ANNOTOOLS_MAX_WIDTH": "768", "ANNOTOOLS_MAX_HEIGHT": "768" }
+    }
+  }
+}
+```
 
-Preview defaults are settings: flags override `ANNOTOOLS_*` environment variables, which override the
-built-in values (`annotools --help` lists them; the pre-0.1 `ANNOTOOLS_MAX_PREVIEW_WIDTH` names are gone). The 384 px default is Gemini's single-unit size; for
-Claude, GPT, or Qwen start the server with a larger limit, e.g. `uv run annotools --max-width 768
---max-height 768` or `ANNOTOOLS_MAX_WIDTH=768 ANNOTOOLS_MAX_HEIGHT=768` in the MCP registration
-(see `.mcp.json`). Other settings: `--target-pixels`, `--grid-columns`, `--grid-rows`, `--grid-mode`,
-`--grid-column-width`, `--grid-row-width`, `--line-width`, `--point-diameter`, `--color`,
-`--output-format`, `--jpeg-quality`.
+Set the preview size for the model behind the agent: 384 px (the default) keeps a Gemini image at one
+258-token unit, while Claude and GPT bill by area and read 768 px comfortably. Codex and OpenCode
+shapes, every setting, and the HTTP transport are in
+[Register the server](https://hoshiori-dev.github.io/annotools/getting-started/register/).
 
-## Tools (planned)
+### As a library
 
-| Tool | Purpose |
+```python
+from annotools import BBoxObject, draw_bboxes, encode, load_image, normalize_coordinates, preview
+
+result = preview(load_image("photo.jpg"), max_width=768, max_height=768)
+boxes = normalize_coordinates(
+    [[240, 130, 470, 505]],
+    result.metadata["output_width"],
+    result.metadata["output_height"],
+)
+overlay = draw_bboxes(result, [BBoxObject(bbox=boxes[0], label="cat")])
+jpeg = encode(overlay.image, "jpeg")
+```
+
+## Tools
+
+| Tool | What it does |
 |---|---|
-| `preview_image` | crop + downscale to fit 384×384 (configurable) |
-| `preview_image_grid` | preview with a semi-transparent 10×10 grid |
-| `preview_image_bboxes` | bounding-box overlays from normalized coordinates, optional labels |
+| `preview_image` | crop + downscale to fit the size limits |
+| `preview_image_grid` | preview with a semi-transparent grid to anchor positions |
+| `preview_image_bboxes` | box overlays from normalized coordinates, optional labels |
 | `preview_image_keypoints` | keypoint overlays from normalized coordinates, optional labels |
-| `preview_image_polygons` | polygon overlays from normalized coordinates, optional labels |
-| `preview_image_segmentation` | ID-mask overlay with labels or a legend |
-| `color_from_text` | stable color from any text |
-| `rotated_bbox_to_polygon` | (cx, cy, w, h, θ) → DOTA 8-number corners |
-| `normalize_coordinates` | a model's frame (pixels of the preview, or 0–1000) → normalized 0–1 |
-| `denormalize_coordinates` | normalized 0–1 → a model's frame (pixels of the preview, or 0–1000) |
+| `preview_image_polygons` | polygon overlays with numbered vertices |
+| `preview_image_segmentation` | ID-mask overlay with per-region labels or a legend |
 | `preview_video` | frame sampling at N fps → one preview per frame |
 | `preview_video_grid` | frame sampling at N fps → a grid on every frame |
-| `clip_audio` | clip and resample audio |
+| `clip_audio` | cut and resample audio to WAV |
+| `color_from_text` | stable color from any text |
+| `rotated_bbox_to_polygon` | (cx, cy, w, h, θ) → DOTA 8-number corners |
+| `normalize_coordinates` | a model's frame (pixels, or 0–1000) → normalized 0–1 |
+| `denormalize_coordinates` | normalized 0–1 → a model's frame |
 
-Specifications live in `.agents/knowledge/spec/` (shared conventions: `.agents/knowledge/spec/mcp-overview.md`);
-the generated tool reference is at `docs/mcp/tools.md`.
+Parameters, return shapes and specifications:
+[tool reference](https://hoshiori-dev.github.io/annotools/mcp/tools/).
 
-## Skills and examples
+## Documentation
 
-`skills/` holds installable skills (`npx skills add hoshiori-dev/annotools`). All seven ship:
-`annotation-project-interview` (design-tree interview + workspace scaffold), `sqlite-annotation-store`
-(schema, tool contract, exports), `mllm-multimodal-input` (per-model token cost, coordinate conventions,
-cache layout), `localization-annotation-guide` (the grid → propose → verify → correct → commit loop),
-`agent-vision-tools` (execution-agent tools on the library for the Claude Agent SDK and Codex SDK),
-`task-image-captioning`, and `task-object-detection` (task scaffolds with prompts and pipeline skeletons). `examples/` holds four complete example projects — image captioning and object detection, each for the
-Claude Agent SDK and the Codex SDK — with their own `CONTEXT.md`, spec, tests, and a usage record to fill
-after the first run.
+- [Get started](https://hoshiori-dev.github.io/annotools/getting-started/install/) — install, extras, container, MCP registration.
+- [Usage](https://hoshiori-dev.github.io/annotools/usage/mcp-server/) — settings, coordinate conventions, the shape of a library call.
+- [API reference](https://hoshiori-dev.github.io/annotools/api/) — every public function, generated from its docstring.
+- [Architecture](https://hoshiori-dev.github.io/annotools/architecture/) — layers and recorded decisions.
+- Skills — the annotation methodology, installable into your agent: `npx skills add hoshiori-dev/annotools`.
+- [`examples/`](examples/) — four complete pipelines: captioning and detection, on the Claude Agent SDK and the Codex SDK.
 
 ## Development
 
 ```bash
 uv sync --all-extras
-just check          # lint, format, types, taxonomy, README sync, unit tests
+just check
 just docker-build && just test-container
 ```
 
-See `CONTRIBUTING.md`; agents start from `AGENTS.md`.
+`just check` runs lint, format, types, taxonomy, README sync, the public-API docstring check, the
+generated-reference drift check, a strict docs build, and the tests behind a 95 % coverage gate. See
+[`CONTRIBUTING.md`](CONTRIBUTING.md); agents start from [`AGENTS.md`](AGENTS.md).
 
 ## License
 

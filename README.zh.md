@@ -1,83 +1,126 @@
-# annotools
+<p align="center">
+  <img src="docs/assets/logo.svg" width="88" alt="annotools">
+</p>
 
-[English](README.md)
+<h1 align="center">annotools</h1>
 
-一个 MCP 服务与 Python 库，帮助 agent 在 MLLM 的 token 预算内查看多模态数据（图片、视频、音频），并附带用于在
-SQLite 上构建 agentic 数据标注管道的 skills 与示例。
+<p align="center">
+  让 agent 在 token 预算内查看并标注多模态数据。
+</p>
 
-## 为什么
+<p align="center">
+  <a href="https://github.com/hoshiori-dev/annotools/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/hoshiori-dev/annotools/actions/workflows/ci.yml/badge.svg"></a>
+  <img alt="覆盖率" src="https://img.shields.io/badge/coverage-99%25-brightgreen">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.12%2B-blue">
+  <a href="LICENSE"><img alt="许可证" src="https://img.shields.io/badge/license-Apache--2.0-blue"></a>
+  <a href="https://hoshiori-dev.github.io/annotools/"><img alt="文档" src="https://img.shields.io/badge/docs-site-blue"></a>
+</p>
 
-把全分辨率媒体直接喂给多模态模型既昂贵又不精确。annotools 为 coding agent 提供便宜且有针对性的视图：缩小预览、
-局部放大、网格辅助线，以及 BBox、关键点、多边形、分割掩码的叠加层，让 agent 在写入前能检查自己的标注结果。
-同一批函数也以库的形式提供，供你用 Claude Agent SDK 或 Codex SDK 构建的执行 agent 使用。
+<p align="center">
+  <a href="https://hoshiori-dev.github.io/annotools/">文档</a> ·
+  <a href="README.md">English</a>
+</p>
 
-## 状态
+<p align="center">
+  <img src="docs/assets/pipeline.svg" width="700" alt="原图、降采样预览、网格叠加、检测框叠加，坐标归一化到原图">
+</p>
 
-建设中——各里程碑均已实现；示例项目等待首次实际运行以填写用量记录。规划中的 MCP 工具已全部可用。进度见
-[tracking issue](https://github.com/hoshiori-dev/annotools/issues/1)。
+把全分辨率媒体直接喂给多模态模型既昂贵又不精确。annotools 改为给 agent 专门构造的视图——降采样预览、
+裁剪放大、网格参考线，以及检测框、关键点、多边形和分割掩码的叠加，让它在提交之前先检查自己的标注。
+所有坐标只有一种约定：相对于**未裁剪原图**归一化到 0.0–1.0。
 
-## 安装
+## 两种一等用法
+
+| 🔌 面向 coding agent 的 MCP 服务器 | 📦 面向 agent 开发者的能力库 |
+|---|---|
+| 为 Claude Code、Codex、OpenCode 提供 13 个工具 | 同样的预览、叠加与坐标转换，以函数提供 |
+| agent 查看数据集时不会耗尽上下文 | 给你自己的执行 agent 装上眼睛，无需 MCP 客户端 |
+| 预览尺寸是配置项，按模型调节成本 | `import annotools` 不会加载 `fastmcp` |
+| [→ 工具参考](https://hoshiori-dev.github.io/annotools/mcp/tools/) | [→ API 参考](https://hoshiori-dev.github.io/annotools/api/) |
+
+## 快速开始
 
 ```bash
-uv add annotools            # 库 + MCP 服务（PyPI 尚未启用发布；请从 git 安装）
-uv add "annotools[media]"   # 增加 PyAV，用于视频与音频工具
+uv add "annotools @ git+https://github.com/hoshiori-dev/annotools"
 ```
 
-容器：`docker run --rm -i ghcr.io/hoshiori-dev/annotools`（stdio），或加上 `--http --host 0.0.0.0` 与
-`-p 8000:8000`。
+### 作为 MCP 服务器
 
-## 作为 MCP 服务使用
+通过 stdio 注册 `annotools` 命令。Claude Code 使用 `.mcp.json`：
 
-在你的 agent 框架中注册 `uv run annotools`（stdio）。本仓库自身的配置展示了三种写法：`.mcp.json`（Claude Code）、
-`.codex/config.toml`（Codex）、`opencode.json`（OpenCode）。`annotools --http --port 8000` 提供 Streamable HTTP，
-用于共享或远程访问。
+```json
+{
+  "mcpServers": {
+    "annotools": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "annotools"],
+      "env": { "ANNOTOOLS_MAX_WIDTH": "768", "ANNOTOOLS_MAX_HEIGHT": "768" }
+    }
+  }
+}
+```
 
-预览默认值是可配置的设置：命令行参数覆盖 `ANNOTOOLS_*` 环境变量，环境变量覆盖内置值（`annotools --help`
-列出全部；0.1 之前的 `ANNOTOOLS_MAX_PREVIEW_WIDTH` 等名称不再读取）。默认 384 px 是 Gemini 单计费单位的尺寸；面向 Claude、GPT 或 Qwen 时用更大的上限启动服务，例如
-`uv run annotools --max-width 768 --max-height 768`，或在 MCP 注册中设置
-`ANNOTOOLS_MAX_WIDTH=768 ANNOTOOLS_MAX_HEIGHT=768`（见 `.mcp.json`）。其他设置：`--target-pixels`、
-`--grid-columns`、`--grid-rows`、`--grid-mode`、`--grid-column-width`、`--grid-row-width`、`--line-width`、
-`--point-diameter`、`--color`、`--output-format`、`--jpeg-quality`。
+按 agent 背后的模型设置预览尺寸：384 px（默认值）让 Gemini 的一张图保持在一个 258 token 的单位内，
+而 Claude 与 GPT 按面积计费，768 px 读起来更从容。Codex 与 OpenCode 的写法、全部配置项以及 HTTP
+传输见[注册服务器](https://hoshiori-dev.github.io/annotools/getting-started/register/)。
 
-## 工具（规划中）
+### 作为能力库
 
-| 工具 | 用途 |
+```python
+from annotools import BBoxObject, draw_bboxes, encode, load_image, normalize_coordinates, preview
+
+result = preview(load_image("photo.jpg"), max_width=768, max_height=768)
+boxes = normalize_coordinates(
+    [[240, 130, 470, 505]],
+    result.metadata["output_width"],
+    result.metadata["output_height"],
+)
+overlay = draw_bboxes(result, [BBoxObject(bbox=boxes[0], label="cat")])
+jpeg = encode(overlay.image, "jpeg")
+```
+
+## 工具
+
+| 工具 | 作用 |
 |---|---|
-| `preview_image` | 裁剪 + 缩小到 384×384 以内（可配置） |
-| `preview_image_grid` | 叠加半透明 10×10 网格的预览 |
-| `preview_image_bboxes` | 基于归一化坐标的边界框叠加层，可带标签 |
-| `preview_image_keypoints` | 基于归一化坐标的关键点叠加层，可带标签 |
-| `preview_image_polygons` | 基于归一化坐标的多边形叠加层，可带标签 |
-| `preview_image_segmentation` | ID 掩码叠加，标签或图例模式 |
-| `color_from_text` | 由任意文本得到稳定颜色 |
-| `rotated_bbox_to_polygon` | (cx, cy, w, h, θ) → DOTA 8 数角点 |
-| `normalize_coordinates` | 模型坐标系（预览像素或 0–1000）→ 归一化 0–1 |
-| `denormalize_coordinates` | 归一化 0–1 → 模型坐标系（预览像素或 0–1000） |
+| `preview_image` | 裁剪 + 降采样到尺寸上限 |
+| `preview_image_grid` | 预览并叠加半透明网格以锚定位置 |
+| `preview_image_bboxes` | 按归一化坐标叠加检测框，可带标签 |
+| `preview_image_keypoints` | 按归一化坐标叠加关键点，可带标签 |
+| `preview_image_polygons` | 叠加多边形并为顶点编号 |
+| `preview_image_segmentation` | 叠加 ID 掩码，逐区域标签或图例 |
 | `preview_video` | 按 N fps 抽帧 → 每帧一张预览 |
 | `preview_video_grid` | 按 N fps 抽帧 → 每帧叠加网格 |
-| `clip_audio` | 音频切片与重采样 |
+| `clip_audio` | 裁剪并重采样音频为 WAV |
+| `color_from_text` | 由任意文本生成稳定颜色 |
+| `rotated_bbox_to_polygon` | (cx, cy, w, h, θ) → DOTA 八数字角点 |
+| `normalize_coordinates` | 模型坐标系（像素或 0–1000）→ 归一化 0–1 |
+| `denormalize_coordinates` | 归一化 0–1 → 模型坐标系 |
 
-规范文档位于 `.agents/knowledge/spec/`（共享约定：`.agents/knowledge/spec/mcp-overview.md`）；
-生成的工具参考见 `docs/mcp/tools.md`。
+参数、返回结构与规格说明见
+[工具参考](https://hoshiori-dev.github.io/annotools/mcp/tools/)。
 
-## Skills 与示例
+## 文档
 
-`skills/` 提供可安装的 skills（`npx skills add hoshiori-dev/annotools`）。七个 skill 全部可用：`annotation-project-interview`
-（设计树访谈 + 工作区脚手架）、`sqlite-annotation-store`（库表、工具契约、导出）、`mllm-multimodal-input`
-（各模型 token 成本、坐标约定、缓存布局）、`localization-annotation-guide`（网格 → 提议 → 校验 → 修正 → 入库循环）、
-`agent-vision-tools`（基于库层为 Claude Agent SDK / Codex SDK 执行 agent 构建的工具）、`task-image-captioning` 与
-`task-object-detection`（含提示词与管道骨架的任务脚手架）。`examples/` 提供四个完整示例项目——图片 caption 与物体检测，各有 Claude Agent SDK 与 Codex SDK 版本——各含
-`CONTEXT.md`、规范、测试与首次运行后填写的用量记录。
+- [快速上手](https://hoshiori-dev.github.io/annotools/getting-started/install/) —— 安装、可选依赖、容器、MCP 注册。
+- [使用](https://hoshiori-dev.github.io/annotools/usage/mcp-server/) —— 配置项、坐标约定、库调用的基本形态。
+- [API 参考](https://hoshiori-dev.github.io/annotools/api/) —— 每个公开函数，由 docstring 生成。
+- [架构](https://hoshiori-dev.github.io/annotools/architecture/) —— 分层与已记录的决策。
+- Skills —— 可安装进你的 agent 的标注方法论：`npx skills add hoshiori-dev/annotools`。
+- [`examples/`](examples/) —— 四个完整流水线：图像描述与目标检测，各有 Claude Agent SDK 与 Codex SDK 版本。
 
 ## 开发
 
 ```bash
 uv sync --all-extras
-just check          # lint、格式、类型、label 一致性、README 同步、单元测试
+just check
 just docker-build && just test-container
 ```
 
-参见 `CONTRIBUTING.md`；agent 从 `AGENTS.md` 开始。
+`just check` 会运行 lint、格式化、类型检查、标签体系、README 同步、公开 API docstring 检查、生成式参考
+文档漂移检查、严格模式文档构建，以及带 95% 覆盖率门槛的测试。参见
+[`CONTRIBUTING.md`](CONTRIBUTING.md)；agent 从 [`AGENTS.md`](AGENTS.md) 开始。
 
 ## 许可证
 

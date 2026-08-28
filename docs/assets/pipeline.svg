@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="200" viewBox="0 0 760 200" role="img"
+     aria-label="Source image, downscaled preview, grid overlay, box overlay, normalized coordinates">
+  <style>
+    .lbl { font: 600 12px ui-sans-serif, system-ui, sans-serif; fill: #57606a; }
+    .sub { font: 400 11px ui-monospace, SFMono-Regular, monospace; fill: #8b949e; }
+    .frame { fill: #dbe3ec; stroke: #9aa7b5; stroke-width: 1.5; }
+    .grid { stroke: #ffffff; stroke-width: 1; opacity: .85; }
+    .arrow { stroke: #9aa7b5; stroke-width: 1.5; fill: none; marker-end: url(#a); }
+    .box { fill: none; stroke: #1f6feb; stroke-width: 2.5; }
+    .tag { fill: #1f6feb; }
+    .tagtext { font: 600 9px ui-sans-serif, system-ui, sans-serif; fill: #ffffff; }
+    .code { font: 400 11px ui-monospace, SFMono-Regular, monospace; fill: #1f6feb; }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 10 5 0 10z" fill="#9aa7b5"/>
+    </marker>
+  </defs>
+
+  <rect class="frame" x="14" y="34" width="128" height="96" rx="4"/>
+  <text class="lbl" x="14" y="152">Source</text>
+  <text class="sub" x="14" y="168">4000 × 3000</text>
+  <path class="arrow" d="M150 82h34"/>
+
+  <rect class="frame" x="192" y="46" width="112" height="84" rx="4"/>
+  <text class="lbl" x="192" y="152">preview</text>
+  <text class="sub" x="192" y="168">768 × 576</text>
+  <path class="arrow" d="M312 88h34"/>
+
+  <rect class="frame" x="354" y="46" width="112" height="84" rx="4"/>
+  <g class="grid">
+    <path d="M382 46v84M410 46v84M438 46v84M354 74h112M354 102h112"/>
+  </g>
+  <text class="lbl" x="354" y="152">draw_grid</text>
+  <text class="sub" x="354" y="168">10 × 10 cells</text>
+  <path class="arrow" d="M474 88h34"/>
+
+  <rect class="frame" x="516" y="46" width="112" height="84" rx="4"/>
+  <g class="grid">
+    <path d="M544 46v84M572 46v84M600 46v84M516 74h112M516 102h112"/>
+  </g>
+  <rect class="box" x="544" y="70" width="56" height="44" rx="2"/>
+  <rect class="tag" x="544" y="59" width="26" height="11" rx="2"/>
+  <text class="tagtext" x="548" y="67.5">cat</text>
+  <text class="lbl" x="516" y="152">draw_bboxes</text>
+  <text class="sub" x="516" y="168">the model checks itself</text>
+  <path class="arrow" d="M636 88h30"/>
+
+  <text class="lbl" x="668" y="80">stored</text>
+  <text class="code" x="668" y="98">0.31</text>
+  <text class="code" x="668" y="112">0.44</text>
+  <text class="code" x="668" y="126">0.62</text>
+  <text class="code" x="668" y="140">0.78</text>
+  <text class="sub" x="668" y="168">0–1 of source</text>
+</svg>
