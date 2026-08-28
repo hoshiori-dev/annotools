@@ -10,5 +10,5 @@
   "max_boxes": 20,
   "classes": ["black_cat", "white_cat", "other_cat"],
   "max_failures": 10,
-  "max_budget_usd_per_item": 0.15
+  "max_budget_usd_per_item": 0.30
 }
