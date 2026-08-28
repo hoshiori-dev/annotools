@@ -1,11 +1,11 @@
 [project]
 name = "annotools"
-version = "0.1.0rc2"
+version = "0.1.0rc3"
 description = "MCP server and library that help agents view and annotate multimodal data within a token budget"
 readme = "README.md"
 license = "Apache-2.0"
 authors = [
-    { name = "Aoi", email = "82735346+ryan-minato@users.noreply.github.com" }
+    { name = "Aoi" }
 ]
 requires-python = ">=3.12"
 keywords = ["mcp", "annotation", "dataset", "multimodal", "agent"]
