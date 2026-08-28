@@ -9,11 +9,9 @@ from PIL import Image, ImageDraw
 from annotools.color import color_from_text, to_hex
 from annotools.config import get_settings
 from annotools.geometry import fit_size
-from annotools.image.overlay import _draw_label
+from annotools.image._draw import draw_label
 from annotools.image.preview import PreviewResult, size_metadata
 from annotools.io import load_image
-
-settings = get_settings()
 
 # Keep in step with .agents/knowledge/spec/preview-image-segmentation.md.
 MASK_MODES = {"L", "P", "I", "I;16", "I;16B", "I;16L"}
@@ -85,9 +83,9 @@ def overlay_mask(
     annotation: Literal["label", "legend"] | str = "label",
     id_names: dict[int, str] | None = None,
     alpha: float = 0.5,
-    line_width: int = settings.line_width,
-    max_width: int = settings.max_width,
-    max_height: int = settings.max_height,
+    line_width: int | None = None,
+    max_width: int | None = None,
+    max_height: int | None = None,
     target_pixels: int | None = None,
 ) -> PreviewResult:
     """Blend the ID ``mask`` over ``result.image`` and annotate regions with labels or a legend.
@@ -98,6 +96,10 @@ def overlay_mask(
     Raises:
         ValueError: for ``alpha`` outside [0, 1], ``line_width < 0``, or an unknown ``annotation``.
     """
+    settings = get_settings()
+    line_width = settings.line_width if line_width is None else line_width
+    max_width = settings.max_width if max_width is None else max_width
+    max_height = settings.max_height if max_height is None else max_height
     if not 0.0 <= alpha <= 1.0:
         raise ValueError(f"alpha must be within [0, 1], got {alpha}")
     if line_width < 0:
@@ -133,7 +135,7 @@ def overlay_mask(
         draw = ImageDraw.Draw(image)
         for i in ids:
             ys, xs = np.nonzero(view == i)
-            _draw_label(
+            draw_label(
                 draw, names.get(i, str(i)), float(xs.mean()), float(ys.mean()), colors[i], image.size, anchor="middle"
             )
     else:

@@ -11,7 +11,8 @@ conventions and parameter groups every tool spec reuses; a tool spec only descri
 - All coordinates in parameters and metadata are normalized floats in `[0.0, 1.0]` relative to the
   **uncropped** source image (x → width, y → height). Pixel coordinates never cross the tool boundary.
 - Colors are CSS/PIL color names (`blue`, `red`) or `#RRGGBB`; default `blue`.
-- Defaults live in `annotools.config.Settings` (pydantic-settings) and are resolved once at server start:
+- Defaults live in `annotools.config.Settings` (pydantic-settings). The library resolves them at call
+  time (`None` parameters read `get_settings()`); the MCP server snapshots them once at start:
   `annotools` command-line flags (`--max-width 768`) override `ANNOTOOLS_<FIELD>` environment variables
   (`ANNOTOOLS_MAX_WIDTH=768`), which override the built-in values. Empty environment values are ignored;
   invalid values fail at startup naming the field. The resolved values are the defaults shown in every
@@ -49,22 +50,25 @@ Processing order: load (EXIF orientation applied) → crop → fit → overlays 
 
 ## `GridOptions` (tools that accept `grid`)
 
+Every field except `color` is nullable; `null` (the schema default for the nested `grid` object) takes the
+`Settings` value when the grid is drawn. The values below are the built-in settings.
+
 | Parameter | Type | Default | Constraints |
 |---|---|---|---|
-| `columns` | int | 10 | ≥ 1; `columns − 1` vertical lines |
-| `rows` | int | 10 | ≥ 1 |
-| `mode` | `"ratio"` \| `"fixed"` | `"ratio"` | `fixed` uses `column_width`/`row_width` in output pixels |
+| `columns` | int \| null | 10 (setting) | ≥ 1; `columns − 1` vertical lines |
+| `rows` | int \| null | 10 (setting) | ≥ 1 |
+| `mode` | `"ratio"` \| `"fixed"` \| null | `"ratio"` (setting) | `fixed` uses `column_width`/`row_width` in output pixels |
 | `column_width` | int \| null | null | required when `mode="fixed"` |
 | `row_width` | int \| null | null | required when `mode="fixed"` |
 | `color` | `"white"` \| `"black"` \| `"invert"` | `"white"` | `invert` inverts the underlying pixels |
-| `opacity` | float | 0.5 | `[0, 1]` |
-| `line_width` | int | 1 | ≥ 1, output pixels |
+| `opacity` | float \| null | 0.5 (setting) | `[0, 1]` |
+| `line_width` | int \| null | 1 (setting) | ≥ 1, output pixels |
 
 ## Object models
 
 | Model | Fields |
 |---|---|
-| `BBoxObject` | `bbox: [x_min, y_min, x_max, y_max]`, `label: str \| null`, `color: str = "blue"` |
+| `BBoxObject` | `bbox: [x_min, y_min, x_max, y_max]`, `label: str \| null`, `color: str \| null = null` (null → `Settings.color`, built-in `blue`) |
 | `KeypointObject` | `point: [x, y]`, `label`, `color` |
 | `PolygonObject` | `points: [x1, y1, x2, y2, …]` (even count, ≥ 6), `label`, `color` |
 

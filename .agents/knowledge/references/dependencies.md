@@ -10,7 +10,7 @@ and add it here.
 | FastMCP | 3.4.7 | https://gofastmcp.com (servers/tools, media helpers; `fastmcp-docs` MCP) | `mcp/server.py`, `mcp/*` |
 | MCP SDK (`mcp`) | 1.29.1 | https://github.com/modelcontextprotocol/python-sdk | content types in tests (`ImageContent`, `TextContent`) |
 | pydantic | 2.13.4 | https://docs.pydantic.dev | parameter models, `Annotated[..., Field]` aliases in `mcp/common.py` |
-| pydantic-settings | 2.15.0 | https://docs.pydantic.dev/latest/concepts/pydantic_settings/ | `config.py` (`Settings`), `cli.py` (`CliSettingsSource`) |
+| pydantic-settings | 2.15.0 | https://docs.pydantic.dev/latest/concepts/pydantic_settings/ | `config.py` (`Settings`), `mcp/cli.py` (`CliSettingsSource`) |
 | Pillow | 12.3.0 | https://pillow.readthedocs.io | `io.py`, `image/*` |
 | numpy | 2.5.2 | https://numpy.org/doc | `image/grid.py`, `image/segmentation.py`, `audio.py` |
 | fsspec | 2026.7.0 | https://filesystem-spec.readthedocs.io | `io.py` (`open_bytes`, `write_bytes`) |
@@ -46,6 +46,9 @@ and add it here.
   `Settings(_cli_settings_source=source(parsed_args=ns))` resolves CLI > env > default.
   `cli_show_env_vars=True` prints the env var name in `--help`.
 - Import cost ≈ 0.2 s; the server import (≈ 1.5 s) stays deferred in `cli.main` so `--help` is fast.
+- pydantic 2.13 omits `default_factory` values from the JSON schema, so a model field whose default comes from
+  `get_settings()` at call time advertises no default; the MCP layer therefore keeps import-time snapshots for
+  flat tool parameters, and nested `GridOptions` fields show `null` (verified 2026-08-28).
 
 ## PyAV
 

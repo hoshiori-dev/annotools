@@ -33,10 +33,29 @@ def test_fixed_mode_requires_widths():
     assert Settings(grid_mode="fixed", grid_column_width=100, grid_row_width=50).grid_row_width == 50
 
 
-def test_configure_after_resolution_raises():
-    config.get_settings()
-    with pytest.raises(RuntimeError, match="configure"):
-        config.configure(Settings())
+def test_configure_replaces_resolved_settings():
+    assert config.get_settings().max_width == 384
+    config.configure(Settings(max_width=512))
+    assert config.get_settings().max_width == 512
+
+
+def test_library_reads_settings_at_call_time():
+    from PIL import Image
+
+    from annotools.image.grid import GridOptions, draw_grid
+    from annotools.image.overlay import BBoxObject, draw_bboxes
+    from annotools.image.preview import preview
+
+    image = Image.new("RGB", (800, 400), "white")
+    config.configure(Settings(max_width=200, max_height=200, grid_columns=4, grid_rows=2, color="red"))
+    result = preview(image)
+    assert result.image.size == (200, 100)
+    assert draw_grid(result.image, GridOptions()).metadata["grid"]["columns"] == 4
+    assert GridOptions(columns=3).resolved().rows == 2
+    drawn = draw_bboxes(result, [BBoxObject(bbox=(0.1, 0.1, 0.5, 0.5))])
+    assert drawn.image.getpixel((round(0.1 * 200), round(0.1 * 100))) == (255, 0, 0)
+    config.reset_settings()
+    assert preview(image).image.size == (384, 192)
 
 
 def test_configure_before_resolution(monkeypatch):
