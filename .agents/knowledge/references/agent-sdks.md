@@ -26,8 +26,9 @@ examples' `uv.lock` (2026-08-27). The published skill copy is
   response, items, and `usage` (`usage.total` aggregates input/cached/output tokens).
 - No in-process tool decorator: tools are served as an MCP stdio server declared under
   `config["mcp_servers"][name] = {"command": ..., "args": [...]}` (same shape as `.codex/config.toml`).
-- MCP tool calls are approval-gated by default and `ApprovalMode.deny_all` (`approval_policy = "never"`)
-  rejects them with `user rejected MCP tool call`; set `"default_tools_approval_mode": "approve"` on the
+- MCP tool calls go through approval; the SDK default `ApprovalMode.auto_review` grants it, but
+  `ApprovalMode.deny_all` (`approval_policy = "never"`) leaves no reviewer and every call fails with
+  `user rejected MCP tool call`. For unattended pipelines keep `deny_all` and set `"default_tools_approval_mode": "approve"` on the
   server entry (per tool: `"tools": {"<name>": {"approval_mode": "approve"}}`; enum `auto | prompt |
   writes | approve`, `auto` still rejects under `deny_all`). Verified 2026-08-28 with openai-codex 0.147.0.
 - TS: `new Codex({config?, env?})`, `codex.startThread({workingDirectory, skipGitRepoCheck})`,

@@ -1,4 +1,4 @@
-# SDK notes (verified 2026-08-27)
+# SDK notes (verified 2026-08-28)
 
 Derived from `.agents/knowledge/references/agent-sdks.md` in the annotools repository.
 
@@ -23,4 +23,9 @@ Derived from `.agents/knowledge/references/agent-sdks.md` in the annotools repos
   `thread.run(prompt, output_schema=, effort=)`; `TurnResult` carries the final response, items, usage.
 - MCP servers are declared through config (`mcp_servers.<name>.command/args`), the same shape as
   `.codex/config.toml`; there is no in-process tool decorator, hence the FastMCP server in the asset.
+- MCP tool calls go through approval; `ApprovalMode.deny_all` (`approval_policy = "never"`) leaves no
+  reviewer and every call fails with `user rejected MCP tool call`. For unattended pipelines keep
+  `deny_all` and set `"default_tools_approval_mode": "approve"` on the server entry (per tool:
+  `"tools": {"<name>": {"approval_mode": "approve"}}`; `auto` still rejects). Verified 2026-08-28,
+  openai-codex 0.147.0.
 - Sources: https://github.com/openai/codex/tree/main/sdk (typescript/README.md, python/docs/api-reference.md)

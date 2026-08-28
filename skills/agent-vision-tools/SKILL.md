@@ -52,6 +52,8 @@ families on the `annotools` library and register them with the SDK, all scoped t
   text block.
 - Codex threads default to the git repo check; when the workspace is not a repo pass
   `skipGitRepoCheck: true` (TS) or run inside the project repo with `cwd` set.
+- Codex `ApprovalMode.deny_all` rejects MCP tool calls too (`user rejected MCP tool call`); declare
+  your own server with `"default_tools_approval_mode": "approve"` (see `references/sdk-notes.md`).
 - Overlays are drawn from coordinates normalized to the **uncropped** source; when the agent looked
   at a crop, convert its answer through the preview metadata first (`localization-annotation-guide`).
 - A preview tool that accepts arbitrary paths is a file-read primitive — the `_inside()` check is the
