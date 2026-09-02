@@ -21,7 +21,7 @@ the default token.
 | `ci-gate` (CI) | aggregates all of the above; required check | same |
 | `secret-scan` (Secret Scanning) | TruffleHog `--results=verified,unknown` | main push, PR |
 | `deploy` (Documentation) | `zensical build --clean --strict` → Pages | main push |
-| `check-version` → `verify` (CI) → `build` → `smoke` + `scan` (Release Tests) | see `release-tests.yml`; `scan` runs TruffleHog over the distributions and the image layers, gitleaks over the first-party files | called by Release Prepare and Release |
+| `check-version` → `verify` (CI) → `build` → `smoke` + `scan` (Release Tests) | see `release-tests.yml`; `scan` runs TruffleHog over the distributions and the image layers, gitleaks over the first-party files. The image scan excludes `/app/.venv/lib/*/site-packages/*`: the URI detector cannot reach the hosts in a dependency's docstring examples from a runner, and an unreachable host is reported as `unknown` | called by Release Prepare and Release |
 | Release Prepare: `resolve` → `tests` (Release Tests) → `draft-release` | see `release-prepare.yml`; creates the tag and a draft release only after the gate passes | `workflow_dispatch` (optional `tag` input; derived from `pyproject.toml` otherwise), or a pushed `v*` tag |
 | Release: `tests` (Release Tests) → `publish-ghcr` + `publish-testpypi` → `publish-pypi` | see `release.yml`; `publish-pypi` runs only when `tests` reports the tag is not a PEP 440 pre-release | release published |
 | Nightly: `changed` → `nightly` | see `nightly.yml`; container smoke test + image scan, then pushes the rolling `nightly` tag | 13:00 UTC (22:00 JST) daily, `workflow_dispatch` |
@@ -31,6 +31,11 @@ A commit on a PR branch produces two CI runs (push + pull_request); the push run
 
 Rules: never weaken or delete a check to make it pass; a renamed job must be renamed in the ruleset in
 the same change. Read failed logs with `gh run view <id> --log-failed`, not the full log.
+
+On a pull request `secret-scan` scans the `base..head` commit range, not the working tree, so a string
+it flags stays flagged after a follow-up commit removes it — amend the commit that introduced it and
+force-push. Prose about credentials trips it as readily as a credential does: writing an example URL
+with a userinfo part into a comment or a docstring is enough.
 
 ## Reusable workflows and composite actions
 
