@@ -52,4 +52,8 @@ replaces whatever the item had in this run.
 - ≤ 4 model calls per image (1 propose + ≤ 3 corrections); ≤ 4 workers; stop after 10 failures in a row
   (`max_failures`); `max_budget_usd_per_item` 0.30 (SDK client-side estimate, enforced per query): a successful item
   usually totals 0.06–0.10, but the estimate has been observed at 0.16 as early as the first tool result, so
-  the cap is a runaway guard well above the typical cost, not the expected cost.
+  the cap is a runaway guard well above the typical cost, not the expected cost. Crossing it is not a
+  verdict on the boxes: an item whose `commit_boxes` already ran keeps the commit and the status the
+  commit gave it, plus a `tag`/`budget_stop` row recording why the query ended (counted as `budget_stop`
+  in the run summary). An item with nothing committed, or any other error, is demoted to `needs_review`
+  and stays pending.

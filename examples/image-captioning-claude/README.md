@@ -26,7 +26,8 @@ One `query()` per image: the agent calls `look_at_item` (annotools preview at 76
 caption, compresses it twice, produces tags, and records each with `record_caption` / `record_tags`
 (SQLite, schema from the `sqlite-annotation-store` skill). The pipeline verifies that all four variants
 exist and are within budget; on failure it sets the item's rows to `needs_review` (nothing is overwritten
-and the item stays pending for the next run) and stops the run after 10 failures in a row.
+and the item stays pending for the next run) and stops the run after 10 failures in a row. An item that
+was complete and only then crossed the per-item budget keeps its captions and is tagged `budget_stop`.
 
 ## Usage record
 
@@ -40,3 +41,6 @@ and the item stays pending for the next run) and stops the run after 10 failures
 
 Fill this table from the JSON summary `just run` prints (`items`, `input_tokens`, `output_tokens`,
 `cache_read_input_tokens`, `cache_creation_input_tokens`, `cost_usd`, `seconds`); `cost_usd` sums the SDK's client-side estimates, not a bill.
+`max_budget_usd_per_item` caps that estimate as a runaway guard, not as the expected cost: an item that
+crossed it with all four variants already recorded keeps them and is counted as `budget_stop`; an
+incomplete item becomes `needs_review`.

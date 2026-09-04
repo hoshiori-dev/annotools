@@ -156,3 +156,52 @@ async def test_caption_item_keeps_the_cost_of_a_budget_error(workspace, monkeypa
     usage = await pipeline.caption_item(ctx, "data/raw/coco-cats/a.jpg", config, "system")
     assert usage["error"].startswith("Reached maximum budget") and usage["subtype"] == "error_max_budget_usd"
     assert usage["cost_usd"] == 0.16 and usage["cache_read_input_tokens"] == 18000
+
+
+BUDGET_ERROR = {"cost_usd": 0.2503, "subtype": "error_max_budget_usd", "error": "Reached maximum budget ($0.25)"}
+
+
+def complete_item(conn, run_id: int) -> None:
+    for variant, text in (("long", "a long caption"), ("medium", "a medium caption"), ("short", "short")):
+        store.record(conn, 1, run_id, "caption", variant, {"text": text})
+    store.record(conn, 1, run_id, "tag", "", {"tags": ["cat", "indoor", "sofa"]})
+
+
+def test_budget_stop_after_a_complete_item_keeps_the_captions(workspace, tmp_path):
+    from captioning.pipeline import settle, verify
+
+    _ws, db = workspace
+    with store.connect(db) as conn:
+        run_id = store.start_run(conn, "m", {"long": "x"}, {})
+        complete_item(conn, run_id)
+        assert verify(conn, 1, run_id) == []
+        assert settle(conn, 1, run_id, [], dict(BUDGET_ERROR)) == ("final", True)
+        rows = dict(
+            conn.execute("SELECT key, status FROM annotations WHERE item_id = 1 AND run_id = ?", (run_id,)).fetchall()
+        )
+        assert rows == {"long": "final", "medium": "final", "short": "final", "": "final", "budget_stop": "final"}
+        assert conn.execute("SELECT COUNT(*) FROM items_pending").fetchone()[0] == 0
+    out = tmp_path / "captions.jsonl"
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "export_captions.py"), "--db", str(db), "--out", str(out)],
+        check=True,
+        capture_output=True,
+    )
+    record = json.loads(out.read_text().strip())  # the budget_stop row does not reach the export
+    assert set(record) == {"uri", "coco_id", "long", "medium", "short", "tags"}
+    assert record["tags"] == ["cat", "indoor", "sofa"]
+
+
+def test_budget_stop_on_an_incomplete_item_is_still_needs_review(workspace):
+    from captioning.pipeline import settle, verify
+
+    _ws, db = workspace
+    with store.connect(db) as conn:
+        run_id = store.start_run(conn, "m", {"long": "x"}, {})
+        store.record(conn, 1, run_id, "caption", "long", {"text": "a long caption"})
+        assert settle(conn, 1, run_id, verify(conn, 1, run_id), dict(BUDGET_ERROR)) == ("needs_review", False)
+        rows = dict(
+            conn.execute("SELECT key, status FROM annotations WHERE item_id = 1 AND run_id = ?", (run_id,)).fetchall()
+        )
+        assert rows == {"long": "needs_review", "error": "needs_review"}
+        assert conn.execute("SELECT COUNT(*) FROM items_pending").fetchone()[0] == 1
