@@ -49,4 +49,6 @@ say normalized requests work poorly; `geometry.py` maps them back through the pr
 | Sanity: mean best IoU / recall@0.5 | 0.913 / 1.0 on 3 images, 3 COCO boxes (`just sanity`) |
 
 Fill this table from the JSON summary `just run` prints (`cost_usd`, `seconds`, `items`, `mean_rounds`)
-and `just sanity`; `total_cost_usd` is a client-side estimate, not a bill.
+and `just sanity`; `total_cost_usd` is a client-side estimate, not a bill. `max_budget_usd_per_item` caps
+that estimate as a runaway guard, not as the expected cost: an item that crossed it after `commit_boxes`
+keeps its boxes and is counted as `budget_stop`; only an item with nothing committed becomes `needs_review`.

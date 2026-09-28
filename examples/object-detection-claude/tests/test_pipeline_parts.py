@@ -210,3 +210,76 @@ async def test_detect_item_keeps_the_cost_of_a_budget_error(workspace, monkeypat
     usage = await pipeline.detect_item(ctx, "data/raw/coco-cats/a.jpg", CONFIG, "system")
     assert usage["error"].startswith("Reached maximum budget") and usage["subtype"] == "error_max_budget_usd"
     assert usage["cost_usd"] == 0.16 and usage["cache_read_input_tokens"] == 18000
+
+
+BUDGET_ERROR = {"cost_usd": 0.3006, "subtype": "error_max_budget_usd", "error": "Reached maximum budget ($0.30)"}
+
+
+def test_budget_stop_after_the_commit_keeps_the_boxes(workspace, tmp_path):
+    from detection.pipeline import committed, settle
+
+    ws, db = workspace
+    with store.connect(db) as conn:
+        run_id = store.start_run(conn, "m", {"system": "x"}, CONFIG)
+    ctx = ToolContext(ws, db, run_id, CONFIG)
+    uri = "data/raw/coco-cats/a.jpg"
+    boxes = [{"label": "other_cat", "box": [76.8, 51.2, 384, 256], "confidence": 0.9}]
+    assert ctx.commit_boxes(uri, boxes, done=True)["status"] == "final"
+    with store.connect(db) as conn:
+        assert settle(conn, 1, run_id, "final", dict(BUDGET_ERROR)) == ("final", True)
+        rows = dict(
+            conn.execute("SELECT kind, status FROM annotations WHERE item_id = 1 AND run_id = ?", (run_id,)).fetchall()
+        )
+        assert rows == {"bbox": "final", "tag": "final"}  # the commit and its verdict stand
+        payload = conn.execute("SELECT payload_json FROM annotations WHERE key = 'budget_stop'").fetchone()[0]
+        assert json.loads(payload)["error"].startswith("Reached maximum budget")
+        assert committed(conn, 1, run_id) == (1, "final", 0)
+        assert conn.execute("SELECT COUNT(*) FROM items_pending").fetchone()[0] == 0
+    out = tmp_path / "detections.jsonl"
+    subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "export_detections.py"), "--db", str(db), "--out", str(out)],
+        check=True,
+        capture_output=True,
+    )
+    record = json.loads(out.read_text().strip())
+    assert [b["label"] for b in record["boxes"]] == ["other_cat"]
+
+
+def test_budget_stop_keeps_the_commit_verdict_and_other_errors_still_demote(workspace):
+    from detection.pipeline import settle
+
+    ws, db = workspace
+    with store.connect(db) as conn:
+        run_id = store.start_run(conn, "m", {"system": "x"}, CONFIG)
+    ctx = ToolContext(ws, db, run_id, CONFIG)
+    uri = "data/raw/coco-cats/a.jpg"
+    low = [{"label": "other_cat", "box": [76.8, 51.2, 384, 256], "confidence": 0.3}]
+    assert ctx.commit_boxes(uri, low, done=True)["status"] == "needs_review"
+    with store.connect(db) as conn:
+        assert settle(conn, 1, run_id, "needs_review", dict(BUDGET_ERROR)) == ("needs_review", True)
+        rows = dict(
+            conn.execute("SELECT kind, status FROM annotations WHERE item_id = 1 AND run_id = ?", (run_id,)).fetchall()
+        )
+        assert rows == {"bbox": "needs_review", "tag": "needs_review"}  # the item stays pending
+        assert conn.execute("SELECT COUNT(*) FROM items_pending").fetchone()[0] == 1
+
+
+def test_any_other_error_or_nothing_committed_is_still_needs_review(workspace):
+    from detection.pipeline import settle
+
+    ws, db = workspace
+    with store.connect(db) as conn:
+        run_id = store.start_run(conn, "m", {"system": "x"}, CONFIG)
+    ctx = ToolContext(ws, db, run_id, CONFIG)
+    boxes = [{"label": "other_cat", "box": [76.8, 51.2, 384, 256], "confidence": 0.9}]
+    assert ctx.commit_boxes("data/raw/coco-cats/a.jpg", boxes, done=True)["status"] == "final"
+    with store.connect(db) as conn:
+        broken = {"cost_usd": 0.0, "error": "transport closed"}
+        assert settle(conn, 1, run_id, "final", broken) == ("needs_review", False)
+        rows = dict(
+            conn.execute("SELECT kind, status FROM annotations WHERE item_id = 1 AND run_id = ?", (run_id,)).fetchall()
+        )
+        assert rows == {"bbox": "needs_review", "tag": "needs_review"}
+        run2 = store.start_run(conn, "m", {"system": "x"}, CONFIG)
+        assert settle(conn, 1, run2, None, dict(BUDGET_ERROR)) == ("needs_review", False)
+        assert conn.execute("SELECT COUNT(*) FROM items_pending").fetchone()[0] == 1

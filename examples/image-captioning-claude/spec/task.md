@@ -41,5 +41,9 @@ Linear, parallel (`workers` in config): preview → long → compress ×2 → ta
 ## Budget
 - `max_budget_usd_per_item` 0.25 (SDK client-side estimate, enforced per query): a successful item
   usually totals about 0.10, but the estimate has been observed at 0.16 as early as the first tool result, so
-  the cap is a runaway guard well above the typical cost, not the expected cost; ≤ 4 workers; stop the run after
-  10 failures in a row (`max_failures`); token totals are reported in the run summary.
+  the cap is a runaway guard well above the typical cost, not the expected cost. Crossing it is not a
+  verdict on the captions: an item that already has all four variants within budget keeps them and gets a
+  `tag`/`budget_stop` row recording why the query ended (counted as `budget_stop` in the run summary,
+  and left out of the export). An incomplete item, or any other error, is demoted to `needs_review` and
+  stays pending. ≤ 4 workers; stop the run after 10 failures in a row (`max_failures`); token totals are
+  reported in the run summary.

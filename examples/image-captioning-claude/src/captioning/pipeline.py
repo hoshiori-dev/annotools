@@ -90,6 +90,28 @@ def fail_item(conn, item_id: int, run_id: int, reason: str) -> None:
     store.record(conn, item_id, run_id, "caption", "error", {"error": reason}, status="needs_review")
 
 
+def budget_stopped(usage: dict) -> bool:
+    """The query crossed ``max_budget_usd``, the SDK's client-side estimate, rather than failing."""
+    return "error" in usage and usage.get("subtype") == "error_max_budget_usd"
+
+
+def settle(conn, item_id: int, run_id: int, problems: list[str], usage: dict) -> tuple[str, bool]:
+    """Record the item's outcome; return its status and whether the budget stopped a finished item.
+
+    A budget stop on an item that already passed ``verify`` keeps its captions and adds a ``budget_stop``
+    tag: the cap guards against runaway loops on an estimate that is high early in a cold-cache item, so
+    crossing it says nothing about the captions. Anything missing, or any other error, fails the item.
+    """
+    if not problems and budget_stopped(usage):
+        payload = {"tags": ["budget_stop"], "error": usage["error"]}
+        store.record(conn, item_id, run_id, "tag", "budget_stop", payload, status="final")
+        return "final", True
+    if problems or "error" in usage:
+        fail_item(conn, item_id, run_id, str(usage.get("error") or "; ".join(problems)))
+        return "needs_review", False
+    return "final", False
+
+
 def print_trial(conn, item_id: int, run_id: int, uri: str) -> None:
     rows = conn.execute(
         "SELECT key, payload_json FROM annotations WHERE item_id = ? AND run_id = ? ORDER BY kind, key",
@@ -110,7 +132,7 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
     ctx = ToolContext(WORKSPACE, DB, run_id, config["preview"])
     semaphore = asyncio.Semaphore(1 if trial else config["workers"])
     budgets = {"medium": config["budgets"]["medium_words"], "short": config["budgets"]["short_words"]}
-    totals: dict[str, float] = {"items": 0, "needs_review": 0, "cost_usd": 0.0, "seconds": 0.0}
+    totals: dict[str, float] = {"items": 0, "needs_review": 0, "budget_stop": 0, "cost_usd": 0.0, "seconds": 0.0}
     totals.update(dict.fromkeys(TOKEN_KEYS, 0))
     failures = 0
     stop = asyncio.Event()
@@ -126,8 +148,9 @@ async def run(limit: int | None, trial: bool, config_path: Path) -> int:
                 usage = {"cost_usd": 0.0, "seconds": 0.0, "error": str(exc)}
             with store.connect(DB) as conn:
                 problems = verify(conn, item_id, run_id, budgets)
-                if problems or "error" in usage:
-                    fail_item(conn, item_id, run_id, str(usage.get("error") or "; ".join(problems)))
+                status, stopped = settle(conn, item_id, run_id, problems, usage)
+                totals["budget_stop"] += int(stopped)
+                if status == "needs_review":
                     totals["needs_review"] += 1
                     failures += 1
                 else:
