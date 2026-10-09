@@ -32,7 +32,7 @@ def main(argv: list[str] | None = None) -> int:
         data = json.loads(payload)
         if kind == "caption":
             rec[key] = data.get("text")
-        elif kind == "tag":
+        elif kind == "tag" and key == "":  # the item's tags; a budget_stop tag is bookkeeping, not output
             rec["tags"] = data.get("tags")
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
